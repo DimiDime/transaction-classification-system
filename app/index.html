@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NordikBank AML — Alert Queue</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --risk-high: #E24B4A; --risk-high-bg: #FCEBEB; --risk-high-border: #F09595;
+    --risk-med: #BA7517; --risk-med-bg: #FAEEDA; --risk-med-border: #FAC775;
+    --risk-low: #3B6D11; --risk-low-bg: #EAF3DE; --risk-low-border: #C0DD97;
+    --accent: #534AB7; --accent-light: #EEEDFE; --accent-border: #AFA9EC;
+    --text: #1a1a1a; --muted: #6b6b6b;
+    --surface: #ffffff; --surface2: #f5f5f3;
+    --border: rgba(0,0,0,0.1); --border-med: rgba(0,0,0,0.18);
+    --radius-md: 8px; --radius-lg: 12px;
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+    background: #edecea;
+    color: var(--text);
+    font-size: 14px;
+    min-height: 100vh;
+  }
+
+  /* ── Top nav ── */
+  .nav {
+    background: #26215C;
+    padding: 0 24px;
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    height: 48px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .nav-logo { font-size: 15px; font-weight: 600; color: #fff; letter-spacing: -0.3px; }
+  .nav-logo span { color: #C2A3FF; }
+  .nav-sep { width: 1px; height: 20px; background: rgba(255,255,255,0.2); }
+  .nav-item { font-size: 13px; color: rgba(255,255,255,0.6); cursor: pointer; padding: 4px 0; }
+  .nav-item.active { color: #fff; border-bottom: 2px solid #C2A3FF; }
+  .nav-right { margin-left: auto; display: flex; align-items: center; gap: 12px; }
+  .nav-analyst { font-size: 12px; color: rgba(255,255,255,0.7); }
+  .nav-avatar { width: 28px; height: 28px; border-radius: 50%; background: #534AB7; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 600; color: #fff; }
+
+  /* ── Page chrome ── */
+  .page { max-width: 1160px; margin: 0 auto; padding: 20px 20px 40px; display: flex; flex-direction: column; gap: 12px; }
+
+  /* ── Top bar ── */
+  .topbar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .breadcrumb { font-size: 12px; color: var(--muted); }
+  .breadcrumb a { color: var(--accent); text-decoration: none; }
+  .breadcrumb a:hover { text-decoration: underline; }
+  .badge { display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; border-radius: 100px; font-size: 12px; font-weight: 500; border: 0.5px solid transparent; }
+  .badge-high { background: var(--risk-high-bg); color: var(--risk-high); border-color: var(--risk-high-border); }
+  .badge-med  { background: var(--risk-med-bg);  color: var(--risk-med);  border-color: var(--risk-med-border); }
+  .badge-low  { background: var(--risk-low-bg);  color: var(--risk-low);  border-color: var(--risk-low-border); }
+  .badge-info { background: var(--accent-light); color: var(--accent); border-color: var(--accent-border); font-size: 11px; padding: 3px 8px; }
+  .topbar-actions { margin-left: auto; display: flex; gap: 8px; }
+  .btn { padding: 7px 16px; border-radius: var(--radius-md); border: 0.5px solid var(--border-med); background: var(--surface); font-size: 13px; cursor: pointer; color: var(--text); transition: background 0.15s; }
+  .btn:hover { background: var(--surface2); }
+  .btn-primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .btn-primary:hover { background: #3C3489; }
+  .btn-danger { background: var(--risk-high); color: #fff; border-color: var(--risk-high); }
+  .btn-danger:hover { background: #A32D2D; }
+
+  /* ── Layout grids ── */
+  .grid-top { display: grid; grid-template-columns: 270px 1fr 210px; gap: 12px; }
+  .grid-mid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .grid-bot { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+  @media (max-width: 960px) {
+    .grid-top { grid-template-columns: 1fr 1fr; }
+    .grid-top .score-card { grid-column: 1 / -1; }
+    .grid-mid, .grid-bot { grid-template-columns: 1fr; }
+  }
+
+  /* ── Card ── */
+  .card {
+    background: var(--surface);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 14px 16px;
+  }
+  .card-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.7px; font-weight: 500; margin-bottom: 10px; }
+
+  /* ── Profile card ── */
+  .profile-header { display: flex; gap: 12px; align-items: center; margin-bottom: 12px; }
+  .avatar { width: 48px; height: 48px; border-radius: 50%; background: var(--accent-light); display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 600; color: var(--accent); flex-shrink: 0; }
+  .profile-name { font-size: 16px; font-weight: 600; }
+  .profile-meta { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .kv-row { display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 0.5px solid var(--border); font-size: 13px; }
+  .kv-row:last-child { border-bottom: none; }
+  .kv-key { color: var(--muted); }
+  .kv-val { font-weight: 500; text-align: right; }
+  .kv-warn { color: var(--risk-med); }
+  .kv-ok { color: var(--risk-low); }
+
+  /* ── Risk score ── */
+  .score-card { display: flex; flex-direction: column; align-items: center; justify-content: center; }
+  .score-num { font-size: 52px; font-weight: 700; color: var(--risk-high); line-height: 1; margin: 8px 0 2px; }
+  .score-denom { font-size: 16px; color: var(--muted); }
+  .score-bar-wrap { width: 100%; margin-top: 10px; }
+  .score-bar-track { width: 100%; height: 8px; border-radius: 4px; background: var(--surface2); overflow: hidden; position: relative; }
+  .score-bar-gradient { position: absolute; inset: 0; background: linear-gradient(90deg, #639922 0%, #BA7517 50%, #E24B4A 100%); border-radius: 4px; }
+  .score-bar-thumb { position: absolute; top: -3px; width: 14px; height: 14px; border-radius: 50%; background: var(--risk-high); border: 2px solid #fff; box-shadow: 0 1px 4px rgba(0,0,0,0.2); left: calc(84% - 7px); }
+  .score-ticks { display: flex; justify-content: space-between; font-size: 10px; color: var(--muted); margin-top: 4px; }
+  .score-context { margin-top: 10px; font-size: 12px; color: var(--muted); text-align: center; line-height: 1.5; }
+  .score-context strong { color: var(--risk-high); }
+
+  /* ── Signals ── */
+  .signals-list { display: flex; flex-direction: column; gap: 8px; }
+  .signal-row { display: flex; align-items: flex-start; gap: 10px; padding: 8px 10px; border-radius: var(--radius-md); background: var(--surface2); }
+  .signal-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; margin-top: 4px; }
+  .sig-high { background: var(--risk-high); }
+  .sig-med  { background: var(--risk-med); }
+  .sig-low  { background: #888; }
+  .signal-text { flex: 1; font-size: 13px; line-height: 1.4; }
+  .signal-tag { font-size: 11px; padding: 2px 7px; border-radius: 4px; white-space: nowrap; flex-shrink: 0; }
+  .tag-high { background: var(--risk-high-bg); color: var(--risk-high); }
+  .tag-med  { background: var(--risk-med-bg);  color: var(--risk-med); }
+  .tag-low  { background: #f1efea; color: #5f5e5a; }
+
+  /* ── Bar chart ── */
+  .bar-chart { display: flex; flex-direction: column; gap: 7px; }
+  .bar-row { display: flex; align-items: center; gap: 8px; }
+  .bar-key { font-size: 12px; color: var(--muted); width: 56px; flex-shrink: 0; text-align: right; }
+  .bar-track { flex: 1; height: 18px; background: var(--surface2); border-radius: 3px; overflow: hidden; }
+  .bar-fill { height: 100%; border-radius: 3px; }
+  .bar-normal { background: var(--accent); opacity: 0.7; }
+  .bar-high   { background: var(--risk-high); }
+  .bar-val { font-size: 12px; font-weight: 500; width: 44px; color: var(--text); }
+
+  /* ── Geo chips ── */
+  .geo-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+  .geo-chip { display: flex; align-items: center; gap: 5px; padding: 5px 12px; border-radius: 100px; font-size: 12px; border: 0.5px solid var(--border); background: var(--surface2); }
+  .geo-chip.suspicious { border-color: var(--risk-high-border); background: var(--risk-high-bg); color: var(--risk-high); font-weight: 500; }
+  .geo-chip.new-flag { border-color: var(--risk-med-border); background: var(--risk-med-bg); color: var(--risk-med); }
+
+  /* ── Counterparties ── */
+  .cp-list { display: flex; flex-direction: column; gap: 0; }
+  .cp-row { display: flex; align-items: center; gap: 8px; font-size: 12px; padding: 6px 0; border-bottom: 0.5px solid var(--border); }
+  .cp-row:last-child { border-bottom: none; }
+  .cp-avatar { width: 26px; height: 26px; border-radius: 50%; background: var(--surface2); display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 600; color: var(--muted); flex-shrink: 0; border: 0.5px solid var(--border); }
+  .cp-name { flex: 1; font-weight: 500; }
+  .cp-freq { color: var(--muted); }
+  .cp-flag { font-size: 11px; padding: 2px 7px; border-radius: 4px; font-weight: 500; }
+
+  /* ── Velocity ── */
+  .velocity-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .vel-card { background: var(--surface2); border-radius: var(--radius-md); padding: 10px 12px; border: 0.5px solid var(--border); }
+  .vel-val { font-size: 20px; font-weight: 600; line-height: 1.1; }
+  .vel-label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-top: 2px; }
+  .vel-delta { font-size: 11px; font-weight: 500; margin-top: 4px; }
+  .delta-up { color: var(--risk-high); }
+  .delta-ok { color: var(--risk-low); }
+
+  .alert-box { margin-top: 10px; padding: 10px 12px; background: var(--risk-high-bg); border-left: 3px solid var(--risk-high); border-radius: 0 6px 6px 0; }
+  .alert-box-title { font-size: 12px; font-weight: 600; color: var(--risk-high); }
+  .alert-box-body { font-size: 11px; color: var(--muted); margin-top: 3px; line-height: 1.4; }
+
+  /* ── Timeline ── */
+  .timeline-scroll { overflow-x: auto; padding-bottom: 4px; }
+  .timeline-track { display: flex; gap: 0; position: relative; padding: 22px 8px 8px; min-width: 500px; }
+  .timeline-line { position: absolute; top: 29px; left: 16px; right: 16px; height: 2px; background: var(--border); }
+  .tl-event { display: flex; flex-direction: column; align-items: center; gap: 4px; flex: 1; cursor: default; }
+  .tl-dot { width: 16px; height: 16px; border-radius: 50%; border: 2px solid var(--surface); position: relative; z-index: 1; }
+  .tl-dot-high { background: var(--risk-high); box-shadow: 0 0 0 3px rgba(226,75,74,0.2); }
+  .tl-dot-med  { background: var(--risk-med); box-shadow: 0 0 0 3px rgba(186,117,23,0.2); }
+  .tl-dot-norm { background: #c8c7c0; }
+  .tl-month { font-size: 10px; color: var(--muted); font-weight: 500; }
+  .tl-label { font-size: 10px; text-align: center; color: var(--muted); max-width: 60px; line-height: 1.3; }
+
+  /* ── Case history ── */
+  .prev-cases { display: flex; flex-direction: column; gap: 6px; margin-top: 6px; }
+  .prev-case { display: flex; align-items: center; gap: 8px; font-size: 12px; }
+  .case-id { font-weight: 500; color: var(--accent); }
+  .case-date { color: var(--muted); }
+
+  /* ── Ruling ── */
+  .ruling-area { display: flex; flex-direction: column; gap: 8px; }
+  .ruling-btn { padding: 10px 14px; border-radius: var(--radius-md); border: 0.5px solid var(--border); background: var(--surface2); cursor: pointer; text-align: left; transition: all 0.15s; width: 100%; }
+  .ruling-btn:hover { background: #edecea; }
+  .ruling-btn.selected-sar      { border-color: var(--risk-high-border); background: var(--risk-high-bg); }
+  .ruling-btn.selected-clear    { border-color: var(--risk-low-border);  background: var(--risk-low-bg); }
+  .ruling-btn.selected-escalate { border-color: var(--risk-med-border);  background: var(--risk-med-bg); }
+  .ruling-title { font-size: 13px; font-weight: 600; }
+  .ruling-desc  { font-size: 11px; color: var(--muted); margin-top: 3px; line-height: 1.4; }
+  .notes-area { margin-top: 10px; }
+  .notes-area textarea { width: 100%; min-height: 64px; background: var(--surface2); border: 0.5px solid var(--border); border-radius: var(--radius-md); font-size: 12px; color: var(--text); padding: 8px 10px; resize: vertical; font-family: inherit; }
+  .notes-area textarea:focus { outline: none; border-color: var(--accent); }
+
+  /* ── Progress bar ── */
+  .progress-bar { display: flex; align-items: center; gap: 16px; padding: 12px 16px; background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius-lg); margin-bottom: 12px; }
+  .progress-fill { flex: 1; height: 8px; background: var(--surface2); border-radius: 4px; overflow: hidden; }
+  .progress-inner { height: 100%; background: linear-gradient(90deg, var(--risk-low) 0%, var(--risk-med) 50%, var(--risk-high) 100%); width: 65%; }
+  .progress-text { font-size: 13px; color: var(--text); font-weight: 500; }
+  .efficiency-score { font-size: 12px; color: var(--muted); }
+
+  /* ── Greeting ── */
+  .greeting { font-size: 18px; font-weight: 600; color: var(--text); margin-bottom: 20px; }
+
+  /* ── Status cards ── */
+  .status-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 20px; }
+  .status-card { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 16px; text-align: center; }
+  .status-count { font-size: 32px; font-weight: 700; margin-bottom: 4px; }
+  .status-label { font-size: 14px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
+  .status-low .status-count { color: var(--risk-low); }
+  .status-med .status-count { color: var(--risk-med); }
+  .status-high .status-count { color: var(--risk-high); }
+
+  /* ── Cases table ── */
+  .cases-table { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; }
+  .table-header { display: grid; grid-template-columns: 1fr 120px 120px 120px; gap: 12px; padding: 12px 16px; background: var(--surface2); border-bottom: 0.5px solid var(--border); font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 500; }
+  .table-row { display: grid; grid-template-columns: 1fr 120px 120px 120px; gap: 12px; padding: 12px 16px; border-bottom: 0.5px solid var(--border); align-items: center; }
+  .table-row:last-child { border-bottom: none; }
+  .case-id { font-weight: 600; color: var(--accent); }
+  .case-status { display: flex; align-items: center; gap: 6px; }
+  .case-badge { padding: 4px 8px; border-radius: 100px; font-size: 11px; font-weight: 500; }
+  .case-badge.low { background: var(--risk-low-bg); color: var(--risk-low); }
+  .case-badge.med { background: var(--risk-med-bg); color: var(--risk-med); }
+  .case-badge.high { background: var(--risk-high-bg); color: var(--risk-high); }
+  .progress-bar-small { width: 80px; height: 6px; background: var(--surface2); border-radius: 3px; overflow: hidden; }
+  .progress-fill-small { height: 100%; background: var(--accent); }
+  .case-assignee { font-size: 12px; color: var(--muted); }
+
+  /* ── Rulings table ── */
+  .rulings-table { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; }
+  .rulings-header { display: grid; grid-template-columns: 1fr 100px 120px 100px 120px 40px; gap: 12px; padding: 12px 16px; background: var(--surface2); border-bottom: 0.5px solid var(--border); font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 500; }
+  .rulings-row { display: grid; grid-template-columns: 1fr 100px 120px 100px 120px 40px; gap: 12px; padding: 12px 16px; border-bottom: 0.5px solid var(--border); align-items: center; }
+  .rulings-row:last-child { border-bottom: none; }
+  .ruling-case-id { font-weight: 600; color: var(--accent); }
+  .ruling-type { display: flex; align-items: center; gap: 6px; }
+  .ruling-badge { padding: 4px 8px; border-radius: 100px; font-size: 11px; font-weight: 500; }
+  .ruling-badge.sar { background: var(--risk-high-bg); color: var(--risk-high); }
+  .ruling-badge.escalate { background: var(--risk-med-bg); color: var(--risk-med); }
+  .ruling-badge.clear { background: var(--risk-low-bg); color: var(--risk-low); }
+  .ruling-submitter { font-size: 12px; color: var(--muted); }
+  .ruling-date { font-size: 12px; color: var(--muted); }
+  .ruling-outcome { font-size: 12px; font-weight: 500; }
+  .ruling-outcome.confirmed { color: var(--risk-high); }
+  .ruling-outcome.false-positive { color: var(--risk-low); }
+  .ruling-outcome.pending { color: var(--muted); }
+  .ruling-notes { position: relative; cursor: help; }
+  .ruling-notes-icon { font-size: 14px; color: var(--muted); }
+  .ruling-notes-tooltip { position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius-md); padding: 8px 12px; font-size: 12px; color: var(--text); white-space: nowrap; opacity: 0; pointer-events: none; transition: opacity 0.15s; z-index: 100; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+  .ruling-notes:hover .ruling-notes-tooltip { opacity: 1; }
+</style>
+</head>
+<body>
+
+<!-- Nav -->
+<nav class="nav">
+  <div class="nav-logo">Nordik<span>Bank</span></div>
+  <div class="nav-sep"></div>
+  <span class="nav-item active" id="nav-alert-queue" onclick="showAlertQueue()">Alert queue</span>
+  <span class="nav-sep"></span>
+  <span class="nav-item" id="nav-investigation" onclick="showInvestigation()">Investigation</span>
+  <span class="nav-sep"></span>
+  <span class="nav-item" id="nav-rulings" onclick="showSubmittedRulings()">Submitted rulings</span>
+  <div class="nav-right">
+    <span class="nav-analyst">M. Hansen · AML Analyst</span>
+    <div class="nav-avatar">MH</div>
+  </div>
+</nav>
+
+<div class="page">
+
+  <!-- Alert Queue View -->
+  <div id="alert-queue-view" style="display: none;">
+
+    <!-- Progress bar -->
+    <div class="progress-bar">
+      <div class="progress-text">Cases reviewed today: 13/20</div>
+      <div class="progress-fill">
+        <div class="progress-inner"></div>
+      </div>
+      <div class="efficiency-score">Efficiency: 92%</div>
+    </div>
+
+    <!-- Greeting -->
+    <div class="greeting">Good morning, this is your day in front of you</div>
+
+    <!-- Project overview -->
+    <div class="status-cards">
+      <div class="status-card status-low">
+        <div class="status-count">8</div>
+        <div class="status-label">Low risk</div>
+      </div>
+      <div class="status-card status-med">
+        <div class="status-count">5</div>
+        <div class="status-label">Moderate risk</div>
+      </div>
+      <div class="status-card status-high">
+        <div class="status-count">7</div>
+        <div class="status-label">High risk</div>
+      </div>
+    </div>
+
+    <!-- Cases table -->
+    <div class="cases-table">
+      <div class="table-header">
+        <div>Case</div>
+        <div>Status</div>
+        <div>Progress</div>
+        <div>Assignee</div>
+      </div>
+      <div class="table-row">
+        <div class="case-id">CASE-2024-3847</div>
+        <div class="case-status">
+          <div class="case-badge high">High risk</div>
+        </div>
+        <div class="progress-bar-small">
+          <div class="progress-fill-small" style="width: 75%;"></div>
+        </div>
+        <div class="case-assignee">M. Hansen</div>
+      </div>
+      <div class="table-row">
+        <div class="case-id">CASE-2024-3846</div>
+        <div class="case-status">
+          <div class="case-badge med">Moderate risk</div>
+        </div>
+        <div class="progress-bar-small">
+          <div class="progress-fill-small" style="width: 50%;"></div>
+        </div>
+        <div class="case-assignee">A. Jensen</div>
+      </div>
+      <div class="table-row">
+        <div class="case-id">CASE-2024-3845</div>
+        <div class="case-status">
+          <div class="case-badge low">Low risk</div>
+        </div>
+        <div class="progress-bar-small">
+          <div class="progress-fill-small" style="width: 90%;"></div>
+        </div>
+        <div class="case-assignee">L. Nielsen</div>
+      </div>
+      <div class="table-row">
+        <div class="case-id">CASE-2024-3844</div>
+        <div class="case-status">
+          <div class="case-badge high">High risk</div>
+        </div>
+        <div class="progress-bar-small">
+          <div class="progress-fill-small" style="width: 30%;"></div>
+        </div>
+        <div class="case-assignee">M. Hansen</div>
+      </div>
+      <div class="table-row">
+        <div class="case-id">CASE-2024-3843</div>
+        <div class="case-status">
+          <div class="case-badge med">Moderate risk</div>
+        </div>
+        <div class="progress-bar-small">
+          <div class="progress-fill-small" style="width: 60%;"></div>
+        </div>
+        <div class="case-assignee">A. Jensen</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Investigation View -->
+  <div id="investigation-view">
+  <div class="topbar">
+    <div class="breadcrumb"><a href="#">Alert queue</a> / <strong>CASE-2024-3847</strong></div>
+    <div class="badge badge-high">
+      <svg width="7" height="7" viewBox="0 0 8 8"><circle cx="4" cy="4" r="4" fill="#E24B4A"/></svg>
+      High risk
+    </div>
+    <div class="badge badge-info">Opened 3 days ago</div>
+    <div class="badge badge-info">SLA: 2 days remaining</div>
+    <div class="topbar-actions">
+      <button class="btn">← Previous case</button>
+      <button class="btn">Next case →</button>
+      <button class="btn btn-primary">Submit ruling</button>
+    </div>
+  </div>
+
+  <!-- Row 1: Profile / Signals / Score -->
+  <div class="grid-top">
+
+    <!-- Profile -->
+    <div class="card">
+      <div class="card-label">Customer profile</div>
+      <div class="profile-header">
+        <div class="avatar">EL</div>
+        <div>
+          <div class="profile-name">Erik Lindqvist</div>
+          <div class="profile-meta">Customer since 2016 · Retail banking</div>
+        </div>
+      </div>
+      <div class="kv-row"><span class="kv-key">Customer ID</span><span class="kv-val">DK-48203917</span></div>
+      <div class="kv-row"><span class="kv-key">Segment</span><span class="kv-val">Private individual</span></div>
+      <div class="kv-row"><span class="kv-key">Occupation</span><span class="kv-val">Self-employed</span></div>
+      <div class="kv-row"><span class="kv-key">Declared income</span><span class="kv-val">DKK 480,000 / yr</span></div>
+      <div class="kv-row"><span class="kv-key">Residence</span><span class="kv-val">Copenhagen, DK</span></div>
+      <div class="kv-row"><span class="kv-key">PEP / Sanctions</span><span class="kv-val kv-ok">Clear</span></div>
+      <div class="kv-row"><span class="kv-key">KYC last reviewed</span><span class="kv-val kv-warn">18 months ago ⚠</span></div>
+      <div class="kv-row"><span class="kv-key">Account type</span><span class="kv-val">Current + Savings</span></div>
+      <div class="kv-row"><span class="kv-key">Prior SARs filed</span><span class="kv-val">0</span></div>
+    </div>
+
+    <!-- Signals -->
+    <div class="card">
+      <div class="card-label">Risk signals — why this customer was flagged</div>
+      <div class="signals-list">
+        <div class="signal-row">
+          <div class="signal-dot sig-high"></div>
+          <div class="signal-text">Cash deposits just below DKK 50,000 threshold — 9 occurrences in 60 days</div>
+          <div class="signal-tag tag-high">Structuring</div>
+        </div>
+        <div class="signal-row">
+          <div class="signal-dot sig-high"></div>
+          <div class="signal-text">Transaction volume up 532% vs same period prior year</div>
+          <div class="signal-tag tag-high">Velocity spike</div>
+        </div>
+        <div class="signal-row">
+          <div class="signal-dot sig-high"></div>
+          <div class="signal-text">3 outbound transfers to high-risk jurisdiction (Dubai, UAE)</div>
+          <div class="signal-tag tag-high">Geo risk</div>
+        </div>
+        <div class="signal-row">
+          <div class="signal-dot sig-med"></div>
+          <div class="signal-text">Round-sum transfers of exactly DKK 10,000 repeated 6 times</div>
+          <div class="signal-tag tag-med">Round amounts</div>
+        </div>
+        <div class="signal-row">
+          <div class="signal-dot sig-med"></div>
+          <div class="signal-text">New counterparty shell company (GoldStream Ltd) registered Cyprus, 4 months ago</div>
+          <div class="signal-tag tag-med">New counterparty</div>
+        </div>
+        <div class="signal-row">
+          <div class="signal-dot sig-low"></div>
+          <div class="signal-text">Transaction activity pattern inconsistent with declared self-employment income</div>
+          <div class="signal-tag tag-low">Profile mismatch</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Risk score -->
+    <div class="card score-card">
+      <div class="card-label" style="text-align:center;">AI risk score</div>
+      <div class="score-num">84</div>
+      <div class="score-denom">/100</div>
+      <div class="score-bar-wrap">
+        <div class="score-bar-track">
+          <div class="score-bar-gradient"></div>
+          <div class="score-bar-thumb"></div>
+        </div>
+        <div class="score-ticks"><span>0 — Low</span><span>100 — High</span></div>
+      </div>
+      <div class="score-context">
+        <strong>Top 3%</strong> of all alerts<br>this quarter
+      </div>
+      <div style="margin-top: 12px; font-size: 12px; color: var(--muted); text-align: center; padding: 8px; background: var(--accent-light); border-radius: var(--radius-md); line-height: 1.5;">
+        Top drivers: <strong style="color: var(--accent);">Cash structuring</strong>, <strong style="color: var(--accent);">geo spread</strong>, <strong style="color: var(--accent);">volume delta</strong>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Row 2: Volume chart / Geo + Counterparties -->
+  <div class="grid-mid">
+
+    <!-- Volume chart -->
+    <div class="card">
+      <div class="card-label">Transaction volume — monthly (DKK 000s) · baseline avg ~44k</div>
+      <div class="bar-chart">
+        <div class="bar-row"><div class="bar-key">Oct '23</div><div class="bar-track"><div class="bar-fill bar-normal" style="width:13%"></div></div><div class="bar-val">41k</div></div>
+        <div class="bar-row"><div class="bar-key">Nov '23</div><div class="bar-track"><div class="bar-fill bar-normal" style="width:15%"></div></div><div class="bar-val">48k</div></div>
+        <div class="bar-row"><div class="bar-key">Dec '23</div><div class="bar-track"><div class="bar-fill bar-normal" style="width:14%"></div></div><div class="bar-val">44k</div></div>
+        <div class="bar-row"><div class="bar-key">Jan '24</div><div class="bar-track"><div class="bar-fill bar-normal" style="width:13%"></div></div><div class="bar-val">42k</div></div>
+        <div class="bar-row"><div class="bar-key">Feb '24</div><div class="bar-track"><div class="bar-fill bar-normal" style="width:26%"></div></div><div class="bar-val">80k</div></div>
+        <div class="bar-row"><div class="bar-key">Mar '24</div><div class="bar-track"><div class="bar-fill bar-high" style="width:68%"></div></div><div class="bar-val" style="color:var(--risk-high)">210k</div></div>
+        <div class="bar-row"><div class="bar-key">Apr '24</div><div class="bar-track"><div class="bar-fill bar-high" style="width:100%"></div></div><div class="bar-val" style="color:var(--risk-high)">310k</div></div>
+        <div class="bar-row"><div class="bar-key">May '24</div><div class="bar-track"><div class="bar-fill bar-high" style="width:90%"></div></div><div class="bar-val" style="color:var(--risk-high)">278k</div></div>
+      </div>
+      <div style="margin-top:10px; display:flex; gap:16px; font-size:11px;">
+        <span style="display:flex;align-items:center;gap:4px;"><span style="width:12px;height:10px;background:var(--accent);opacity:0.7;border-radius:2px;display:inline-block;"></span>Baseline period</span>
+        <span style="display:flex;align-items:center;gap:4px;"><span style="width:12px;height:10px;background:var(--risk-high);border-radius:2px;display:inline-block;"></span>Anomalous period</span>
+        <span style="color:var(--risk-high);font-weight:600;margin-left:auto;">+532% vs prior year same period</span>
+      </div>
+    </div>
+
+    <!-- Geo + counterparties -->
+    <div class="card">
+      <div class="card-label">Geographic footprint</div>
+      <div class="geo-chips">
+        <div class="geo-chip">🇩🇰 Denmark <span class="badge badge-info" style="margin-left:4px;">Home</span></div>
+        <div class="geo-chip">🇸🇪 Sweden</div>
+        <div class="geo-chip suspicious">🇦🇪 UAE — High risk jurisdiction</div>
+        <div class="geo-chip suspicious">🇨🇾 Cyprus — Shell co. registered</div>
+        <div class="geo-chip new-flag">🇭🇰 Hong Kong — New Apr '24</div>
+      </div>
+      <div class="card-label">Top counterparties</div>
+      <div class="cp-list">
+        <div class="cp-row">
+          <div class="cp-avatar">JT</div>
+          <div class="cp-name">J. Thornton (private)</div>
+          <div class="cp-freq">22 txns</div>
+          <div class="cp-flag" style="background:var(--risk-low-bg);color:var(--risk-low);">DK ✓</div>
+        </div>
+        <div class="cp-row">
+          <div class="cp-avatar">LN</div>
+          <div class="cp-name">L. Nielsen (private)</div>
+          <div class="cp-freq">17 txns</div>
+          <div class="cp-flag" style="background:var(--risk-low-bg);color:var(--risk-low);">DK ✓</div>
+        </div>
+        <div class="cp-row">
+          <div class="cp-avatar" style="background:var(--risk-high-bg);color:var(--risk-high);">GS</div>
+          <div class="cp-name">GoldStream Ltd</div>
+          <div class="cp-freq">9 txns</div>
+          <div class="cp-flag" style="background:var(--risk-high-bg);color:var(--risk-high);">CY ⚑ Shell</div>
+        </div>
+        <div class="cp-row">
+          <div class="cp-avatar" style="background:var(--risk-high-bg);color:var(--risk-high);">AC</div>
+          <div class="cp-name">AlphaConnect FZE</div>
+          <div class="cp-freq">6 txns</div>
+          <div class="cp-flag" style="background:var(--risk-high-bg);color:var(--risk-high);">AE ⚑ High risk</div>
+        </div>
+        <div class="cp-row">
+          <div class="cp-avatar" style="background:var(--risk-med-bg);color:var(--risk-med);">??</div>
+          <div class="cp-name">Unknown entity</div>
+          <div class="cp-freq">3 txns</div>
+          <div class="cp-flag" style="background:var(--risk-med-bg);color:var(--risk-med);">HK — Unverified</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Row 3: Velocity / Timeline / Ruling -->
+  <div class="grid-bot">
+
+    <!-- Velocity -->
+    <div class="card">
+      <div class="card-label">Velocity metrics — 90-day window</div>
+      <div class="velocity-grid">
+        <div class="vel-card">
+          <div class="vel-val" style="color:var(--risk-high);">DKK 788k</div>
+          <div class="vel-label">Total inflow</div>
+          <div class="vel-delta delta-up">+532% vs prior 90d</div>
+        </div>
+        <div class="vel-card">
+          <div class="vel-val" style="color:var(--risk-high);">48</div>
+          <div class="vel-label">Cash deposits</div>
+          <div class="vel-delta delta-up">9 sub-threshold</div>
+        </div>
+        <div class="vel-card">
+          <div class="vel-val">DKK 91k</div>
+          <div class="vel-label">Avg. transaction size</div>
+          <div class="vel-delta delta-up">+410% vs prior</div>
+        </div>
+        <div class="vel-card">
+          <div class="vel-val" style="color:var(--risk-high);">5</div>
+          <div class="vel-label">Active jurisdictions</div>
+          <div class="vel-delta delta-up">Was 2 prior 90d</div>
+        </div>
+      </div>
+      <div class="alert-box">
+        <div class="alert-box-title">Structuring pattern detected</div>
+        <div class="alert-box-body">9 cash deposits ranging DKK 46–49k within 60 days. Consistent with intentional threshold avoidance (Hvidvaskloven §7).</div>
+      </div>
+    </div>
+
+    <!-- Timeline + history -->
+    <div class="card">
+      <div class="card-label">Activity timeline</div>
+      <div class="timeline-scroll">
+        <div class="timeline-track">
+          <div class="timeline-line"></div>
+          <div class="tl-event"><div class="tl-dot tl-dot-norm"></div><div class="tl-month">Oct</div><div class="tl-label">Normal</div></div>
+          <div class="tl-event"><div class="tl-dot tl-dot-norm"></div><div class="tl-month">Nov</div><div class="tl-label">Normal</div></div>
+          <div class="tl-event"><div class="tl-dot tl-dot-norm"></div><div class="tl-month">Dec</div><div class="tl-label">Normal</div></div>
+          <div class="tl-event"><div class="tl-dot tl-dot-norm"></div><div class="tl-month">Jan</div><div class="tl-label">Normal</div></div>
+          <div class="tl-event"><div class="tl-dot tl-dot-med"></div><div class="tl-month">Feb</div><div class="tl-label">Volume spike begins</div></div>
+          <div class="tl-event"><div class="tl-dot tl-dot-high"></div><div class="tl-month">Mar</div><div class="tl-label">GoldStream first contact</div></div>
+          <div class="tl-event"><div class="tl-dot tl-dot-high"></div><div class="tl-month">Apr</div><div class="tl-label">Sub-threshold deposits ×6, UAE transfers</div></div>
+          <div class="tl-event"><div class="tl-dot tl-dot-high"></div><div class="tl-month">May</div><div class="tl-label">Alert triggered</div></div>
+        </div>
+      </div>
+      <div class="card-label" style="margin-top:12px;">Previous cases</div>
+      <div class="prev-cases">
+        <div class="prev-case">
+          <span class="case-id">CASE-2023-1102</span>
+          <span class="case-date">Nov 2023</span>
+          <span class="badge badge-info">Cleared — false positive</span>
+        </div>
+        <div class="prev-case">
+          <span class="case-id">CASE-2022-0334</span>
+          <span class="case-date">Mar 2022</span>
+          <span class="badge badge-info">Cleared — false positive</span>
+        </div>
+      </div>
+      <div style="margin-top:10px; font-size:11px; color:var(--muted); padding:8px; background:var(--accent-light); border-radius: var(--radius-md);">
+        Note: Prior cases were cleared under old rule-based TMS. Patterns were not visible at individual transaction level.
+      </div>
+    </div>
+
+    <!-- Ruling -->
+    <div class="card">
+      <div class="card-label">Investigation ruling</div>
+      <div class="ruling-area" id="rulings">
+        <button class="ruling-btn" id="r-sar" onclick="selectRuling('sar')">
+          <div class="ruling-title" style="color:var(--risk-high);">⚑ File SAR</div>
+          <div class="ruling-desc">Submit suspicious activity report to FIU. Structuring + geo risk pattern meets filing threshold.</div>
+        </button>
+        <button class="ruling-btn" id="r-escalate" onclick="selectRuling('escalate')">
+          <div class="ruling-title" style="color:var(--risk-med);">↑ Escalate — request more information</div>
+          <div class="ruling-desc">Request KYC refresh and written business justification before deciding.</div>
+        </button>
+        <button class="ruling-btn" id="r-clear" onclick="selectRuling('clear')">
+          <div class="ruling-title" style="color:var(--risk-low);">✓ Clear — false positive</div>
+          <div class="ruling-desc">Activity is legitimate. Document reason and close the case.</div>
+        </button>
+      </div>
+      <div class="notes-area">
+        <div class="card-label" style="margin-top:10px;">Investigation notes</div>
+        <textarea id="notes" placeholder="Document evidence, reasoning, and any additional context…"></textarea>
+      </div>
+      <div style="margin-top: 10px; display:flex; gap:8px;">
+        <button class="btn" style="flex:1;" onclick="clearForm()">Clear</button>
+        <button class="btn btn-primary" style="flex:2;" onclick="submitRuling()">Submit ruling</button>
+      </div>
+    </div>
+
+  </div>
+
+  </div>
+
+  <!-- Submitted Rulings View -->
+  <div id="rulings-view" style="display: none;">
+
+    <!-- Rulings table -->
+    <div class="rulings-table">
+      <div class="rulings-header">
+        <div>Case</div>
+        <div>Ruling</div>
+        <div>Submitted by</div>
+        <div>Date</div>
+        <div>Outcome</div>
+        <div>Notes</div>
+      </div>
+      <div class="rulings-row">
+        <div class="ruling-case-id">CASE-2024-3801</div>
+        <div class="ruling-type">
+          <div class="ruling-badge sar">SAR Filed</div>
+        </div>
+        <div class="ruling-submitter">M. Hansen</div>
+        <div class="ruling-date">2024-05-01</div>
+        <div class="ruling-outcome confirmed">Confirmed fraud</div>
+        <div class="ruling-notes">
+          <span class="ruling-notes-icon">📝</span>
+          <div class="ruling-notes-tooltip">Structuring pattern with high-risk jurisdictions. Customer admitted to tax evasion when contacted by authorities.</div>
+        </div>
+      </div>
+      <div class="rulings-row">
+        <div class="ruling-case-id">CASE-2024-3756</div>
+        <div class="ruling-type">
+          <div class="ruling-badge clear">Cleared</div>
+        </div>
+        <div class="ruling-submitter">A. Jensen</div>
+        <div class="ruling-date">2024-04-28</div>
+        <div class="ruling-outcome false-positive">False positive</div>
+        <div class="ruling-notes">
+          <span class="ruling-notes-icon">📝</span>
+          <div class="ruling-notes-tooltip">Volume spike explained by legitimate business expansion. KYC documents verified.</div>
+        </div>
+      </div>
+      <div class="rulings-row">
+        <div class="ruling-case-id">CASE-2024-3723</div>
+        <div class="ruling-type">
+          <div class="ruling-badge escalate">Escalated</div>
+        </div>
+        <div class="ruling-submitter">L. Nielsen</div>
+        <div class="ruling-date">2024-04-25</div>
+        <div class="ruling-outcome pending">Under review</div>
+        <div class="ruling-notes">
+          <span class="ruling-notes-icon">📝</span>
+          <div class="ruling-notes-tooltip">Requested additional documentation from customer. Awaiting KYC refresh and business justification.</div>
+        </div>
+      </div>
+      <div class="rulings-row">
+        <div class="ruling-case-id">CASE-2024-3689</div>
+        <div class="ruling-type">
+          <div class="ruling-badge sar">SAR Filed</div>
+        </div>
+        <div class="ruling-submitter">M. Hansen</div>
+        <div class="ruling-date">2024-04-20</div>
+        <div class="ruling-outcome confirmed">Confirmed fraud</div>
+        <div class="ruling-notes">
+          <span class="ruling-notes-icon">📝</span>
+          <div class="ruling-notes-tooltip">Multiple shell company connections. Funds traced to sanctioned entities. Criminal investigation initiated.</div>
+        </div>
+      </div>
+      <div class="rulings-row">
+        <div class="ruling-case-id">CASE-2024-3654</div>
+        <div class="ruling-type">
+          <div class="ruling-badge clear">Cleared</div>
+        </div>
+        <div class="ruling-submitter">A. Jensen</div>
+        <div class="ruling-date">2024-04-15</div>
+        <div class="ruling-outcome false-positive">False positive</div>
+        <div class="ruling-notes">
+          <span class="ruling-notes-icon">📝</span>
+          <div class="ruling-notes-tooltip">Round number transactions explained by payroll deposits. Verified with employer records.</div>
+        </div>
+      </div>
+      <div class="rulings-row">
+        <div class="ruling-case-id">CASE-2024-3621</div>
+        <div class="ruling-type">
+          <div class="ruling-badge sar">SAR Filed</div>
+        </div>
+        <div class="ruling-submitter">L. Nielsen</div>
+        <div class="ruling-date">2024-04-10</div>
+        <div class="ruling-outcome pending">Under review</div>
+        <div class="ruling-notes">
+          <span class="ruling-notes-icon">📝</span>
+          <div class="ruling-notes-tooltip">Complex money laundering scheme involving multiple jurisdictions. Referred to special investigations unit.</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+<script>
+  function showAlertQueue() {
+    document.getElementById('alert-queue-view').style.display = 'block';
+    document.getElementById('investigation-view').style.display = 'none';
+    document.getElementById('rulings-view').style.display = 'none';
+    document.getElementById('nav-alert-queue').classList.add('active');
+    document.getElementById('nav-investigation').classList.remove('active');
+    document.getElementById('nav-rulings').classList.remove('active');
+    document.title = 'NordikBank AML — Alert Queue';
+  }
+
+  function showInvestigation() {
+    document.getElementById('alert-queue-view').style.display = 'none';
+    document.getElementById('investigation-view').style.display = 'block';
+    document.getElementById('rulings-view').style.display = 'none';
+    document.getElementById('nav-alert-queue').classList.remove('active');
+    document.getElementById('nav-investigation').classList.add('active');
+    document.getElementById('nav-rulings').classList.remove('active');
+    document.title = 'NordikBank AML — Customer 360 · CASE-2024-3847';
+  }
+
+  function showSubmittedRulings() {
+    document.getElementById('alert-queue-view').style.display = 'none';
+    document.getElementById('investigation-view').style.display = 'none';
+    document.getElementById('rulings-view').style.display = 'block';
+    document.getElementById('nav-alert-queue').classList.remove('active');
+    document.getElementById('nav-investigation').classList.remove('active');
+    document.getElementById('nav-rulings').classList.add('active');
+    document.title = 'NordikBank AML — Submitted Rulings';
+  }
+
+  let selectedRuling = null;
+
+  function selectRuling(type) {
+    selectedRuling = type;
+    ['sar','escalate','clear'].forEach(t => {
+      document.getElementById('r-'+t).classList.remove('selected-sar','selected-clear','selected-escalate');
+    });
+    document.getElementById('r-'+type).classList.add('selected-'+type);
+  }
+
+  function clearForm() {
+    selectedRuling = null;
+    ['sar','escalate','clear'].forEach(t => {
+      document.getElementById('r-'+t).classList.remove('selected-sar','selected-clear','selected-escalate');
+    });
+    document.getElementById('notes').value = '';
+  }
+
+  function submitRuling() {
+    const bar = document.getElementById('submit-bar');
+    const msg = document.getElementById('submit-msg');
+    if (!selectedRuling) {
+      alert('Please select a ruling before submitting.');
+      return;
+    }
+    const labels = { sar: 'SAR filed', escalate: 'Escalated for KYC review', clear: 'Cleared as false positive' };
+    msg.innerHTML = '<strong>Case CASE-2024-3847</strong> — ' + labels[selectedRuling] + '. Logged to audit trail.';
+    bar.style.display = 'flex';
+    bar.scrollIntoView({ behavior: 'smooth' });
+  }
+
+  // Initialize default view
+  showAlertQueue();
+</script>
+
+</body>
+</html>
