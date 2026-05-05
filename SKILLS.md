@@ -113,3 +113,73 @@ No threshold required; the panel computes AUC-ROC against true labels.
   unless a clear performance gain justifies the explainability cost.
 - Document why each model was chosen, not just how it performed.
 - Validate on the customer-level split in `customers.csv` (train/val/test columns).
+
+---
+
+## Presentation Guidelines (10-Minute Storyline)
+
+The presentation follows the **Minto Pyramid Principle** as taught in the Accenture AI Program
+(Module 3: Storytelling). Every slide must carry a conclusion-first action title — not a topic label.
+
+### Structure: S-C-Q → Pyramid → Story
+
+**Introduction (Situation → Complication → Question)** — ~1 min
+- **Situation**: NordikBank processes ~5M transactions/month; 45 analysts monitor for AML.
+- **Complication**: The rule-based TMS generates 15,000 alerts/month with a 97% false positive rate —
+  analysts have capacity for only ~50 deep investigations; the FSA review is Q3 2025.
+- **Question**: How can NordikBank cut false positives while maintaining regulatory explainability?
+
+**Conclusion / Key Message** — state it up front, before the evidence:
+> "Our ML system reduces the false positive burden by X% while surfacing the highest-risk customers
+> first — with SHAP-based explanations that satisfy FSA auditability requirements."
+
+**Main Body** — three MECE pillars that each answer "why does the solution work?":
+1. Behavioural feature engineering reveals patterns the rule engine cannot see
+2. The gradient boosting model ranks customers with AUC-ROC 0.85 vs. 0.71 baseline
+3. The analyst workbench makes risk scores actionable and auditable
+
+### Slide-Building Rules (from Accenture Storytelling module)
+
+- **One main message per slide** — the tagline states the conclusion, not the topic.
+  Bad: "Model Performance" | Good: "Engineered features deliver a 21% AUC lift over pre-computed baselines"
+- **MECE groupings** — supporting arguments must be mutually exclusive and collectively exhaustive;
+  no overlapping points, no gaps.
+- **"So what?" filter** — include a slide only if it advances the recommendation. Technical detail
+  (hyperparameter grids, full confusion matrices) goes to the appendix.
+- **Inductive structure preferred** — lead with the conclusion, then support it. Avoids burying
+  the punchline.
+- **Steal with pride** — reuse clear visuals (SHAP waterfall, alert queue screenshot) rather than
+  building new diagrams from scratch.
+- **Align everything** — use alignment tools; a messy layout undermines credibility with compliance
+  stakeholders.
+
+### 10-Minute Slide Budget (~1 min per slide)
+
+| # | Action Title | Content |
+|---|---|---|
+| 1 | NordikBank's TMS creates more noise than signal | S-C-Q opener; 97% FP rate, analyst capacity |
+| 2 | Our system re-ranks customers by true behavioural risk | Key message + AUC headline number |
+| 3 | Structuring, velocity, and geographic spread are the real signals | Feature engineering: top 5 features, AML rationale |
+| 4 | The model lifts AUC from 0.71 to 0.85 — a 21% gain over baseline | ROC / PR curves, baseline vs. engineered comparison |
+| 5 | The analyst workbench turns scores into investigations | Live demo: alert queue, customer drill-down, SHAP explanation |
+| 6 | SHAP makes every flag explainable to the FSA | SHAP waterfall for a flagged customer; regulatory link |
+| 7 | Flagged customer walkthrough: [CUST_XXXX] | Live demo: the panel explicitly values a single customer story |
+| 8 | Threshold calibration aligns with analyst capacity | Precision-recall trade-off at 50 investigations/month cap |
+| 9 | Next steps: operationalise, monitor drift, expand to corporate | Deployment roadmap; ongoing monitoring |
+| 10 | Appendix: methodology, full feature list, hyperparameters | For questions; not presented unless asked |
+
+### Audience & Delivery Notes
+
+- **Audience type**: Panel is analytical + results-oriented (Driver/Analytical quadrant). They want
+  evidence and business impact — not methodology slides. Lead with numbers.
+- **Technical depth**: Right-size explanations. Compliance stakeholders need intuition, not equations.
+  Frame SHAP as "the model's receipt for every decision."
+- **Vocal**: Vary pace; pause after the key metric (AUC 0.85) to let it land.
+- **Demo over slides**: The live demo of a flagged customer walkthrough is explicitly called out as
+  valued by the panel — allocate time for it, rehearse it.
+- **Self-assessment checklist before presenting**:
+  - Is the problem clear from the first slide?
+  - Is the solution linked directly to the problem?
+  - Is the technical explanation at the right level for a compliance audience?
+  - Is the value creation (analyst time saved, FSA readiness) explicit?
+  - Are next steps realistic and scoped?
