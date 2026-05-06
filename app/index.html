@@ -100,7 +100,7 @@
 
   /* ── Risk score ── */
   .score-card { display: flex; flex-direction: column; align-items: center; justify-content: center; }
-  .score-num { font-size: 52px; font-weight: 700; color: var(--risk-high); line-height: 1; margin: 8px 0 2px; }
+  .score-num { font-size: 52px; font-weight: 700; line-height: 1; margin: 8px 0 2px; }
   .score-denom { font-size: 16px; color: var(--muted); }
   .score-bar-wrap { width: 100%; margin-top: 10px; }
   .score-bar-track { width: 100%; height: 8px; border-radius: 4px; background: var(--surface2); overflow: hidden; position: relative; }
@@ -647,16 +647,13 @@
 
   </div>
 
-  <!-- Investigation View -->
-  <div id="investigation-view">
+  <!-- Investigation and customer 360 View -->
+  <div id="investigation-view" style="display: none;">
   <div class="topbar">
-    <div class="breadcrumb" id="case-breadcrumb"><a href="#">Alert queue</a> / <strong id="investigation-case-id">CASE-2024-3847</strong></div>
-    <div class="badge badge-high" id="investigation-risk-badge">
-      <svg width="7" height="7" viewBox="0 0 8 8"><circle cx="4" cy="4" r="4" fill="#E24B4A"/></svg>
-      High risk
-    </div>
-    <div class="badge badge-info" id="investigation-opened">Opened 3 days ago</div>
-    <div class="badge badge-info" id="investigation-sla">SLA: 2 days remaining</div>
+    <div class="breadcrumb" id="case-breadcrumb"><a href="javascript:void(0)" id="case-breadcrumb-link" onclick="showAlertQueue()">Alert queue</a> / <strong id="investigation-case-id"></strong></div>
+    <div class="badge badge-high" id="investigation-risk-badge"></div>
+    <div class="badge badge-info" id="investigation-opened"></div>
+    <div class="badge badge-info" id="investigation-sla"></div>
     <div class="topbar-actions">
       <button class="btn" onclick="changeInvestigation(-1)">← Previous case</button>
       <button class="btn" onclick="changeInvestigation(1)">Next case →</button>
@@ -671,64 +668,33 @@
     <div class="card">
       <div class="card-label">Customer profile</div>
       <div class="profile-header">
-        <div class="avatar" id="investigation-avatar">EL</div>
+        <div class="avatar" id="investigation-avatar"></div>
         <div>
-          <div class="profile-name" id="investigation-customer-name">Erik Lindqvist</div>
-          <div class="profile-meta" id="investigation-customer-meta">Customer since 2016 · Retail banking</div>
+          <div class="profile-name" id="investigation-customer-name"></div>
+          <div class="profile-meta" id="investigation-customer-meta"></div>
         </div>
       </div>
-      <div class="kv-row"><span class="kv-key">Customer ID</span><span class="kv-val" id="investigation-customer-id">DK-48203917</span></div>
-      <div class="kv-row"><span class="kv-key">Segment</span><span class="kv-val" id="investigation-customer-segment">Private individual</span></div>
-      <div class="kv-row"><span class="kv-key">Occupation</span><span class="kv-val" id="investigation-customer-occupation">Self-employed</span></div>
-      <div class="kv-row"><span class="kv-key">Declared income</span><span class="kv-val" id="investigation-income">DKK 480,000 / yr</span></div>
-      <div class="kv-row"><span class="kv-key">Residence</span><span class="kv-val" id="investigation-residence">Copenhagen, DK</span></div>
-      <div class="kv-row"><span class="kv-key">PEP / Sanctions</span><span class="kv-val kv-ok" id="investigation-pep">Clear</span></div>
-      <div class="kv-row"><span class="kv-key">KYC last reviewed</span><span class="kv-val kv-warn" id="investigation-kyc">18 months ago ⚠</span></div>
-      <div class="kv-row"><span class="kv-key">Account type</span><span class="kv-val" id="investigation-account">Current + Savings</span></div>
-      <div class="kv-row"><span class="kv-key">Prior SARs filed</span><span class="kv-val" id="investigation-prior-sar">0</span></div>
+      <div class="kv-row"><span class="kv-key">Customer ID</span><span class="kv-val" id="investigation-customer-id"></span></div>
+      <div class="kv-row"><span class="kv-key">Segment</span><span class="kv-val" id="investigation-customer-segment"></span></div>
+      <div class="kv-row"><span class="kv-key">Occupation</span><span class="kv-val" id="investigation-customer-occupation"></span></div>
+      <div class="kv-row"><span class="kv-key">Declared income</span><span class="kv-val" id="investigation-income"></span></div>
+      <div class="kv-row"><span class="kv-key">Residence</span><span class="kv-val" id="investigation-residence"></span></div>
+      <div class="kv-row"><span class="kv-key">PEP / Sanctions</span><span class="kv-val kv-ok" id="investigation-pep"></span></div>
+      <div class="kv-row"><span class="kv-key">KYC last reviewed</span><span class="kv-val" id="investigation-kyc"></span></div>
+      <div class="kv-row"><span class="kv-key">Account type</span><span class="kv-val" id="investigation-account"></span></div>
+      <div class="kv-row"><span class="kv-key">Prior SARs filed</span><span class="kv-val" id="investigation-prior-sar"></span></div>
     </div>
 
     <!-- Signals -->
     <div class="card">
       <div class="card-label">Risk signals — why this customer was flagged</div>
-      <div class="signals-list">
-        <div class="signal-row">
-          <div class="signal-dot sig-high"></div>
-          <div class="signal-text">Cash deposits just below DKK 50,000 threshold — 9 occurrences in 60 days</div>
-          <div class="signal-tag tag-high">Structuring</div>
-        </div>
-        <div class="signal-row">
-          <div class="signal-dot sig-high"></div>
-          <div class="signal-text">Transaction volume up 532% vs same period prior year</div>
-          <div class="signal-tag tag-high">Velocity spike</div>
-        </div>
-        <div class="signal-row">
-          <div class="signal-dot sig-high"></div>
-          <div class="signal-text">3 outbound transfers to high-risk jurisdiction (Dubai, UAE)</div>
-          <div class="signal-tag tag-high">Geo risk</div>
-        </div>
-        <div class="signal-row">
-          <div class="signal-dot sig-med"></div>
-          <div class="signal-text">Round-sum transfers of exactly DKK 10,000 repeated 6 times</div>
-          <div class="signal-tag tag-med">Round amounts</div>
-        </div>
-        <div class="signal-row">
-          <div class="signal-dot sig-med"></div>
-          <div class="signal-text">New counterparty shell company (GoldStream Ltd) registered Cyprus, 4 months ago</div>
-          <div class="signal-tag tag-med">New counterparty</div>
-        </div>
-        <div class="signal-row">
-          <div class="signal-dot sig-low"></div>
-          <div class="signal-text">Transaction activity pattern inconsistent with declared self-employment income</div>
-          <div class="signal-tag tag-low">Profile mismatch</div>
-        </div>
-      </div>
+      <div class="signals-list" id="investigation-signals-list"></div>
     </div>
 
     <!-- Risk score -->
     <div class="card score-card">
       <div class="card-label" style="text-align:center;">AI risk score</div>
-      <div class="score-num" id="investigation-score-num">84</div>
+      <div class="score-num" id="investigation-score-num"></div>
       <div class="score-denom">/100</div>
       <div class="score-bar-wrap">
         <div class="score-bar-track">
@@ -737,12 +703,8 @@
         </div>
         <div class="score-ticks"><span>0 — Low</span><span>100 — High</span></div>
       </div>
-      <div class="score-context" id="investigation-score-context">
-        <strong>Top 3%</strong> of all alerts<br>this quarter
-      </div>
-      <div style="margin-top: 12px; font-size: 12px; color: var(--muted); text-align: center; padding: 8px; background: var(--accent-light); border-radius: var(--radius-md); line-height: 1.5;" id="investigation-score-drivers">
-        Top drivers: <strong style="color: var(--accent);">Cash structuring</strong>, <strong style="color: var(--accent);">geo spread</strong>, <strong style="color: var(--accent);">volume delta</strong>
-      </div>
+      <div class="score-context" id="investigation-score-context"></div>
+      <div style="margin-top: 12px; font-size: 12px; color: var(--muted); text-align: center; padding: 8px; background: var(--accent-light); border-radius: var(--radius-md); line-height: 1.5;" id="investigation-score-drivers"></div>
     </div>
 
   </div>
@@ -751,68 +713,18 @@
   <div class="grid-mid">
 
     <!-- Volume chart -->
-    <div class="card">
-      <div class="card-label">Transaction volume — monthly (DKK 000s) · baseline avg ~44k</div>
-      <div class="bar-chart">
-        <div class="bar-row"><div class="bar-key">Oct '23</div><div class="bar-track"><div class="bar-fill bar-normal" style="width:13%"></div></div><div class="bar-val">41k</div></div>
-        <div class="bar-row"><div class="bar-key">Nov '23</div><div class="bar-track"><div class="bar-fill bar-normal" style="width:15%"></div></div><div class="bar-val">48k</div></div>
-        <div class="bar-row"><div class="bar-key">Dec '23</div><div class="bar-track"><div class="bar-fill bar-normal" style="width:14%"></div></div><div class="bar-val">44k</div></div>
-        <div class="bar-row"><div class="bar-key">Jan '24</div><div class="bar-track"><div class="bar-fill bar-normal" style="width:13%"></div></div><div class="bar-val">42k</div></div>
-        <div class="bar-row"><div class="bar-key">Feb '24</div><div class="bar-track"><div class="bar-fill bar-normal" style="width:26%"></div></div><div class="bar-val">80k</div></div>
-        <div class="bar-row"><div class="bar-key">Mar '24</div><div class="bar-track"><div class="bar-fill bar-high" style="width:68%"></div></div><div class="bar-val" style="color:var(--risk-high)">210k</div></div>
-        <div class="bar-row"><div class="bar-key">Apr '24</div><div class="bar-track"><div class="bar-fill bar-high" style="width:100%"></div></div><div class="bar-val" style="color:var(--risk-high)">310k</div></div>
-        <div class="bar-row"><div class="bar-key">May '24</div><div class="bar-track"><div class="bar-fill bar-high" style="width:90%"></div></div><div class="bar-val" style="color:var(--risk-high)">278k</div></div>
-      </div>
-      <div style="margin-top:10px; display:flex; gap:16px; font-size:11px;">
-        <span style="display:flex;align-items:center;gap:4px;"><span style="width:12px;height:10px;background:var(--accent);opacity:0.7;border-radius:2px;display:inline-block;"></span>Baseline period</span>
-        <span style="display:flex;align-items:center;gap:4px;"><span style="width:12px;height:10px;background:var(--risk-high);border-radius:2px;display:inline-block;"></span>Anomalous period</span>
-        <span style="color:var(--risk-high);font-weight:600;margin-left:auto;">+532% vs prior year same period</span>
-      </div>
+    <div class="card" id="investigation-volume-card">
+      <div class="card-label" id="investigation-volume-label">Transaction volume — monthly (DKK 000s)</div>
+      <div class="bar-chart" id="investigation-bar-chart"></div>
+      <div style="margin-top:10px; display:flex; gap:16px; font-size:11px;" id="investigation-volume-legend"></div>
     </div>
 
     <!-- Geo + counterparties -->
     <div class="card">
       <div class="card-label">Geographic footprint</div>
-      <div class="geo-chips">
-        <div class="geo-chip">🇩🇰 Denmark <span class="badge badge-info" style="margin-left:4px;">Home</span></div>
-        <div class="geo-chip">🇸🇪 Sweden</div>
-        <div class="geo-chip suspicious">🇦🇪 UAE — High risk jurisdiction</div>
-        <div class="geo-chip suspicious">🇨🇾 Cyprus — Shell co. registered</div>
-        <div class="geo-chip new-flag">🇭🇰 Hong Kong — New Apr '24</div>
-      </div>
+      <div class="geo-chips" id="investigation-geo-chips"></div>
       <div class="card-label">Top counterparties</div>
-      <div class="cp-list">
-        <div class="cp-row">
-          <div class="cp-avatar">JT</div>
-          <div class="cp-name">J. Thornton (private)</div>
-          <div class="cp-freq">22 txns</div>
-          <div class="cp-flag" style="background:var(--risk-low-bg);color:var(--risk-low);">DK ✓</div>
-        </div>
-        <div class="cp-row">
-          <div class="cp-avatar">LN</div>
-          <div class="cp-name">L. Nielsen (private)</div>
-          <div class="cp-freq">17 txns</div>
-          <div class="cp-flag" style="background:var(--risk-low-bg);color:var(--risk-low);">DK ✓</div>
-        </div>
-        <div class="cp-row">
-          <div class="cp-avatar" style="background:var(--risk-high-bg);color:var(--risk-high);">GS</div>
-          <div class="cp-name">GoldStream Ltd</div>
-          <div class="cp-freq">9 txns</div>
-          <div class="cp-flag" style="background:var(--risk-high-bg);color:var(--risk-high);">CY ⚑ Shell</div>
-        </div>
-        <div class="cp-row">
-          <div class="cp-avatar" style="background:var(--risk-high-bg);color:var(--risk-high);">AC</div>
-          <div class="cp-name">AlphaConnect FZE</div>
-          <div class="cp-freq">6 txns</div>
-          <div class="cp-flag" style="background:var(--risk-high-bg);color:var(--risk-high);">AE ⚑ High risk</div>
-        </div>
-        <div class="cp-row">
-          <div class="cp-avatar" style="background:var(--risk-med-bg);color:var(--risk-med);">??</div>
-          <div class="cp-name">Unknown entity</div>
-          <div class="cp-freq">3 txns</div>
-          <div class="cp-flag" style="background:var(--risk-med-bg);color:var(--risk-med);">HK — Unverified</div>
-        </div>
-      </div>
+      <div class="cp-list" id="investigation-cp-list"></div>
     </div>
 
   </div>
@@ -823,66 +735,21 @@
     <!-- Velocity -->
     <div class="card">
       <div class="card-label">Velocity metrics — 90-day window</div>
-      <div class="velocity-grid">
-        <div class="vel-card">
-          <div class="vel-val" style="color:var(--risk-high);">DKK 788k</div>
-          <div class="vel-label">Total inflow</div>
-          <div class="vel-delta delta-up">+532% vs prior 90d</div>
-        </div>
-        <div class="vel-card">
-          <div class="vel-val" style="color:var(--risk-high);">48</div>
-          <div class="vel-label">Cash deposits</div>
-          <div class="vel-delta delta-up">9 sub-threshold</div>
-        </div>
-        <div class="vel-card">
-          <div class="vel-val">DKK 91k</div>
-          <div class="vel-label">Avg. transaction size</div>
-          <div class="vel-delta delta-up">+410% vs prior</div>
-        </div>
-        <div class="vel-card">
-          <div class="vel-val" style="color:var(--risk-high);">5</div>
-          <div class="vel-label">Active jurisdictions</div>
-          <div class="vel-delta delta-up">Was 2 prior 90d</div>
-        </div>
-      </div>
-      <div class="alert-box">
-        <div class="alert-box-title">Structuring pattern detected</div>
-        <div class="alert-box-body">9 cash deposits ranging DKK 46–49k within 60 days. Consistent with intentional threshold avoidance (Hvidvaskloven §7).</div>
-      </div>
+      <div class="velocity-grid" id="investigation-velocity-grid"></div>
+      <div id="investigation-alert-box"></div>
     </div>
 
     <!-- Timeline + history -->
     <div class="card">
       <div class="card-label">Activity timeline</div>
       <div class="timeline-scroll">
-        <div class="timeline-track">
+        <div class="timeline-track" id="investigation-timeline-track">
           <div class="timeline-line"></div>
-          <div class="tl-event"><div class="tl-dot tl-dot-norm"></div><div class="tl-month">Oct</div><div class="tl-label">Normal</div></div>
-          <div class="tl-event"><div class="tl-dot tl-dot-norm"></div><div class="tl-month">Nov</div><div class="tl-label">Normal</div></div>
-          <div class="tl-event"><div class="tl-dot tl-dot-norm"></div><div class="tl-month">Dec</div><div class="tl-label">Normal</div></div>
-          <div class="tl-event"><div class="tl-dot tl-dot-norm"></div><div class="tl-month">Jan</div><div class="tl-label">Normal</div></div>
-          <div class="tl-event"><div class="tl-dot tl-dot-med"></div><div class="tl-month">Feb</div><div class="tl-label">Volume spike begins</div></div>
-          <div class="tl-event"><div class="tl-dot tl-dot-high"></div><div class="tl-month">Mar</div><div class="tl-label">GoldStream first contact</div></div>
-          <div class="tl-event"><div class="tl-dot tl-dot-high"></div><div class="tl-month">Apr</div><div class="tl-label">Sub-threshold deposits ×6, UAE transfers</div></div>
-          <div class="tl-event"><div class="tl-dot tl-dot-high"></div><div class="tl-month">May</div><div class="tl-label">Alert triggered</div></div>
         </div>
       </div>
       <div class="card-label" style="margin-top:12px;">Previous cases</div>
-      <div class="prev-cases">
-        <div class="prev-case">
-          <span class="case-id">CASE-2023-1102</span>
-          <span class="case-date">Nov 2023</span>
-          <span class="badge badge-info">Cleared — false positive</span>
-        </div>
-        <div class="prev-case">
-          <span class="case-id">CASE-2022-0334</span>
-          <span class="case-date">Mar 2022</span>
-          <span class="badge badge-info">Cleared — false positive</span>
-        </div>
-      </div>
-      <div style="margin-top:10px; font-size:11px; color:var(--muted); padding:8px; background:var(--accent-light); border-radius: var(--radius-md);">
-        Note: Prior cases were cleared under old rule-based TMS. Patterns were not visible at individual transaction level.
-      </div>
+      <div class="prev-cases" id="investigation-prev-cases"></div>
+      <div style="margin-top:10px; font-size:11px; color:var(--muted); padding:8px; background:var(--accent-light); border-radius: var(--radius-md);" id="investigation-prev-note"></div>
     </div>
 
     <!-- Ruling -->
@@ -1180,8 +1047,7 @@
 
   function sortCases(data) {
     return data.slice().sort((a,b)=> {
-      const priority = riskPriority[a.risk] - riskPriority[b.risk];
-      if (priority !== 0) return priority;
+      if (b.score !== a.score) return b.score - a.score;
       if (a.date !== b.date) return b.date.localeCompare(a.date);
       return b.progress - a.progress;
     });
@@ -1253,6 +1119,7 @@
     const queue = sortCases(CASES);
     investigationIndex = queue.findIndex(c => c.id === caseId);
     if (investigationIndex === -1) investigationIndex = 0;
+    console.log('selectInvestigationCase', caseId, 'index=', investigationIndex, 'resolves to', queue[investigationIndex]?.id);
     showInvestigation();
   }
 
@@ -1400,8 +1267,15 @@
     });
   }
 
+  function getFilteredQueue() {
+    let data = sortCases(CASES);
+    if (activeRisk !== 'all') data = data.filter(c => c.risk === activeRisk);
+    return data;
+  }
+
   function getCurrentCase() {
-    return sortCases(CASES)[investigationIndex];
+    const queue = sortCases(CASES);
+    return queue[investigationIndex] || queue[0];
   }
 
   function changeInvestigation(direction) {
@@ -1410,35 +1284,223 @@
     loadInvestigationCase();
   }
 
+  function seededRand(seed) {
+    let s = seed;
+    return function() {
+      s = (s * 1664525 + 1013904223) & 0xffffffff;
+      return (s >>> 0) / 0xffffffff;
+    };
+  }
+
   function loadInvestigationCase() {
     const c = getCurrentCase();
+    console.log('loadInvestigationCase: investigationIndex=', investigationIndex, 'case=', c?.id);
+    const rand = seededRand(parseInt(c.id.replace(/\D/g,''), 10) || 1);
+
+    // ── Topbar ──────────────────────────────────────────────────────────────
     const riskLabel = {high:'High risk', moderate:'Moderate risk', low:'Low risk'}[c.risk];
     const badgeType = {high:'high', moderate:'med', low:'low'}[c.risk];
     const score = c.score;
     document.getElementById('investigation-case-id').textContent = c.id;
-    document.getElementById('case-breadcrumb').innerHTML = `<a href="#" onclick="showAlertQueue(); return false;">Alert queue</a> / <strong>${c.id}</strong>`;
+    document.getElementById('case-breadcrumb-link').setAttribute('onclick', 'showAlertQueue()');
     const badge = document.getElementById('investigation-risk-badge');
     badge.className = `badge badge-${badgeType}`;
-    badge.innerHTML = `<svg width="7" height="7" viewBox="0 0 8 8"><circle cx="4" cy="4" r="4" fill="${c.risk==='high'? '#E24B4A': c.risk==='moderate'? '#BA7517':'#3B6D11'}"/></svg>${riskLabel}`;
-    document.getElementById('investigation-opened').textContent = `Opened ${Math.max(1, Math.floor(Math.random()*4))} days ago`;
-    document.getElementById('investigation-sla').textContent = `SLA: ${Math.max(0, 2 - Math.floor(Math.random()*2))} days remaining`;
-    document.getElementById('investigation-avatar').textContent = c.customer.split('_')[1] ? c.customer.split('_')[1].slice(0,2) : 'CU';
+    badge.innerHTML = `<svg width="7" height="7" viewBox="0 0 8 8"><circle cx="4" cy="4" r="4" fill="${c.risk==='high'?'#E24B4A':c.risk==='moderate'?'#BA7517':'#3B6D11'}"/></svg>${riskLabel}`;
+    const daysOpen = Math.max(1, Math.round(rand() * 5 + 1));
+    const slaLeft = Math.max(0, Math.round(rand() * 3));
+    document.getElementById('investigation-opened').textContent = `Opened ${daysOpen} day${daysOpen!==1?'s':''} ago`;
+    document.getElementById('investigation-sla').textContent = `SLA: ${slaLeft} day${slaLeft!==1?'s':''} remaining`;
+
+    // ── Customer profile ─────────────────────────────────────────────────────
+    const custNum = c.customer.split('_')[1] || '00';
+    document.getElementById('investigation-avatar').textContent = custNum.slice(0,2);
     document.getElementById('investigation-customer-name').textContent = c.customer;
-    document.getElementById('investigation-customer-meta').textContent = `${c.customer_type.replace('_',' ')} · ${c.nationality}`;
+    document.getElementById('investigation-customer-meta').textContent = `${c.customer_type.replace(/_/g,' ')} · ${c.nationality}`;
     document.getElementById('investigation-customer-id').textContent = c.customer;
-    document.getElementById('investigation-customer-segment').textContent = c.customer_type.replace('_',' ');
+    document.getElementById('investigation-customer-segment').textContent = c.customer_type.replace(/_/g,' ');
     document.getElementById('investigation-customer-occupation').textContent = c.rule;
-    document.getElementById('investigation-income').textContent = `${42 + c.progress}k / yr`;
-    document.getElementById('investigation-residence').textContent = c.nationality;
-    document.getElementById('investigation-pep').textContent = c.risk === 'high' ? 'Review required' : 'Clear';
+    document.getElementById('investigation-income').textContent = `DKK ${42 + c.progress}k / yr`;
+    const countryNames = {DK:'Denmark',SE:'Sweden',NO:'Norway',FI:'Finland',DE:'Germany'};
+    document.getElementById('investigation-residence').textContent = countryNames[c.nationality] || c.nationality;
+    const pepEl = document.getElementById('investigation-pep');
+    pepEl.textContent = c.risk === 'high' ? 'Review required' : 'Clear';
+    pepEl.className = `kv-val ${c.risk === 'high' ? 'kv-warn' : 'kv-ok'}`;
     document.getElementById('investigation-kyc').textContent = c.risk === 'high' ? '6 months ago ⚠' : '3 months ago';
-    document.getElementById('investigation-account').textContent = c.customer_type.replace('_',' ');
+    document.getElementById('investigation-account').textContent = c.customer_type === 'personal' ? 'Current + Savings' : c.customer_type === 'corporate' ? 'Business Current' : 'Business Current + FX';
     document.getElementById('investigation-prior-sar').textContent = c.status === 'SAR_filed' ? '1' : '0';
-    document.getElementById('investigation-score-num').textContent = score;
+
+    // ── Risk score ───────────────────────────────────────────────────────────
+    const scoreEl = document.getElementById('investigation-score-num');
+    scoreEl.textContent = score;
+    scoreEl.style.color = `var(--risk-${c.risk === 'moderate' ? 'mod' : c.risk})`;
     document.getElementById('investigation-score-thumb').style.left = `${Math.min(94, Math.max(6, score - 5))}%`;
-    const scorePercentile = score >= 80 ? 'top 10%' : score >= 60 ? 'top 30%' : score >= 40 ? 'mid range' : 'bottom 40%';
+    const scorePercentile = score >= 90 ? 'top 5%' : score >= 80 ? 'top 10%' : score >= 60 ? 'top 30%' : score >= 40 ? 'mid range' : 'bottom 40%';
     document.getElementById('investigation-score-context').innerHTML = `<strong>Risk rank</strong> ${scorePercentile} of alerts`;
-    document.getElementById('investigation-score-drivers').innerHTML = `Top drivers: <strong style="color: var(--accent);">${c.rule}</strong>, <strong style="color: var(--accent);">${c.status.replace('_',' ')}</strong>, <strong style="color: var(--accent);">${c.time} min review</strong>`;
+    const secondDriver = c.status === 'SAR_filed' ? 'prior SAR filed' : c.status === 'escalated' ? 'previously escalated' : 'high transaction count';
+    document.getElementById('investigation-score-drivers').innerHTML = `Top drivers: <strong style="color:var(--accent);">${c.rule}</strong>, <strong style="color:var(--accent);">${secondDriver}</strong>, <strong style="color:var(--accent);">${c.time} min avg review</strong>`;
+
+    // ── Risk signals ─────────────────────────────────────────────────────────
+    const allSignals = {
+      'Large Cash':       [{sev:'high',text:`${Math.round(rand()*8+5)} large cash deposits near DKK 50,000 threshold in 60 days`,tag:'Structuring'},{sev:'high',text:`Cash-in volume up ${Math.round(rand()*300+200)}% vs prior quarter`,tag:'Velocity spike'},{sev:'med',text:'Round-sum cash withdrawals repeated across multiple branches',tag:'Round amounts'},{sev:'low',text:'Activity inconsistent with declared income level',tag:'Profile mismatch'}],
+      'Geographic Risk':  [{sev:'high',text:`Outbound transfers to ${Math.round(rand()*3+2)} high-risk jurisdictions in 90 days`,tag:'Geo risk'},{sev:'high',text:'New counterparty registered in offshore jurisdiction 3 months ago',tag:'New counterparty'},{sev:'med',text:`IP logins from ${Math.round(rand()*4+2)} different countries this quarter`,tag:'Login geo spread'},{sev:'low',text:'Customer nationality differs from registered address country',tag:'Residency mismatch'}],
+      'Rapid Movement':   [{sev:'high',text:`Funds in and out within ${Math.round(rand()*12+4)} hours — pass-through pattern`,tag:'Pass-through'},{sev:'high',text:`${Math.round(rand()*30+20)} rapid transfers totalling DKK ${Math.round(rand()*500+200)}k`,tag:'Velocity spike'},{sev:'med',text:'Multiple beneficiaries receiving equal split amounts',tag:'Round amounts'},{sev:'low',text:'Activity spike does not match business cycle',tag:'Profile mismatch'}],
+      'Threshold':        [{sev:'high',text:`${Math.round(rand()*10+5)} transactions just below reporting threshold in 45 days`,tag:'Structuring'},{sev:'high',text:'Consistent gap of DKK 200–500 below threshold per transaction',tag:'Structuring'},{sev:'med',text:'Multiple accounts used across same threshold-avoidance pattern',tag:'Layering'},{sev:'low',text:'Transaction timing clustered on same weekday each week',tag:'Pattern timing'}],
+      'Structuring':      [{sev:'high',text:`${Math.round(rand()*12+6)} deposits structured to stay below DKK 50,000`,tag:'Structuring'},{sev:'high',text:'Identical deposit amounts repeated across 3 different branch offices',tag:'Structuring'},{sev:'med',text:'Funds aggregated and forwarded to single account within 48h',tag:'Layering'},{sev:'med',text:'Customer refused to provide source of funds explanation',tag:'Non-cooperative'},{sev:'low',text:'Declared occupation does not explain cash volume',tag:'Profile mismatch'}],
+      'Dormant Activation':[{sev:'high',text:'Account dormant for 18+ months, suddenly activated with large inflow',tag:'Dormant reuse'},{sev:'high',text:`DKK ${Math.round(rand()*200+100)}k deposited within first week of reactivation`,tag:'Velocity spike'},{sev:'med',text:'Contact details changed immediately before reactivation',tag:'Identity change'},{sev:'low',text:'No customer interaction with bank during dormant period',tag:'Unusual pattern'}],
+    };
+    const signals = allSignals[c.rule] || [{sev:'high',text:`Suspicious activity related to ${c.rule}`,tag:c.rule},{sev:'med',text:'Transaction pattern inconsistent with customer profile',tag:'Profile mismatch'},{sev:'low',text:'Requires further investigation',tag:'Review'}];
+    document.getElementById('investigation-signals-list').innerHTML = signals.map(s =>
+      `<div class="signal-row"><div class="signal-dot sig-${s.sev}"></div><div class="signal-text">${s.text}</div><div class="signal-tag tag-${s.sev}">${s.tag}</div></div>`
+    ).join('');
+
+    // ── Volume chart ─────────────────────────────────────────────────────────
+    const baseVal = Math.round(rand()*20+35);
+    const alertDate = new Date(c.date);
+    const months = [];
+    for (let i = 7; i >= 0; i--) {
+      const d = new Date(alertDate);
+      d.setMonth(d.getMonth() - i);
+      months.push(`${d.toLocaleString('en',{month:'short'})} '${String(d.getFullYear()).slice(2)}`);
+    }
+    const spikeStart = c.risk === 'high' ? 3 : c.risk === 'moderate' ? 4 : 5;
+    const spikeMultiplier = c.risk === 'high' ? (rand()*4+4) : c.risk === 'moderate' ? (rand()*2+2) : (rand()*1+1.2);
+    const vals = months.map((_, i) => {
+      if (i < spikeStart) return Math.round(baseVal + rand()*10 - 5);
+      const factor = 1 + ((i - spikeStart + 1) / (8 - spikeStart)) * (spikeMultiplier - 1);
+      return Math.round(baseVal * factor);
+    });
+    const maxVal = Math.max(...vals);
+    const pctChange = Math.round(((vals[7] - vals[0]) / vals[0]) * 100);
+    document.getElementById('investigation-volume-label').textContent = `Transaction volume — monthly (DKK 000s) · baseline avg ~${baseVal}k`;
+    document.getElementById('investigation-bar-chart').innerHTML = months.map((m, i) => {
+      const isAnomaly = i >= spikeStart;
+      const w = Math.round((vals[i] / maxVal) * 100);
+      const cls = isAnomaly ? 'bar-fill bar-high' : 'bar-fill bar-normal';
+      const valStyle = isAnomaly ? 'color:var(--risk-high)' : '';
+      return `<div class="bar-row"><div class="bar-key">${m}</div><div class="bar-track"><div class="${cls}" style="width:${w}%"></div></div><div class="bar-val" style="${valStyle}">${vals[i]}k</div></div>`;
+    }).join('');
+    document.getElementById('investigation-volume-legend').innerHTML = `
+      <span style="display:flex;align-items:center;gap:4px;"><span style="width:12px;height:10px;background:var(--accent);opacity:0.7;border-radius:2px;display:inline-block;"></span>Baseline period</span>
+      <span style="display:flex;align-items:center;gap:4px;"><span style="width:12px;height:10px;background:var(--risk-high);border-radius:2px;display:inline-block;"></span>Anomalous period</span>
+      <span style="color:var(--risk-high);font-weight:600;margin-left:auto;">+${pctChange}% vs prior year same period</span>`;
+
+    // ── Geo footprint ─────────────────────────────────────────────────────────
+    const geoByRisk = {
+      high: [{flag:'🇩🇰',name:'Denmark',label:'Home',cls:''},{flag:'🇸🇪',name:'Sweden',label:'',cls:''},{flag:'🇦🇪',name:'UAE',label:'High risk jurisdiction',cls:'suspicious'},{flag:'🇨🇾',name:'Cyprus',label:'Shell co. registered',cls:'suspicious'},{flag:'🇭🇰',name:'Hong Kong',label:'New this quarter',cls:'new-flag'}],
+      moderate: [{flag:'🇩🇰',name:'Denmark',label:'Home',cls:''},{flag:'🇸🇪',name:'Sweden',label:'',cls:''},{flag:'🇩🇪',name:'Germany',label:'',cls:''},{flag:'🇲🇹',name:'Malta',label:'Shell co. linked',cls:'suspicious'}],
+      low: [{flag:'🇩🇰',name:'Denmark',label:'Home',cls:''},{flag:'🇸🇪',name:'Sweden',label:'',cls:''}],
+    };
+    const geoList = geoByRisk[c.risk] || geoByRisk.low;
+    document.getElementById('investigation-geo-chips').innerHTML = geoList.map(g => {
+      if (g.label === 'Home') {
+        return `<div class="geo-chip${g.cls?' '+g.cls:''}">${g.flag} ${g.name} <span class="badge badge-info" style="margin-left:4px;">Home</span></div>`;
+      }
+      return `<div class="geo-chip${g.cls?' '+g.cls:''}">${g.flag} ${g.name}${g.label?' — '+g.label:''}</div>`;
+    }).join('');
+
+    // ── Top counterparties ────────────────────────────────────────────────────
+    const cpByRisk = {
+      high: [
+        {init:'JT',name:'J. Thornton (private)',freq:Math.round(rand()*15+15),country:'DK',risk:'low'},
+        {init:'LN',name:'L. Nielsen (private)',freq:Math.round(rand()*10+10),country:'DK',risk:'low'},
+        {init:'GS',name:'GoldStream Ltd',freq:Math.round(rand()*6+5),country:'CY',risk:'high',note:'Shell'},
+        {init:'AC',name:'AlphaConnect FZE',freq:Math.round(rand()*4+3),country:'AE',risk:'high',note:'High risk'},
+        {init:'??',name:'Unknown entity',freq:Math.round(rand()*3+2),country:'HK',risk:'med',note:'Unverified'},
+      ],
+      moderate: [
+        {init:'MH',name:'M. Hansen (private)',freq:Math.round(rand()*12+10),country:'DK',risk:'low'},
+        {init:'BP',name:'Baltic Partners OÜ',freq:Math.round(rand()*8+4),country:'EE',risk:'med',note:'Unverified'},
+        {init:'KA',name:'K. Andersen (private)',freq:Math.round(rand()*6+4),country:'DK',risk:'low'},
+        {init:'MT',name:'MediaTrade Ltd',freq:Math.round(rand()*5+3),country:'MT',risk:'med',note:'Shell linked'},
+      ],
+      low: [
+        {init:'PL',name:'P. Larsen (private)',freq:Math.round(rand()*20+12),country:'DK',risk:'low'},
+        {init:'AB',name:'A. Berg (private)',freq:Math.round(rand()*10+8),country:'SE',risk:'low'},
+        {init:'NK',name:'NordicKøb ApS',freq:Math.round(rand()*8+4),country:'DK',risk:'low'},
+      ],
+    };
+    const cpList = cpByRisk[c.risk] || cpByRisk.low;
+    document.getElementById('investigation-cp-list').innerHTML = cpList.map(cp => {
+      const bg = cp.risk==='high'?'var(--risk-high-bg)':cp.risk==='med'?'var(--risk-med-bg)':'var(--risk-low-bg)';
+      const fg = cp.risk==='high'?'var(--risk-high)':cp.risk==='med'?'var(--risk-med)':'var(--risk-low)';
+      const flagTxt = cp.note ? `${cp.country} ⚑ ${cp.note}` : `${cp.country} ✓`;
+      return `<div class="cp-row">
+        <div class="cp-avatar" style="background:${bg};color:${fg};">${cp.init}</div>
+        <div class="cp-name">${cp.name}</div>
+        <div class="cp-freq">${cp.freq} txns</div>
+        <div class="cp-flag" style="background:${bg};color:${fg};">${flagTxt}</div>
+      </div>`;
+    }).join('');
+
+    // ── Velocity metrics ──────────────────────────────────────────────────────
+    const inflow = Math.round(baseVal * (spikeMultiplier + 1) * (rand()*0.4+0.8) * 10);
+    const cashDeps = c.rule === 'Large Cash' || c.rule === 'Structuring' ? Math.round(rand()*30+20) : Math.round(rand()*10+5);
+    const subThresh = c.rule === 'Structuring' || c.rule === 'Threshold' || c.rule === 'Large Cash' ? Math.round(rand()*8+3) : 0;
+    const avgTxSize = Math.round(inflow / (cashDeps + Math.round(rand()*20+10)));
+    const jurisdictions = c.risk === 'high' ? Math.round(rand()*3+3) : c.risk === 'moderate' ? Math.round(rand()*2+2) : 2;
+    const inflowColor = c.risk === 'high' ? 'color:var(--risk-high);' : c.risk === 'moderate' ? 'color:var(--risk-med);' : '';
+    document.getElementById('investigation-velocity-grid').innerHTML = `
+      <div class="vel-card"><div class="vel-val" style="${inflowColor}">DKK ${inflow}k</div><div class="vel-label">Total inflow</div><div class="vel-delta delta-up">+${pctChange}% vs prior 90d</div></div>
+      <div class="vel-card"><div class="vel-val" style="${inflowColor}">${cashDeps}</div><div class="vel-label">Cash deposits</div><div class="vel-delta delta-up">${subThresh>0?subThresh+' sub-threshold':'within norms'}</div></div>
+      <div class="vel-card"><div class="vel-val">DKK ${avgTxSize}k</div><div class="vel-label">Avg. transaction size</div><div class="vel-delta delta-up">+${Math.round(pctChange*0.8)}% vs prior</div></div>
+      <div class="vel-card"><div class="vel-val" style="${jurisdictions>=4?'color:var(--risk-high);':''}">${jurisdictions}</div><div class="vel-label">Active jurisdictions</div><div class="vel-delta delta-up">Was ${Math.max(1,jurisdictions-2)} prior 90d</div></div>`;
+
+    const alertTitles = {
+      'Structuring':'Structuring pattern detected','Threshold':'Threshold avoidance pattern',
+      'Large Cash':'Large cash deposit activity','Geographic Risk':'High-risk jurisdiction exposure',
+      'Rapid Movement':'Rapid movement / pass-through','Dormant Activation':'Dormant account reactivation',
+    };
+    const alertBodies = {
+      'Structuring':`${subThresh} deposits structured just below DKK 50,000 over 60 days. Consistent with intentional threshold avoidance (Hvidvaskloven §7).`,
+      'Threshold':`${subThresh} transactions clustered DKK 200–500 below reporting threshold. Pattern suggests deliberate structuring.`,
+      'Large Cash':`${cashDeps} cash deposits recorded, ${subThresh} below threshold. Volume inconsistent with declared income.`,
+      'Geographic Risk':`Transfers to ${jurisdictions - 1} high-risk jurisdictions detected. Counterparty due diligence required under §8.`,
+      'Rapid Movement':`Pass-through pattern: funds received and forwarded within 24h on ${Math.round(rand()*8+5)} occasions.`,
+      'Dormant Activation':`Account inactive 18+ months. DKK ${inflow}k deposited within first week — immediate review warranted.`,
+    };
+    const aTitle = alertTitles[c.rule] || `${c.rule} alert`;
+    const aBody = alertBodies[c.rule] || `Suspicious activity consistent with ${c.rule} pattern. Review required.`;
+    document.getElementById('investigation-alert-box').innerHTML = `<div class="alert-box"><div class="alert-box-title">${aTitle}</div><div class="alert-box-body">${aBody}</div></div>`;
+
+    // ── Activity timeline ─────────────────────────────────────────────────────
+    const tlMonths = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    const alertMonth = new Date(c.date).getMonth();
+    const tlEvents = [];
+    for (let i = 7; i >= 0; i--) {
+      const mIdx = ((alertMonth - i) + 12) % 12;
+      const mName = tlMonths[mIdx];
+      if (i > 5) { tlEvents.push({dot:'norm',month:mName,label:'Normal'}); }
+      else if (i === 5) { tlEvents.push({dot:'norm',month:mName,label:'Normal activity'}); }
+      else if (i === 4) { tlEvents.push({dot: c.risk==='low'?'norm':'med', month:mName, label: c.risk==='low'?'Normal':'Early anomaly detected'}); }
+      else if (i === 3) { tlEvents.push({dot: c.risk==='low'?'norm':'med', month:mName, label: c.risk==='low'?'Minor spike':'Volume spike begins'}); }
+      else if (i === 2) { tlEvents.push({dot: c.risk==='high'?'high':'med', month:mName, label: `${c.rule} pattern starts`}); }
+      else if (i === 1) { tlEvents.push({dot:'high',month:mName,label:`${cashDeps} transactions flagged`}); }
+      else { tlEvents.push({dot:'high',month:mName,label:'Alert triggered'}); }
+    }
+    const tlTrack = document.getElementById('investigation-timeline-track');
+    tlTrack.innerHTML = '<div class="timeline-line"></div>' + tlEvents.map(e =>
+      `<div class="tl-event"><div class="tl-dot tl-dot-${e.dot}"></div><div class="tl-month">${e.month}</div><div class="tl-label">${e.label}</div></div>`
+    ).join('');
+
+    // ── Previous cases ────────────────────────────────────────────────────────
+    const priorCount = c.status === 'SAR_filed' ? 2 : c.risk === 'high' ? Math.round(rand()*2+1) : Math.round(rand()*1);
+    if (priorCount === 0) {
+      document.getElementById('investigation-prev-cases').innerHTML = '<div style="font-size:12px;color:var(--muted);padding:4px 0;">No prior cases on record.</div>';
+      document.getElementById('investigation-prev-note').textContent = '';
+    } else {
+      const yr = new Date(c.date).getFullYear();
+      const priorCases = Array.from({length:priorCount},(_,i)=>{
+        const pastYr = yr - (i+1);
+        const pastMon = ['Jan','Mar','May','Aug','Oct','Nov'][Math.round(rand()*5)];
+        const caseNum = Math.round(rand()*2000+1000);
+        const outcome = i===0 && c.status==='SAR_filed' ? 'SAR filed' : 'Cleared — false positive';
+        const badge = outcome==='SAR filed' ? 'badge-high' : 'badge-info';
+        return `<div class="prev-case"><span class="case-id">CASE-${pastYr}-${caseNum}</span><span class="case-date">${pastMon} ${pastYr}</span><span class="badge ${badge}">${outcome}</span></div>`;
+      });
+      document.getElementById('investigation-prev-cases').innerHTML = priorCases.join('');
+      document.getElementById('investigation-prev-note').textContent = 'Prior cases reviewed under previous TMS ruleset. Current AI model captures cross-account patterns not visible before.';
+    }
+
     document.getElementById('final-ruling').value = selectedRuling;
     updateSubmitModal();
   }
@@ -1536,7 +1598,7 @@
   }
 
   document.addEventListener('DOMContentLoaded', () => {
-    setTheme('dark');
+    setTheme('light');
     document.getElementById('today-date').textContent = new Date().toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'long',year:'numeric'});
     const effArc = document.getElementById('eff-arc');
     const effPctText = document.getElementById('eff-pct').textContent;
@@ -1545,7 +1607,6 @@
     requestAnimationFrame(() => { effArc.style.strokeDashoffset = circumference * (1 - effPct); });
     updateRiskSummaryCards();
     showAlertQueue();
-    loadInvestigationCase();
     document.addEventListener('keydown', e => { if (e.key === 'Escape') closeSubmitModalDirect(); });
   });
 </script>
