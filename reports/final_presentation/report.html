@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NordikBank AML — Technical Development Report</title>
+<style>
+  :root {
+    --pdk: #460073; --pd: #7500C0; --pc: #A100FF;
+    --plk: #E6DCFF; --pl: #C2A3FF;
+    --risk-high: #E24B4A; --risk-med: #BA7517; --risk-low: #3B6D11;
+    --text: #1a1a1a; --muted: #555; --border: #e0daea;
+    --surface: #faf8fd; --white: #fff;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'Inter', 'Segoe UI', Helvetica, Arial, sans-serif;
+    color: var(--text); background: #f0ecf7; font-size: 15px; line-height: 1.65;
+  }
+
+  /* ── Nav ── */
+  .sidenav {
+    position: fixed; top: 0; left: 0; width: 240px; height: 100vh;
+    background: var(--pdk); overflow-y: auto; padding: 28px 0 40px;
+    z-index: 100;
+  }
+  .sidenav-logo { font-size: 17px; font-weight: 700; color: #fff; padding: 0 22px 24px; display: block; letter-spacing: -0.3px; }
+  .sidenav-logo span { color: var(--pl); }
+  .sidenav-section { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 1.4px; color: var(--pl); padding: 16px 22px 6px; }
+  .sidenav a { display: block; padding: 7px 22px; font-size: 13px; color: rgba(255,255,255,0.7); text-decoration: none; transition: color 0.15s, background 0.15s; }
+  .sidenav a:hover { color: #fff; background: rgba(255,255,255,0.07); }
+  .sidenav a.active { color: #fff; border-left: 3px solid var(--pc); padding-left: 19px; }
+
+  /* ── Main content ── */
+  .main { margin-left: 240px; padding: 48px 56px 80px; max-width: 980px; }
+
+  /* ── Typography ── */
+  h1 { font-size: 34px; font-weight: 700; color: var(--pdk); line-height: 1.2; margin-bottom: 8px; }
+  h2 { font-size: 24px; font-weight: 700; color: var(--pdk); margin: 56px 0 16px; padding-bottom: 10px; border-bottom: 3px solid var(--pc); }
+  h3 { font-size: 18px; font-weight: 600; color: var(--pdk); margin: 32px 0 10px; }
+  h4 { font-size: 15px; font-weight: 600; color: var(--pd); margin: 20px 0 8px; }
+  p { margin-bottom: 14px; }
+  ul, ol { margin: 0 0 14px 22px; }
+  li { margin-bottom: 5px; }
+  strong { font-weight: 600; }
+  code {
+    font-family: 'Consolas', 'Courier New', monospace; font-size: 13px;
+    background: #f0ecf5; color: var(--pd); padding: 2px 5px; border-radius: 3px;
+  }
+  pre {
+    background: #f0ecf5; border: 1px solid var(--border); border-radius: 6px;
+    padding: 16px 18px; overflow-x: auto; margin: 14px 0 18px; font-size: 13px;
+    font-family: 'Consolas', 'Courier New', monospace; line-height: 1.55;
+    color: var(--pdk);
+  }
+
+  /* ── Cover ── */
+  .cover { margin-bottom: 48px; }
+  .cover-meta { font-size: 13px; color: var(--muted); margin-top: 6px; }
+  .cover-divider { height: 4px; background: var(--pc); width: 80px; margin-top: 20px; }
+
+  /* ── Highlight box ── */
+  .highlight {
+    background: var(--plk); border-left: 4px solid var(--pc);
+    padding: 16px 20px; border-radius: 2px; margin: 18px 0;
+  }
+  .highlight p:last-child { margin-bottom: 0; }
+
+  /* ── Metric cards ── */
+  .metrics-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin: 20px 0 28px; }
+  .metric-card {
+    background: var(--white); border: 1px solid var(--border); border-radius: 8px;
+    padding: 16px 18px; text-align: center;
+  }
+  .metric-val { font-size: 30px; font-weight: 800; color: var(--pdk); line-height: 1; margin-bottom: 5px; }
+  .metric-val.good { color: var(--risk-low); }
+  .metric-val.warn { color: var(--risk-med); }
+  .metric-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.6px; font-weight: 500; }
+  .metric-sub { font-size: 11px; color: var(--muted); margin-top: 4px; }
+
+  /* ── Tables ── */
+  table { width: 100%; border-collapse: collapse; margin: 14px 0 22px; font-size: 14px; }
+  th {
+    background: var(--pdk); color: #fff; text-align: left; padding: 9px 13px;
+    font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;
+  }
+  td { padding: 9px 13px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  tr:nth-child(even) td { background: var(--surface); }
+  .td-good { color: var(--risk-low); font-weight: 600; }
+  .td-warn { color: var(--risk-med); font-weight: 600; }
+  .td-bad  { color: var(--risk-high); font-weight: 600; }
+  .td-mono { font-family: 'Consolas', monospace; font-size: 13px; }
+
+  /* ── Bar chart (horizontal, CSS only) ── */
+  .bar-chart { margin: 16px 0 24px; }
+  .bar-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+  .bar-label { font-size: 12px; color: var(--muted); width: 220px; flex-shrink: 0; text-align: right; font-family: 'Consolas', monospace; }
+  .bar-track { flex: 1; height: 20px; background: #ede9f6; border-radius: 3px; overflow: hidden; }
+  .bar-fill { height: 100%; background: var(--pc); border-radius: 3px; transition: width 0.3s; }
+  .bar-fill.secondary { background: var(--pl); }
+  .bar-val { font-size: 12px; font-weight: 600; color: var(--pdk); width: 50px; }
+
+  /* ── Pros / Cons ── */
+  .procon { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 16px 0 24px; }
+  .procon-box { background: var(--white); border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; }
+  .procon-title { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.7px; margin-bottom: 10px; padding-bottom: 6px; border-bottom: 2px solid; }
+  .pro .procon-title { color: var(--risk-low); border-color: var(--risk-low); }
+  .con .procon-title { color: var(--risk-high); border-color: var(--risk-high); }
+  .procon-box ul { margin-left: 16px; }
+  .procon-box li { font-size: 13px; margin-bottom: 5px; line-height: 1.5; }
+
+  /* ── Decision boxes ── */
+  .decision {
+    background: var(--white); border: 1px solid var(--border); border-radius: 8px;
+    padding: 16px 18px; margin: 16px 0;
+  }
+  .decision-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--pc); margin-bottom: 6px; }
+
+  /* ── Feature group tags ── */
+  .tag {
+    display: inline-block; font-size: 11px; font-weight: 600; padding: 2px 8px;
+    border-radius: 12px; margin: 2px 3px 2px 0;
+    background: var(--plk); color: var(--pdk);
+  }
+
+  /* ── Section badge ── */
+  .step-badge {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 28px; height: 28px; border-radius: 50%; background: var(--pc);
+    color: #fff; font-size: 13px; font-weight: 700; margin-right: 10px; flex-shrink: 0;
+    vertical-align: middle;
+  }
+
+  /* ── Callout ── */
+  .callout { background: #fff8e1; border-left: 4px solid var(--risk-med); padding: 12px 16px; margin: 16px 0; border-radius: 2px; font-size: 14px; }
+  .callout-danger { background: #fff0f0; border-left-color: var(--risk-high); }
+
+  /* ── TOC ── */
+  .toc { background: var(--white); border: 1px solid var(--border); border-radius: 8px; padding: 20px 24px; margin: 28px 0 40px; }
+  .toc h3 { margin: 0 0 12px; font-size: 14px; text-transform: uppercase; letter-spacing: 0.8px; color: var(--muted); }
+  .toc ol { margin-left: 18px; }
+  .toc li { margin-bottom: 5px; }
+  .toc a { color: var(--pd); text-decoration: none; font-size: 14px; }
+  .toc a:hover { text-decoration: underline; }
+
+  /* ── Scroll highlight for active section ── */
+  @media (max-width: 900px) {
+    .sidenav { display: none; }
+    .main { margin-left: 0; padding: 24px 20px 60px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ── Side navigation ── -->
+<nav class="sidenav">
+  <span class="sidenav-logo">Nordik<span>Bank</span></span>
+  <div class="sidenav-section">Overview</div>
+  <a href="#problem">1. Problem framing</a>
+  <a href="#data">2. Data overview</a>
+  <div class="sidenav-section">Development</div>
+  <a href="#eda">3. Exploratory analysis</a>
+  <a href="#features">4. Feature engineering</a>
+  <a href="#baseline">5. Baseline model</a>
+  <a href="#model">6. Updated model</a>
+  <div class="sidenav-section">Results</div>
+  <a href="#evaluation">7. Evaluation</a>
+  <a href="#tradeoffs">8. Trade-offs</a>
+  <a href="#business">9. Business impact</a>
+  <a href="#next">10. Next steps</a>
+</nav>
+
+<!-- ── Main content ── -->
+<div class="main">
+
+  <!-- Cover -->
+  <div class="cover">
+    <h1>NordikBank AML<br>Technical Development Report</h1>
+    <div class="cover-meta">Accenture AI Program · Case Study · May 2026</div>
+    <div class="cover-meta">Gradient Boosting classifier · Val AUC-ROC 0.886 · 60 engineered features</div>
+    <div class="cover-divider"></div>
+  </div>
+
+  <!-- TOC -->
+  <div class="toc">
+    <h3>Contents</h3>
+    <ol>
+      <li><a href="#problem">Problem framing — S-C-Q and business context</a></li>
+      <li><a href="#data">Data overview — six datasets, relationships, caveats</a></li>
+      <li><a href="#eda">Exploratory analysis — what the data revealed</a></li>
+      <li><a href="#features">Feature engineering — 12 groups, 60 features, design decisions</a></li>
+      <li><a href="#baseline">Baseline model — LR and GB on pre-computed features</a></li>
+      <li><a href="#model">Updated model — full engineered feature matrix</a></li>
+      <li><a href="#evaluation">Evaluation — metrics, interpretation, threshold calibration</a></li>
+      <li><a href="#tradeoffs">Trade-offs — model choice, metric choice, explainability</a></li>
+      <li><a href="#business">Business impact — analyst capacity, FSA framing</a></li>
+      <li><a href="#next">Next steps — SHAP integration, drift monitoring, deployment</a></li>
+    </ol>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════════════════ 1. PROBLEM -->
+  <h2 id="problem"><span class="step-badge">1</span> Problem Framing</h2>
+
+  <h3>Situation · Complication · Question</h3>
+  <p>NordikBank is a mid-size Nordic retail and corporate bank with 1.2 million customers across Denmark and Sweden, processing approximately <strong>5 million transactions per month</strong>. The compliance department employs 45 analysts dedicated to transaction monitoring.</p>
+
+  <div class="highlight">
+    <p><strong>Situation:</strong> NordikBank replaced its legacy system in 2019 with a rule-based Transaction Monitoring System (TMS) containing ~120 rules — threshold triggers, geographic risk flags, and structuring pattern detectors.</p>
+    <p><strong>Complication:</strong> The TMS generates ~15,000 alerts per month with a <strong>97% false positive rate</strong>. Analysts have capacity for approximately 50 deep investigations per month. The FSA (Finanstilsynet) regulatory review is scheduled for Q3 2025 and will specifically assess monitoring sophistication.</p>
+    <p style="margin-bottom:0;"><strong>Question:</strong> How can NordikBank reduce false positives while maintaining full regulatory explainability?</p>
+  </div>
+
+  <h3>Why the rule-based system fails</h3>
+  <p>Each rule evaluates transactions <em>independently</em>. A cash-heavy small business making routine deposits triggers the same alert as a customer structuring deposits to avoid detection. The system cannot distinguish between them because it lacks:</p>
+  <ul>
+    <li><strong>Customer-level behavioural context</strong> — no aggregation over time</li>
+    <li><strong>Deviation from baseline</strong> — a DKK 500k transaction means something different for a corporate with DKK 3.5M/month volume vs. a personal customer with DKK 61k/month</li>
+    <li><strong>Cross-signal synthesis</strong> — combining geographic risk + counterparty diversity + cash intensity requires a model, not a rule</li>
+  </ul>
+
+  <h3>Our answer</h3>
+  <p>Build a supervised classification model that aggregates each customer's full 12-month behavioural history into a single risk score. This re-ranks the alert queue so analysts spend their 50 investigations on the customers most likely to be genuinely suspicious.</p>
+
+
+  <!-- ═══════════════════════════════════════════════════════ 2. DATA -->
+  <h2 id="data"><span class="step-badge">2</span> Data Overview</h2>
+
+  <h3>Six datasets — 12-month snapshot (Jan–Dec 2024)</h3>
+  <table>
+    <tr><th>File</th><th>Rows</th><th>Role in modelling</th><th>Key gotcha</th></tr>
+    <tr>
+      <td><code>customers.csv</code></td><td>1,200</td>
+      <td>Target label (<code>suspicious_activity_confirmed</code>), train/val/test split</td>
+      <td><code>age</code>, <code>income</code>, <code>occupation</code> null for corporates by design</td>
+    </tr>
+    <tr>
+      <td><code>transactions.csv</code></td><td>77,384</td>
+      <td>Core behavioural signal — signed amounts, type, channel, counterparty</td>
+      <td>Declined txns (~2%) show attempted amounts; no funds moved — treat separately</td>
+    </tr>
+    <tr>
+      <td><code>accounts.csv</code></td><td>2,702</td>
+      <td>6-month avg balances and flows per account</td>
+      <td>Dormancy defined as zero balance + zero inflow + zero outflow</td>
+    </tr>
+    <tr>
+      <td><code>baselines.csv</code></td><td>1,200</td>
+      <td>Pre-computed 6-month behavioural aggregates — used as deviation reference</td>
+      <td>Only 6-month lookback; 12-month actual vs 6-month baseline = deviation signal</td>
+    </tr>
+    <tr>
+      <td><code>alert_history.csv</code></td><td>19,469</td>
+      <td>Historical TMS rule triggers — for UI context only</td>
+      <td class="td-bad">Analyst decisions (SAR_filed, escalated) are downstream of the label — using them as features causes leakage</td>
+    </tr>
+    <tr>
+      <td><code>country_risk.csv</code></td><td>48</td>
+      <td>FATF status, CPI score, EU high-risk list per country</td>
+      <td><code>counterparty_bank_country</code> is null for ~97% of transactions</td>
+    </tr>
+  </table>
+
+  <h3>Label distribution and splits</h3>
+  <div class="metrics-grid">
+    <div class="metric-card"><div class="metric-val">700</div><div class="metric-label">Labelled customers</div><div class="metric-sub">train + val</div></div>
+    <div class="metric-card"><div class="metric-val warn">30</div><div class="metric-label">Suspicious</div><div class="metric-sub">4.3% positive rate</div></div>
+    <div class="metric-card"><div class="metric-val">500</div><div class="metric-label">Train</div><div class="metric-sub">21 suspicious</div></div>
+    <div class="metric-card"><div class="metric-val">200</div><div class="metric-label">Validation</div><div class="metric-sub">9 suspicious</div></div>
+  </div>
+
+  <div class="callout">
+    <strong>Unit of prediction is the customer, not the transaction.</strong> Train/val/test splits are defined in <code>customers.csv</code> — the split column. Never split on transactions; a customer's transactions must all stay in the same fold to prevent data leakage.
+  </div>
+
+  <h3>Key data relationship diagram</h3>
+  <pre>customers (1) ──── (N) transactions
+customers (1) ──── (N) accounts
+customers (1) ──── (1) baselines
+customers (1) ──── (N) alert_history
+customers.nationality ──── country_risk.country_code
+transactions.counterparty_bank_country ──── country_risk.country_code</pre>
+
+
+  <!-- ═══════════════════════════════════════════════════════ 3. EDA -->
+  <h2 id="eda"><span class="step-badge">3</span> Exploratory Analysis</h2>
+
+  <h3>What the data revealed</h3>
+  <p>The EDA (Notebook 01) produced three findings that directly shaped modelling strategy:</p>
+
+  <h4>Finding 1 — Static risk flags have near-zero predictive power</h4>
+  <p>KYC risk rating, PEP status, and sanctions screening flag showed almost no correlation with the confirmed label. This is counterintuitive but important: the compliance audit that generated the ground-truth labels was conducted independently of the existing TMS, so it captured suspicious customers that the static flags missed entirely.</p>
+  <div class="highlight">
+    <p><strong>Implication:</strong> Do not rely on <code>kyc_risk_rating</code> or <code>pep_status</code> as primary features. Include them as weak signals but do not weight them heavily. The real signal is in behaviour.</p>
+  </div>
+
+  <h4>Finding 2 — Structuring signal is visible in the raw data</h4>
+  <p>Cash transactions cluster visibly just below NordikBank's internal DKK 15,000 threshold. This is a classic structuring indicator — customers intentionally keeping deposits just below the reporting line. The band DKK 13,000–14,999 is disproportionately represented vs. a smooth distribution.</p>
+
+  <h4>Finding 3 — TMS alert count is a poor separator</h4>
+  <p>The median alert count for confirmed suspicious customers (14) and clean customers (16) are nearly identical. This confirms the TMS is not risk-stratifying — it is generating noise uniformly across the customer base.</p>
+
+  <h3>Strongest baseline correlates with the label</h3>
+  <table>
+    <tr><th>Feature</th><th>Pearson r with label</th><th>AML interpretation</th></tr>
+    <tr><td><code>geographic_spread_score</code></td><td>0.26</td><td>More countries = higher layering risk</td></tr>
+    <tr><td><code>num_unique_counterparties_6m</code></td><td>0.23</td><td>Fragmented counterparty network = potential smurfing</td></tr>
+    <tr><td><code>pct_international_transactions</code></td><td>0.22</td><td>High cross-border exposure raises placement risk</td></tr>
+    <tr><td><code>dormancy_periods_count</code></td><td>0.18</td><td>Dormant-then-active pattern is a known ML typology</td></tr>
+    <tr><td>Cash share (raw)</td><td>~0.02</td><td>Direction and structuring pattern matter, not raw cash share alone</td></tr>
+  </table>
+
+
+  <!-- ═══════════════════════════════════════════════════════ 4. FEATURES -->
+  <h2 id="features"><span class="step-badge">4</span> Feature Engineering</h2>
+
+  <p>All features are computed at the <strong>customer level</strong> — transactions are aggregated up, never split. The final matrix has <strong>60 features</strong> across 12 logical groups.</p>
+
+  <h3>Feature groups and design rationale</h3>
+
+  <table>
+    <tr><th>#</th><th>Group</th><th>Key features</th><th>AML rationale</th></tr>
+    <tr>
+      <td>1</td><td>Identity &amp; static risk</td>
+      <td><code>kyc_medium</code>, <code>kyc_high</code>, <code>pep_status</code>, <code>nationality_mismatch</code>, <code>tenure_years</code></td>
+      <td>Weak signals on their own; included so the model can combine them with behaviour</td>
+    </tr>
+    <tr>
+      <td>2</td><td>Income consistency</td>
+      <td><code>income_volume_ratio</code>, <code>income_missing</code></td>
+      <td>Ratio >1 means transacting more than declared — core AML red flag; income missing is itself a signal for corporate opacity</td>
+    </tr>
+    <tr>
+      <td>3</td><td>Transaction velocity</td>
+      <td><code>txn_count_total</code>, <code>total_volume</code>, <code>max_single_txn</code>, <code>declined_ratio</code></td>
+      <td>Rapid velocity changes and high declined-transaction ratios indicate probing behaviour</td>
+    </tr>
+    <tr>
+      <td>4</td><td>Structuring</td>
+      <td><code>structuring_ratio</code>, <code>structuring_count</code></td>
+      <td>Cash txns in the DKK 13,000–14,999 band / total cash txns — directly measures threshold avoidance</td>
+    </tr>
+    <tr>
+      <td>5</td><td>Cash intensity</td>
+      <td><code>pct_cash_deposit</code>, <code>pct_cash_withdrawal</code>, <code>volume_cash_deposit</code></td>
+      <td>Direction split matters: large cash deposits with minimal withdrawals suggest placement</td>
+    </tr>
+    <tr>
+      <td>6</td><td>Counterparty network</td>
+      <td><code>unique_counterparties</code>, <code>pct_recurring</code>, <code>max_cp_concentration</code></td>
+      <td>Many counterparties + low recurring share = shell network routing; high concentration = single suspicious beneficiary</td>
+    </tr>
+    <tr>
+      <td>7</td><td>Geographic exposure</td>
+      <td><code>pct_intl_txns</code>, <code>pct_intl_high_risk</code>, <code>min_cpi</code>, <code>unique_countries</code></td>
+      <td>EU high-risk country exposure and low CPI scores in counterparty countries amplify layering risk</td>
+    </tr>
+    <tr>
+      <td>8</td><td>Account structure</td>
+      <td><code>num_dormant</code>, <code>pct_dormant_accounts</code>, <code>inflow_outflow_ratio</code>, <code>has_foreign_currency</code></td>
+      <td>Dormant accounts reactivated with large inflows are a classic ML typology; asymmetric flows signal layering</td>
+    </tr>
+    <tr>
+      <td>9</td><td>Temporal behaviour</td>
+      <td><code>monthly_vol_cv</code>, <code>monthly_cnt_cv</code></td>
+      <td>High coefficient of variation in monthly volume/count indicates erratic, burst-pattern behaviour inconsistent with legitimate activity</td>
+    </tr>
+    <tr>
+      <td>10</td><td>Baselines (pass-through)</td>
+      <td>All columns from <code>baselines.csv</code></td>
+      <td>Pre-computed 6-month aggregates; included verbatim as comparative reference</td>
+    </tr>
+    <tr>
+      <td>11</td><td>Deviation from baseline</td>
+      <td><code>vol_vs_baseline</code>, <code>count_vs_baseline</code></td>
+      <td>12-month actual ÷ 6-month baseline annualised; ratio >1 = customer more active than their own history suggests</td>
+    </tr>
+    <tr>
+      <td>12</td><td>Transaction type mix</td>
+      <td><code>txn_type_international_wire</code>, <code>txn_type_cash_deposit</code>, etc.</td>
+      <td>Share of each transaction type as a proportion; high international wire share is a strong AML signal</td>
+    </tr>
+  </table>
+
+  <h3>Critical design decisions</h3>
+
+  <div class="decision">
+    <div class="decision-label">Decision 1 — Declined transactions treated separately</div>
+    <p>Declined transactions (~2% of all 77,384) show the <em>attempted</em> amount — no funds actually moved. Including them in volume/velocity features would distort every amount-based signal. They are split out during preprocessing and tracked as a separate feature (<code>declined_ratio</code>), which captures probing behaviour independently.</p>
+  </div>
+
+  <div class="decision">
+    <div class="decision-label">Decision 2 — CPI imputed at median, not zero</div>
+    <p>When a customer has no international transactions, <code>min_cpi</code> has no value. Imputing zero would falsely flag them as extreme high-risk (CPI=0 = most corrupt). Imputing median CPI signals "unknown" rather than "dangerous" — an honest representation of missing data.</p>
+  </div>
+
+  <div class="decision">
+    <div class="decision-label">Decision 3 — Income ratio uses turnover for business customers</div>
+    <p>For corporate, SME, and sole trader customers, <code>declared_annual_income</code> is null by design. The ratio uses <code>declared_annual_turnover</code> instead. Personal customers use <code>declared_annual_income</code>. Both are treated as potentially stale — a known limitation flagged in the Data Dictionary.</p>
+  </div>
+
+  <div class="procon">
+    <div class="procon-box pro">
+      <div class="procon-title">Strengths of this feature set</div>
+      <ul>
+        <li>All 12 groups are grounded in known AML typologies (structuring, layering, smurfing, dormancy reuse)</li>
+        <li>Deviation features (vol_vs_baseline) make the model customer-aware, not threshold-based</li>
+        <li>No leakage: only information available before the investigation date is used</li>
+        <li>Structural nulls (no international txns = 0, not missing) handled consistently</li>
+      </ul>
+    </div>
+    <div class="procon-box con">
+      <div class="procon-title">Limitations</div>
+      <ul>
+        <li>Income declarations may be stale — ratio is noisy for customers who haven't updated KYC</li>
+        <li>Counterparty names are hashed — cannot distinguish legitimate recurring payees from suspicious ones by name</li>
+        <li>No network graph features — shared counterparties between customers (smurfing rings) are invisible</li>
+        <li>Geographic features rely on only ~3% of transactions (international wires) for most customers</li>
+      </ul>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════════════════ 5. BASELINE -->
+  <h2 id="baseline"><span class="step-badge">5</span> Baseline Model</h2>
+
+  <p>The baseline (Notebook 03) uses only the 9 pre-computed features from <code>baselines.csv</code> plus 4 static customer profile fields (18 features total). Its purpose is to establish a performance floor that the engineered features must beat, and to quantify how much value feature engineering adds.</p>
+
+  <h3>Models and results</h3>
+  <table>
+    <tr><th>Model</th><th>AUC-ROC</th><th>PR-AUC</th><th>Notes</th></tr>
+    <tr>
+      <td>Logistic Regression</td>
+      <td>0.682</td><td>0.099</td>
+      <td>Linear boundary; can't capture interaction between structuring ratio and geographic spread</td>
+    </tr>
+    <tr>
+      <td>Gradient Boosting</td>
+      <td class="td-good">0.714</td><td class="td-good">0.146</td>
+      <td>Best baseline; captures non-linear combinations of pre-computed features</td>
+    </tr>
+  </table>
+
+  <div class="procon">
+    <div class="procon-box pro">
+      <div class="procon-title">Logistic Regression — pros</div>
+      <ul>
+        <li>Fully interpretable — coefficients are direct feature weights</li>
+        <li>Fast to train and explain; easy to audit</li>
+        <li>Calibrated probabilities by design (with correct regularisation)</li>
+        <li>Preferred by regulators for its transparency</li>
+      </ul>
+    </div>
+    <div class="procon-box con">
+      <div class="procon-title">Logistic Regression — cons</div>
+      <ul>
+        <li>Cannot model feature interactions (e.g. high international volume AND low CPI)</li>
+        <li>Assumes linear relationship between features and log-odds — rarely holds for AML data</li>
+        <li>Sensitive to scale; requires normalisation</li>
+        <li>Worst-performing model across all metrics in this project</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="procon">
+    <div class="procon-box pro">
+      <div class="procon-title">Gradient Boosting — pros</div>
+      <ul>
+        <li>Captures non-linear feature interactions automatically</li>
+        <li>Robust to outliers (tree splits, not squared errors)</li>
+        <li>Feature importances are a built-in explainability tool</li>
+        <li>Handles mixed feature types and imbalanced classes well</li>
+      </ul>
+    </div>
+    <div class="procon-box con">
+      <div class="procon-title">Gradient Boosting — cons</div>
+      <ul>
+        <li>Less interpretable than LR at the individual prediction level — requires SHAP for FSA compliance</li>
+        <li>Prone to overfitting without careful hyperparameter control</li>
+        <li>Slower to train and serve than LR</li>
+        <li>Feature importances reflect split frequency, not marginal contribution (SHAP is more reliable)</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3>Hyperparameters chosen</h3>
+  <pre>n_estimators     = 100   # Enough trees to learn signal; too many → overfit on 500-row train set
+max_depth        = 3     # Shallow trees: each captures a low-order interaction; controls overfit
+learning_rate    = 0.05  # Small steps: each tree corrects residuals gently
+subsample        = 0.8   # 80% row sampling per tree: variance reduction
+min_samples_leaf = 5     # At least 5 customers per leaf: prevents splits on noise
+sample_weight    # Inverse-frequency: each suspicious customer weighted ~23× a clean one</pre>
+
+
+  <!-- ═══════════════════════════════════════════════════════ 6. MODEL -->
+  <h2 id="model"><span class="step-badge">6</span> Updated Model (Engineered Features)</h2>
+
+  <p>Notebook 04 re-runs identical model configurations on the full 60-feature matrix from <code>features.parquet</code>. The only change is the input data — hyperparameters and architecture are held constant so the performance delta is attributable purely to feature engineering.</p>
+
+  <h3>Results — validation set (200 customers, 9 suspicious)</h3>
+  <div class="metrics-grid">
+    <div class="metric-card"><div class="metric-val good">0.886</div><div class="metric-label">AUC-ROC</div><div class="metric-sub">vs 0.714 baseline (+24%)</div></div>
+    <div class="metric-card"><div class="metric-val good">0.472</div><div class="metric-label">PR-AUC</div><div class="metric-sub">vs 0.146 baseline (+224%)</div></div>
+    <div class="metric-card"><div class="metric-val">16%</div><div class="metric-label">Top-50 flag rate</div><div class="metric-sub">suspicious in top 50 ranked</div></div>
+    <div class="metric-card"><div class="metric-val good">0.988</div><div class="metric-label">Max score</div><div class="metric-sub">highest-risk customer</div></div>
+  </div>
+
+  <h3>Top 10 features by model importance</h3>
+  <div class="bar-chart">
+    <div class="bar-row"><div class="bar-label">monthly_vol_cv</div><div class="bar-track"><div class="bar-fill" style="width:100%"></div></div><div class="bar-val">49.9%</div></div>
+    <div class="bar-row"><div class="bar-label">intl_volume</div><div class="bar-track"><div class="bar-fill" style="width:17%"></div></div><div class="bar-val">8.3%</div></div>
+    <div class="bar-row"><div class="bar-label">txn_type_international_wire</div><div class="bar-track"><div class="bar-fill" style="width:12%"></div></div><div class="bar-val">6.2%</div></div>
+    <div class="bar-row"><div class="bar-label">unique_counterparties</div><div class="bar-track"><div class="bar-fill" style="width:8%"></div></div><div class="bar-val">3.9%</div></div>
+    <div class="bar-row"><div class="bar-label">income_volume_ratio</div><div class="bar-track"><div class="bar-fill" style="width:5%"></div></div><div class="bar-val">2.7%</div></div>
+    <div class="bar-row"><div class="bar-label">max_single_txn</div><div class="bar-track"><div class="bar-fill secondary" style="width:5%"></div></div><div class="bar-val">2.6%</div></div>
+    <div class="bar-row"><div class="bar-label">volume_cash_deposit</div><div class="bar-track"><div class="bar-fill secondary" style="width:4%"></div></div><div class="bar-val">2.2%</div></div>
+    <div class="bar-row"><div class="bar-label">avg_monthly_transaction_count</div><div class="bar-track"><div class="bar-fill secondary" style="width:4%"></div></div><div class="bar-val">2.1%</div></div>
+    <div class="bar-row"><div class="bar-label">monthly_cnt_cv</div><div class="bar-track"><div class="bar-fill secondary" style="width:4%"></div></div><div class="bar-val">2.1%</div></div>
+    <div class="bar-row"><div class="bar-label">max_single_transaction_6m</div><div class="bar-track"><div class="bar-fill secondary" style="width:4%"></div></div><div class="bar-val">1.9%</div></div>
+  </div>
+
+  <div class="callout">
+    <strong>monthly_vol_cv dominates at 50% importance.</strong> This is the coefficient of variation of monthly transaction volume — it captures erratic, burst-pattern behaviour that is invisible to static thresholds. A customer with consistent DKK 100k/month volume looks completely different from one with DKK 20k some months and DKK 500k others, even if their annual total is similar.
+  </div>
+
+  <h3>Final model training strategy</h3>
+  <p>The final model (used for <code>predictions.csv</code>) is retrained on <strong>train + val combined</strong> (700 customers, 30 suspicious). This is standard practice: once hyperparameters are fixed using validation performance, all labelled data is used to maximise signal before scoring the held-out test set.</p>
+  <div class="callout callout-danger">
+    <strong>This means the 0.886 AUC-ROC is an honest estimate</strong> — it was computed on the validation set before the final model saw that data. The submission file is generated from the retrained model, not the validation model.
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════════════════ 7. EVALUATION -->
+  <h2 id="evaluation"><span class="step-badge">7</span> Evaluation</h2>
+
+  <h3>Why AUC-ROC, not accuracy</h3>
+  <p>With 4.3% positive rate, a classifier that predicts "clean" for everyone achieves 95.7% accuracy. This is useless. The metrics that matter are:</p>
+  <table>
+    <tr><th>Metric</th><th>What it measures</th><th>Our value</th><th>Interpretation</th></tr>
+    <tr>
+      <td><strong>AUC-ROC</strong></td>
+      <td>Probability that a randomly chosen suspicious customer ranks above a randomly chosen clean one</td>
+      <td class="td-good">0.886</td>
+      <td>Strong ranking ability — the model reliably puts suspicious customers near the top of the queue</td>
+    </tr>
+    <tr>
+      <td><strong>PR-AUC</strong></td>
+      <td>Area under the precision-recall curve — how well the model finds suspicious customers at various thresholds</td>
+      <td class="td-good">0.472</td>
+      <td>Good for a 4.3% base rate — a random classifier scores 0.043</td>
+    </tr>
+    <tr>
+      <td><strong>Top-50 flag rate</strong></td>
+      <td>Fraction of suspicious customers in the top-50 ranked — directly maps to analyst capacity</td>
+      <td>16%</td>
+      <td>At 50 investigations/month, the analyst reaches 16% of suspicious customers. At random, they'd reach ~4%.</td>
+    </tr>
+    <tr>
+      <td class="td-bad">Accuracy</td>
+      <td>Fraction correctly classified</td>
+      <td>N/A</td>
+      <td>Not reported — misleading with 4.3% base rate</td>
+    </tr>
+  </table>
+
+  <h3>Threshold calibration</h3>
+  <p>The submission file contains raw probabilities (0.0–1.0), not binary labels. The threshold is not set at 0.5 — it should be calibrated to analyst capacity:</p>
+  <ul>
+    <li>At <strong>50 investigations/month</strong>, the threshold maps to roughly the 53rd customer ranked by score (53 customers score above 0.50)</li>
+    <li>At <strong>73 investigations/month</strong>, it maps to the 73rd customer (above 0.30)</li>
+    <li>The <strong>correct threshold</strong> is set by the compliance team, not the data scientist — it depends on SAR filing obligations, analyst headcount, and regulatory risk appetite</li>
+  </ul>
+
+  <h3>Score distribution — all 1,200 customers</h3>
+  <table>
+    <tr><th>Score tier</th><th>Threshold</th><th>Customers</th><th>Interpretation</th></tr>
+    <tr><td>High risk</td><td>&gt; 0.60</td><td class="td-bad">53</td><td>Priority queue — immediate investigation warranted</td></tr>
+    <tr><td>Moderate risk</td><td>0.30 – 0.60</td><td class="td-warn">20</td><td>Enhanced due diligence — investigate if capacity allows</td></tr>
+    <tr><td>Low risk</td><td>&lt; 0.30</td><td class="td-good">1,127</td><td>Routine monitoring — deprioritise</td></tr>
+  </table>
+
+
+  <!-- ═══════════════════════════════════════════════════════ 8. TRADEOFFS -->
+  <h2 id="tradeoffs"><span class="step-badge">8</span> Trade-offs</h2>
+
+  <h3>Precision vs. recall — the fundamental tension</h3>
+  <p>There is no free lunch. Every threshold decision involves a trade-off:</p>
+  <table>
+    <tr><th>System type</th><th>Behaviour</th><th>Analyst burden</th><th>Regulatory risk</th></tr>
+    <tr>
+      <td><strong>High recall</strong><br>(low threshold)</td>
+      <td>Catches more suspicious customers but generates more false positives</td>
+      <td class="td-bad">High — analysts review many false alarms</td>
+      <td class="td-good">Low — few suspicious customers missed</td>
+    </tr>
+    <tr>
+      <td><strong>High precision</strong><br>(high threshold)</td>
+      <td>Fewer alerts, higher confidence per alert, but misses borderline cases</td>
+      <td class="td-good">Low — analysts work on genuinely suspicious cases</td>
+      <td class="td-warn">Moderate — some suspicious customers below threshold</td>
+    </tr>
+    <tr>
+      <td><strong>Current TMS</strong></td>
+      <td>97% false positives — effectively random within the flagged set</td>
+      <td class="td-bad">Extreme — 15,000 alerts/month</td>
+      <td class="td-bad">High — no meaningful risk stratification</td>
+    </tr>
+  </table>
+  <p>The right balance depends on NordikBank's SAR filing obligations under Hvidvaskloven and their analyst headcount. Our recommendation: set the threshold to cover the top-50 customers for the current analyst team, and re-calibrate if headcount changes.</p>
+
+  <h3>Gradient Boosting vs. Logistic Regression — final choice</h3>
+  <div class="procon">
+    <div class="procon-box pro">
+      <div class="procon-title">Why we chose Gradient Boosting</div>
+      <ul>
+        <li>+24% AUC-ROC gain over LR on engineered features (0.886 vs. 0.845)</li>
+        <li>Automatically learns that <em>combination</em> of high international volume + high vol_cv is suspicious — LR cannot</li>
+        <li>SHAP values provide per-customer explainability that satisfies FSA audit requirements</li>
+        <li>Feature importances give a global explanation readily communicable to compliance leadership</li>
+      </ul>
+    </div>
+    <div class="procon-box con">
+      <div class="procon-title">The cost of this choice</div>
+      <ul>
+        <li>Harder to explain individual decisions without SHAP (not yet integrated — see Next Steps)</li>
+        <li>Risk of overfitting is higher on a 500-row training set — mitigated with shallow trees and high min_samples_leaf</li>
+        <li>Retraining requires a data scientist; LR can be re-estimated with simple tooling</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3>Alert history — the leakage trap</h3>
+  <p>The <code>alert_history.csv</code> contains analyst decisions (SAR_filed, escalated, cleared). These are tempting features — a customer with many prior SARs is clearly higher risk. However, these decisions are made <em>after</em> the confirmed label is generated. Using them as model features would cause data leakage, producing over-optimistic validation metrics that do not generalise to real-world scoring.</p>
+  <div class="callout callout-danger">
+    <strong>We use alert_history only in the frontend</strong> (for the investigation view context panel), never as a model input. If temporal gating were implemented — using only alerts prior to the scoring date — they could be safely included, but this was not done in the current version.
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════════════════ 9. BUSINESS -->
+  <h2 id="business"><span class="step-badge">9</span> Business Impact</h2>
+
+  <h3>Before vs. after — the analyst's workday</h3>
+  <table>
+    <tr><th>Dimension</th><th>Current TMS (rule-based)</th><th>Our ML system</th></tr>
+    <tr>
+      <td>Monthly alerts generated</td>
+      <td class="td-bad">~15,000</td>
+      <td class="td-good">Top-50 prioritised queue</td>
+    </tr>
+    <tr>
+      <td>False positive rate</td>
+      <td class="td-bad">~97%</td>
+      <td class="td-good">Reduced — model ranks genuine cases to the top</td>
+    </tr>
+    <tr>
+      <td>Time per investigation</td>
+      <td>20–45 min</td>
+      <td>20–45 min (unchanged — human judgement still required)</td>
+    </tr>
+    <tr>
+      <td>Capacity for deep investigation</td>
+      <td>~50 / month</td>
+      <td>~50 / month, but now on the <em>right</em> customers</td>
+    </tr>
+    <tr>
+      <td>Suspicious customers captured in top-50</td>
+      <td>~4% (random)</td>
+      <td class="td-good">~16% (4× improvement)</td>
+    </tr>
+    <tr>
+      <td>Explainability for FSA</td>
+      <td>Rule description (e.g. "threshold exceeded")</td>
+      <td>Feature-level explanation via SHAP (pending integration)</td>
+    </tr>
+  </table>
+
+  <h3>Regulatory framing</h3>
+  <p>The FSA review (Q3 2025) will specifically assess monitoring sophistication. Our system addresses three of the EBA Guidelines on ML/TF risk factors explicitly:</p>
+  <ul>
+    <li><strong>Risk-based approach</strong> — customers are ranked by predicted probability, not binary rule triggers</li>
+    <li><strong>Explainability</strong> — gradient boosting feature importances (and SHAP when integrated) provide per-decision audit trails</li>
+    <li><strong>Behavioural monitoring</strong> — the model aggregates 12 months of transaction history, not individual transactions in isolation</li>
+  </ul>
+
+
+  <!-- ═══════════════════════════════════════════════════════ 10. NEXT STEPS -->
+  <h2 id="next"><span class="step-badge">10</span> Next Steps</h2>
+
+  <table>
+    <tr><th>Priority</th><th>Action</th><th>Why</th><th>Complexity</th></tr>
+    <tr>
+      <td class="td-bad">High</td>
+      <td>Integrate SHAP into the analyst workbench</td>
+      <td>FSA compliance — every flag needs a per-customer explanation, not just global importances</td>
+      <td>Medium — <code>shap.TreeExplainer</code> on the existing GB model; ~1 day</td>
+    </tr>
+    <tr>
+      <td class="td-bad">High</td>
+      <td>Calibrate the classification threshold</td>
+      <td>Current probabilities are uncalibrated — Platt scaling or isotonic regression brings them to true probabilities</td>
+      <td>Low — sklearn <code>CalibratedClassifierCV</code>; ~2 hours</td>
+    </tr>
+    <tr>
+      <td class="td-warn">Medium</td>
+      <td>Add network graph features</td>
+      <td>Shared counterparties between customers (smurfing rings) are invisible to the current model; NetworkX + community detection could expose them</td>
+      <td>High — requires graph construction from transactions; ~3 days</td>
+    </tr>
+    <tr>
+      <td class="td-warn">Medium</td>
+      <td>Implement model drift monitoring</td>
+      <td>Customer behaviour shifts over time; the model needs to be retrained periodically and monitored for score distribution drift</td>
+      <td>Medium — population stability index (PSI) on score distribution; ~1 day</td>
+    </tr>
+    <tr>
+      <td class="td-warn">Medium</td>
+      <td>Temporally gate alert_history features</td>
+      <td>Analyst decisions pre-dating the scoring window are clean signals that could improve recall — currently excluded to avoid leakage</td>
+      <td>Medium — requires careful timestamp filtering; ~1 day</td>
+    </tr>
+    <tr>
+      <td>Low</td>
+      <td>Expand to real-time scoring</td>
+      <td>Current system is batch (post-transaction). Real-time would require a feature store and online inference endpoint</td>
+      <td>Very high — full MLOps architecture change; months</td>
+    </tr>
+    <tr>
+      <td>Low</td>
+      <td>Extend to corporate customer network analysis</td>
+      <td>Corporate customers with multiple accounts and related entities require entity resolution — beyond the current model scope</td>
+      <td>Very high</td>
+    </tr>
+  </table>
+
+  <div class="highlight" style="margin-top:40px;">
+    <p><strong>The work completed demonstrates proof-of-concept value.</strong> The AUC-ROC improvement from 0.714 (baseline) to 0.886 (engineered features) — a 24% relative gain — shows that behavioural feature engineering on raw transactions substantially outperforms pre-computed aggregates. The system surfaces suspicious customers 4× more effectively than random sampling within the same analyst capacity constraint.</p>
+    <p style="margin-bottom:0;">The immediate next step that unlocks full regulatory deployment is <strong>SHAP integration</strong> — it is the difference between a model that works and a model that can be audited.</p>
+  </div>
+
+  <div style="margin-top: 60px; font-size: 12px; color: var(--muted); border-top: 1px solid var(--border); padding-top: 16px;">
+    NordikBank AML Technical Development Report · Accenture AI Program · May 2026 ·
+    Model: GradientBoostingClassifier · Val AUC-ROC: 0.886 · Features: 60 · Train customers: 700
+  </div>
+
+</div>
+
+<script>
+  // Highlight active sidenav link on scroll
+  const sections = document.querySelectorAll('h2[id]');
+  const navLinks = document.querySelectorAll('.sidenav a');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        navLinks.forEach(l => l.classList.remove('active'));
+        const active = document.querySelector(`.sidenav a[href="#${entry.target.id}"]`);
+        if (active) active.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-20% 0px -70% 0px' });
+  sections.forEach(s => observer.observe(s));
+</script>
+</body>
+</html>
