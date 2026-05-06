@@ -1,0 +1,975 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NordikBank AML — Presentation</title>
+<style>
+  /*
+    Accenture palette:
+      --ac:        #A100FF   primary purple
+      --ac-dim:    rgba(161,0,255,0.18)  muted purple fill
+      --ac-border: rgba(161,0,255,0.35)  purple border
+      --ac-light:  #C966FF   lighter purple tone
+      --bg:        #0d0d0d   near-black
+      --surface:   #161616   card surface
+      --line:      rgba(255,255,255,0.08)
+      --txt:       #ffffff
+      --txt-mid:   rgba(255,255,255,0.60)
+      --txt-dim:   rgba(255,255,255,0.35)
+  */
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    background: #0d0d0d;
+    color: #ffffff;
+    height: 100vh;
+    overflow: hidden;
+  }
+
+  .deck { width: 100%; height: 100vh; position: relative; }
+
+  .slide {
+    display: none;
+    width: 100%;
+    height: 100vh;
+    padding: 52px 72px 36px;
+    flex-direction: column;
+    justify-content: flex-start;
+    position: absolute;
+    top: 0; left: 0;
+  }
+  .slide.active { display: flex; }
+
+  /* purple accent bar at top of each slide */
+  .slide::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: #A100FF;
+  }
+
+  /* NAV */
+  .nav {
+    position: fixed;
+    bottom: 24px; right: 40px;
+    display: flex; gap: 10px; align-items: center;
+    z-index: 100;
+  }
+  .nav button {
+    background: rgba(161,0,255,0.15);
+    border: 1px solid rgba(161,0,255,0.4);
+    color: #ffffff;
+    padding: 7px 18px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: background 0.2s;
+  }
+  .nav button:hover { background: rgba(161,0,255,0.30); }
+  .slide-counter {
+    font-size: 11px;
+    color: rgba(255,255,255,0.30);
+    min-width: 36px;
+    text-align: center;
+  }
+
+  /* TYPOGRAPHY */
+  .label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: #A100FF;
+    margin-bottom: 10px;
+  }
+  .tagline {
+    font-size: 26px;
+    font-weight: 700;
+    line-height: 1.25;
+    color: #ffffff;
+    max-width: 800px;
+    margin-bottom: 32px;
+  }
+  .tagline em { color: #C966FF; font-style: normal; }
+
+  /* ── PANELS ── */
+  .panel {
+    background: #161616;
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 6px;
+    padding: 22px 26px;
+  }
+  .panel-title {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.10em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.30);
+    margin-bottom: 16px;
+  }
+
+  /* ── SLIDE 1 — MODELS ── */
+  .model-grid {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 20px;
+    flex: 1;
+  }
+
+  .model-cards { display: flex; flex-direction: column; gap: 10px; }
+  .model-card {
+    border-radius: 4px;
+    padding: 12px 14px;
+    border-left: 3px solid rgba(255,255,255,0.12);
+    background: rgba(255,255,255,0.03);
+  }
+  .model-card.winner {
+    border-left-color: #A100FF;
+    background: rgba(161,0,255,0.10);
+  }
+  .model-card.dropped {
+    border-left-color: rgba(255,255,255,0.15);
+    opacity: 0.75;
+  }
+
+  .model-name {
+    font-size: 12px;
+    font-weight: 700;
+    margin-bottom: 5px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #ffffff;
+  }
+  .badge {
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    padding: 2px 7px;
+    border-radius: 3px;
+    background: #A100FF;
+    color: #ffffff;
+    text-transform: uppercase;
+  }
+  .model-why {
+    font-size: 11px;
+    color: rgba(255,255,255,0.50);
+    line-height: 1.5;
+  }
+
+  /* results table */
+  .results-panel { display: flex; flex-direction: column; gap: 16px; }
+
+  .results-table { width: 100%; border-collapse: collapse; }
+  .results-table th {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.28);
+    text-align: left;
+    padding: 0 12px 10px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.07);
+  }
+  .results-table td {
+    padding: 9px 12px 9px 0;
+    font-size: 13px;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    color: rgba(255,255,255,0.65);
+  }
+  .results-table tr.winner td { color: #ffffff; font-weight: 600; }
+  .results-table tr.baseline-row td { color: rgba(255,255,255,0.28); font-size: 11px; }
+
+  .auc-bar-bg {
+    flex: 1; height: 5px; background: rgba(255,255,255,0.07); border-radius: 2px; overflow: hidden;
+  }
+  .auc-bar { height: 100%; border-radius: 2px; }
+  .auc-val { font-size: 13px; font-weight: 700; min-width: 42px; }
+
+  .overfit-row { display: flex; gap: 16px; }
+  .check-item {
+    flex: 1;
+    background: #161616;
+    border: 1px solid rgba(255,255,255,0.06);
+    border-top: 2px solid rgba(161,0,255,0.5);
+    border-radius: 4px;
+    padding: 14px 16px;
+  }
+  .check-title {
+    font-size: 10px;
+    font-weight: 700;
+    color: #C966FF;
+    text-transform: uppercase;
+    letter-spacing: 0.10em;
+    margin-bottom: 8px;
+  }
+  .check-body { font-size: 11.5px; color: rgba(255,255,255,0.60); line-height: 1.5; }
+  .check-body strong { color: #ffffff; }
+  .check-body ul, .model-why ul { padding-left: 13px; margin: 0; display: flex; flex-direction: column; gap: 3px; }
+  .check-body li, .model-why li { list-style: disc; }
+
+  /* ── SLIDE 1 — QUESTION ── */
+  .q-layout {
+    display: grid;
+    grid-template-columns: 1fr 48px 1.3fr;
+    gap: 0 12px;
+    flex: 1;
+    align-items: center;
+  }
+
+  .q-bubbles {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .q-bubble {
+    background: #161616;
+    border: 1px solid rgba(255,255,255,0.06);
+    border-left: 3px solid rgba(161,0,255,0.45);
+    border-radius: 6px;
+    padding: 12px 16px;
+  }
+
+  .q-bubble-tag {
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #A100FF;
+    margin-bottom: 5px;
+  }
+
+  .q-bubble-text {
+    font-size: 11.5px;
+    color: rgba(255,255,255,0.55);
+    line-height: 1.5;
+  }
+
+  .q-hmw-wrap {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .q-hmw {
+    background: rgba(161,0,255,0.10);
+    border: 2px solid rgba(161,0,255,0.50);
+    border-radius: 10px;
+    padding: 40px 44px;
+    max-width: 500px;
+    text-align: center;
+  }
+
+  .q-hmw-label {
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: rgba(201,102,255,0.65);
+    margin-bottom: 20px;
+  }
+
+  .q-hmw-text {
+    font-size: 24px;
+    font-weight: 700;
+    line-height: 1.3;
+    color: #ffffff;
+    margin-bottom: 20px;
+  }
+
+  .q-hmw-sub {
+    font-size: 13px;
+    color: rgba(255,255,255,0.45);
+    line-height: 1.6;
+  }
+
+  .q-connector {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    gap: 6px;
+  }
+
+  .q-connector-line {
+    flex: 1;
+    width: 1px;
+    background: linear-gradient(to bottom, transparent, rgba(161,0,255,0.4), transparent);
+  }
+
+  .q-connector-arrow {
+    font-size: 22px;
+    color: rgba(161,0,255,0.70);
+    line-height: 1;
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+  }
+
+  /* ── SLIDE 2 — ANSWER ── */
+  .ans-layout {
+    display: grid;
+    grid-template-columns: 1fr 48px 1fr;
+    gap: 0;
+    flex: 1;
+    align-items: stretch;
+    margin-bottom: 0;
+  }
+
+  .ans-side {
+    background: #161616;
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 8px;
+    padding: 36px 40px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .ans-side--left  { border-top: 3px solid #A100FF; }
+  .ans-side--right { border-top: 3px solid #C966FF; }
+
+  .ans-icon {
+    font-size: 22px;
+    color: #A100FF;
+    line-height: 1;
+  }
+
+  .ans-side--right .ans-icon { color: #C966FF; }
+
+  .ans-side-label {
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: rgba(161,0,255,0.75);
+  }
+
+  .ans-side--right .ans-side-label { color: rgba(201,102,255,0.75); }
+
+  .ans-side-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: #ffffff;
+    line-height: 1.2;
+  }
+
+  .ans-list {
+    padding-left: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin: 0;
+    flex: 1;
+  }
+
+  .ans-list li {
+    font-size: 12.5px;
+    color: rgba(255,255,255,0.58);
+    line-height: 1.55;
+    list-style: disc;
+  }
+
+  .ans-list li strong { color: #ffffff; }
+
+  .ans-divider {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+
+  .ans-divider-line {
+    flex: 1;
+    width: 1px;
+    background: rgba(255,255,255,0.08);
+  }
+
+  .ans-divider-label {
+    font-size: 18px;
+    font-weight: 700;
+    color: rgba(161,0,255,0.60);
+  }
+
+  .ans-footer {
+    margin-top: 18px;
+    padding: 14px 20px;
+    background: rgba(161,0,255,0.07);
+    border: 1px solid rgba(161,0,255,0.25);
+    border-radius: 6px;
+    font-size: 12px;
+    color: rgba(255,255,255,0.50);
+    line-height: 1.6;
+    text-align: center;
+  }
+
+  .ans-footer strong { color: #C966FF; }
+
+  /* ── SLIDE 4 — FEATURES ── */
+  .feat-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    flex: 1;
+  }
+
+  .feat-bar-list { display: flex; flex-direction: column; gap: 11px; margin-top: 4px; }
+  .feat-bar-row { display: flex; flex-direction: column; gap: 5px; }
+  .feat-label-row { display: flex; justify-content: space-between; align-items: baseline; }
+  .feat-name { font-size: 12px; color: rgba(255,255,255,0.85); }
+  .feat-count { font-size: 11px; color: rgba(255,255,255,0.30); }
+  .feat-bg { height: 4px; background: rgba(255,255,255,0.07); border-radius: 2px; overflow: hidden; }
+  .feat-fill { height: 100%; border-radius: 2px; background: linear-gradient(90deg, #A100FF, #C966FF); }
+
+  .top10-table { width: 100%; border-collapse: collapse; }
+  .top10-table th {
+    font-size: 10px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+    color: rgba(255,255,255,0.28); text-align: left; padding: 0 8px 10px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.07);
+  }
+  .top10-table td {
+    padding: 7px 8px 7px 0;
+    font-size: 11.5px;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    vertical-align: middle;
+  }
+  .top10-table td:first-child { color: rgba(255,255,255,0.30); font-size: 10px; }
+  .cust-id { font-weight: 600; color: #ffffff; font-size: 12px; }
+
+  .prob-chip {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 3px;
+    font-size: 11px;
+    font-weight: 700;
+    background: rgba(161,0,255,0.20);
+    color: #C966FF;
+  }
+
+  .feat-tag {
+    display: inline-block;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 10px;
+    margin-right: 3px;
+    white-space: nowrap;
+  }
+  .feat-tag          { background: rgba(161,0,255,0.20); color: #C966FF; }
+  .feat-tag.secondary{ background: rgba(161,0,255,0.10); color: rgba(201,102,255,0.75); }
+  .feat-tag.tertiary { background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.45); }
+
+  /* source badge on feature bars */
+  .src-badge {
+    font-size: 9px; font-weight: 700; letter-spacing: 0.06em;
+    text-transform: uppercase; padding: 1px 5px; border-radius: 3px;
+    background: rgba(161,0,255,0.15); color: rgba(201,102,255,0.8);
+    margin-left: 6px; vertical-align: middle;
+  }
+
+  /* hoverable feature row */
+  .has-tip { cursor: default; border-radius: 4px; padding: 3px 4px; margin: -3px -4px; transition: background 0.15s; }
+  .has-tip:hover { background: rgba(161,0,255,0.08); }
+
+  /* full feature overview */
+  .feat-overview {
+    overflow-y: auto; flex: 1;
+    display: flex; flex-direction: column; gap: 5px;
+    scrollbar-width: thin; scrollbar-color: rgba(161,0,255,0.3) transparent;
+  }
+  .fov-group {
+    display: flex; align-items: baseline; gap: 8px;
+    font-size: 11px; line-height: 1.45;
+    padding: 4px 0; border-bottom: 1px solid rgba(255,255,255,0.04);
+  }
+  .fov-label {
+    min-width: 130px; font-weight: 700; color: rgba(255,255,255,0.70); flex-shrink: 0;
+  }
+  .fov-src {
+    min-width: 90px; font-size: 9px; font-weight: 700; letter-spacing: 0.06em;
+    text-transform: uppercase; color: rgba(161,0,255,0.75); flex-shrink: 0;
+  }
+  .fov-items { color: rgba(255,255,255,0.38); font-size: 10.5px; }
+</style>
+</head>
+<body>
+
+<div class="deck">
+
+  <!-- ═══════════════════════════════════════════════
+       SLIDE 1 — QUESTION
+  ════════════════════════════════════════════════ -->
+  <div class="slide active" id="slide-1">
+    <div class="label">The Question</div>
+    <div class="tagline">Five complications converge on <em>one central challenge</em></div>
+
+    <div class="q-layout">
+
+      <!-- LEFT: complication bubbles -->
+      <div class="q-bubbles">
+        <div class="q-bubble">
+          <div class="q-bubble-tag">Capacity</div>
+          <div class="q-bubble-text">15,000 alerts/month. 45 analysts. Capacity for ~50 deep investigations. The math doesn't work.</div>
+        </div>
+        <div class="q-bubble">
+          <div class="q-bubble-tag">Signal quality</div>
+          <div class="q-bubble-text">97% false positive rate. Static rules can't tell a cash business from a structuring scheme.</div>
+        </div>
+        <div class="q-bubble">
+          <div class="q-bubble-tag">Regulatory pressure</div>
+          <div class="q-bubble-text">FSA review Q3 2025. Post-Danske Bank, explainable risk-based monitoring is mandatory.</div>
+        </div>
+        <div class="q-bubble">
+          <div class="q-bubble-tag">Blind spots</div>
+          <div class="q-bubble-text">Rules evaluate transactions in isolation — no behavioural history, no patterns over time.</div>
+        </div>
+        <div class="q-bubble">
+          <div class="q-bubble-tag">Cost of misses</div>
+          <div class="q-bubble-text">Under 6AMLD, the bank is liable for missed SAR filings — not the individual analyst.</div>
+        </div>
+      </div>
+
+      <!-- CONNECTOR -->
+      <div class="q-connector">
+        <div class="q-connector-line"></div>
+        <div class="q-connector-arrow">⟹</div>
+        <div class="q-connector-line"></div>
+      </div>
+
+      <!-- RIGHT: core HMW -->
+      <div class="q-hmw-wrap">
+        <div class="q-hmw">
+          <div class="q-hmw-label">Core question</div>
+          <div class="q-hmw-text">How might we turn 15,000 noise alerts into 50 high-confidence investigations?</div>
+          <div class="q-hmw-sub">Reducing analyst burden while catching what matters — and explaining every decision to the FSA.</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════════
+       SLIDE 2 — ANSWER
+  ════════════════════════════════════════════════ -->
+  <div class="slide" id="slide-2">
+    <div class="label">Our Answer</div>
+    <div class="tagline">Our edge: a system that works for <em>both the model and the analyst</em></div>
+
+    <div class="ans-layout">
+
+      <div class="ans-side ans-side--left">
+        <div class="ans-icon">⬡</div>
+        <div class="ans-side-label">Better model</div>
+        <div class="ans-side-title">Rank risk, don't just flag it</div>
+        <ul class="ans-list">
+          <li>64 behavioural features built from raw transactions — velocity, structuring, counterparty networks, geographic spread</li>
+          <li>XGBoost customer-level scoring with AUC-ROC 0.89 vs. 0.73 rule-based baseline</li>
+          <li>Prevalence-calibrated threshold: flags only the top ~4% of customers, matching analyst capacity</li>
+          <li>Per-customer feature contributions — every score has a receipt, not just a number</li>
+        </ul>
+      </div>
+
+      <div class="ans-divider">
+        <div class="ans-divider-line"></div>
+        <div class="ans-divider-label">+</div>
+        <div class="ans-divider-line"></div>
+      </div>
+
+      <div class="ans-side ans-side--right">
+        <div class="ans-icon">⬡</div>
+        <div class="ans-side-label">Better analysts</div>
+        <div class="ans-side-title">Prevent overwork, enable focus</div>
+        <ul class="ans-list">
+          <li>Prioritised alert queue: analysts see the highest-risk customers first — no more random triage</li>
+          <li>Customer investigation view: full behavioural profile, top drivers, and transaction history in one screen</li>
+          <li>SHAP-equivalent explanations satisfy FSA auditability — every flag is defensible in writing</li>
+          <li>Capacity-aligned threshold calibration means the queue is always within the team's reach</li>
+        </ul>
+      </div>
+
+    </div>
+
+    <div class="ans-footer">
+      Our unique edge is not the model alone — it is the balance between <strong>technical performance</strong> and <strong>analyst wellbeing and stakeholder communication</strong>. Explainability is not a feature; it is the bridge between ML and compliance.
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════════
+       SLIDE 3 — MODELS
+  ════════════════════════════════════════════════ -->
+  <div class="slide" id="slide-3">
+    <div class="label">Modelling</div>
+    <div class="tagline">XGBoost with engineered features delivers an <em>AUC-ROC of 0.89</em> — 22% above the rule-based baseline</div>
+
+    <div class="model-grid">
+
+      <!-- LEFT: model cards -->
+      <div class="panel">
+        <div class="panel-title">Four models evaluated</div>
+        <div class="model-cards">
+          <div class="model-card xgb winner">
+            <div class="model-name">XGBoost <span class="badge">Selected</span></div>
+            <div class="model-why"><ul>
+              <li>Best val AUC-ROC <strong>and</strong> best PR-AUC — wins on both metrics</li>
+              <li>Smallest train–val gap (+0.11) — most generalisable</li>
+              <li>Native per-customer explanations satisfy FSA auditability</li>
+            </ul></div>
+          </div>
+          <div class="model-card dropped rf">
+            <div class="model-name">Random Forest <span style="color:rgba(255,255,255,0.28);font-weight:400;font-size:10px;letter-spacing:0.05em;">— dropped</span></div>
+            <div class="model-why"><ul>
+              <li>Similar AUC to LR/GB, no meaningful gain over XGBoost</li>
+              <li>Weaker PR-AUC — ranks the 9 val positives less precisely</li>
+            </ul></div>
+          </div>
+          <div class="model-card dropped lr">
+            <div class="model-name">Logistic Regression <span style="color:rgba(255,255,255,0.28);font-weight:400;font-size:10px;letter-spacing:0.05em;">— dropped</span></div>
+            <div class="model-why"><ul>
+              <li>Lowest AUC-ROC — linear model misses feature interactions</li>
+              <li>Retained as interpretability benchmark only</li>
+            </ul></div>
+          </div>
+          <div class="model-card dropped gb">
+            <div class="model-name">Gradient Boosting <span style="color:rgba(255,255,255,0.28);font-weight:400;font-size:10px;letter-spacing:0.05em;">— dropped</span></div>
+            <div class="model-why"><ul>
+              <li>Lowest PR-AUC (0.37) — poor precision on suspicious customers</li>
+              <li>No native imbalance parameter; sample weighting less effective</li>
+            </ul></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT: results + checks -->
+      <div class="results-panel">
+
+        <div class="panel">
+          <div class="panel-title">Validation results (200 held-out customers, 9 suspicious)</div>
+          <table class="results-table">
+            <thead>
+              <tr>
+                <th>Model</th>
+                <th>AUC-ROC</th>
+                <th style="min-width:160px"></th>
+                <th>PR-AUC</th>
+                <th>Train gap</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="winner">
+                <td>XGBoost ★</td>
+                <td><span class="auc-val" style="color:#C966FF">0.889</span></td>
+                <td><div class="auc-bar-bg"><div class="auc-bar" style="width:88.9%;background:#A100FF"></div></div></td>
+                <td style="color:#C966FF">0.556</td>
+                <td style="color:rgba(255,255,255,0.35)">+0.11</td>
+              </tr>
+              <tr>
+                <td>Random Forest</td>
+                <td><span class="auc-val" style="color:rgba(255,255,255,0.65)">0.849</span></td>
+                <td><div class="auc-bar-bg"><div class="auc-bar" style="width:84.9%;background:rgba(161,0,255,0.45)"></div></div></td>
+                <td style="color:rgba(255,255,255,0.45)">0.407</td>
+                <td style="color:rgba(255,255,255,0.35)">+0.15</td>
+              </tr>
+              <tr>
+                <td>Logistic Regression</td>
+                <td><span class="auc-val" style="color:rgba(255,255,255,0.65)">0.846</span></td>
+                <td><div class="auc-bar-bg"><div class="auc-bar" style="width:84.6%;background:rgba(161,0,255,0.35)"></div></div></td>
+                <td style="color:rgba(255,255,255,0.45)">0.508</td>
+                <td style="color:rgba(255,255,255,0.35)">+0.15</td>
+              </tr>
+              <tr>
+                <td>Gradient Boosting</td>
+                <td><span class="auc-val" style="color:rgba(255,255,255,0.65)">0.845</span></td>
+                <td><div class="auc-bar-bg"><div class="auc-bar" style="width:84.5%;background:rgba(161,0,255,0.25)"></div></div></td>
+                <td style="color:rgba(255,255,255,0.45)">0.373</td>
+                <td style="color:rgba(255,255,255,0.35)">+0.16</td>
+              </tr>
+              <tr class="baseline-row">
+                <td>── Baseline (18 features)</td>
+                <td colspan="2" style="color:rgba(255,255,255,0.25); font-size:11px;">XGB 0.73 &nbsp;·&nbsp; RF 0.73 &nbsp;·&nbsp; GB 0.71 &nbsp;·&nbsp; LR 0.68</td>
+                <td style="color:rgba(255,255,255,0.25)">—</td>
+                <td style="color:rgba(255,255,255,0.25)">—</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="overfit-row">
+          <div class="check-item">
+            <div class="check-title">Class imbalance</div>
+            <div class="check-body"><ul>
+              <li>5% suspicious rate (21 of 500 train customers)</li>
+              <li>XGBoost: <strong>scale_pos_weight = 22</strong></li>
+              <li>LR: <strong>class_weight = 'balanced'</strong></li>
+              <li>RF: <strong>balanced_subsample</strong> per bootstrap</li>
+            </ul></div>
+          </div>
+          <div class="check-item">
+            <div class="check-title">Overfitting checks</div>
+            <div class="check-body"><ul>
+              <li>Train–val AUC gap reported for all models</li>
+              <li><strong>5-fold stratified CV</strong> on training split</li>
+              <li>XGBoost: <strong>early stopping</strong> on val AUC</li>
+              <li>Tree depth capped at 3 across all tree models</li>
+            </ul></div>
+          </div>
+          <div class="check-item">
+            <div class="check-title">Explainability</div>
+            <div class="check-body"><ul>
+              <li>Per-customer top-3 features via XGBoost <strong>feature contributions</strong></li>
+              <li>Mathematically equivalent to SHAP — computed natively</li>
+              <li>Each alert has its own driver breakdown</li>
+              <li>Satisfies FSA auditability requirements</li>
+            </ul></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════════
+       SLIDE 4 — FEATURES & TOP 10
+  ════════════════════════════════════════════════ -->
+  <div class="slide" id="slide-4">
+    <div class="label">Feature Intelligence</div>
+    <div class="tagline">Three behavioural signals drive <em>94% of alerts</em> — international wire exposure, volume volatility, and declined transactions</div>
+
+    <div class="feat-grid">
+
+      <!-- LEFT: feature importance + full overview -->
+      <div class="panel" style="display:flex;flex-direction:column;overflow:hidden;">
+        <div class="panel-title">Top features by alert frequency — hover for detail &nbsp;·&nbsp; XGBoost contributions, all 1,200 customers</div>
+        <div class="feat-bar-list">
+
+          <div class="feat-bar-row has-tip" data-tip="Share of transactions that are international wires. Only 3.1% of all transactions but highest-risk type — direct cross-border exposure with limited auditability." data-src="transactions.csv · Group L">
+            <div class="feat-label-row">
+              <span class="feat-name">International wire share <span class="src-badge">transactions</span></span>
+              <span class="feat-count">1,134</span>
+            </div>
+            <div class="feat-bg"><div class="feat-fill" style="width:100%"></div></div>
+          </div>
+
+          <div class="feat-bar-row has-tip" data-tip="Coefficient of variation of monthly transaction volumes. Legitimate customers have stable flows (salary, rent, bills). Suspicious customers show sudden spikes then silence." data-src="transactions.csv · Group I">
+            <div class="feat-label-row">
+              <span class="feat-name">Monthly volume volatility (CV) <span class="src-badge">transactions</span></span>
+              <span class="feat-count">962</span>
+            </div>
+            <div class="feat-bg"><div class="feat-fill" style="width:84.8%"></div></div>
+          </div>
+
+          <div class="feat-bar-row has-tip" data-tip="Declined transactions ÷ total attempted. A high ratio indicates probing behaviour — testing which amounts or channels get through before committing funds." data-src="transactions.csv · Group C">
+            <div class="feat-label-row">
+              <span class="feat-name">Declined transaction ratio <span class="src-badge">transactions</span></span>
+              <span class="feat-count">902</span>
+            </div>
+            <div class="feat-bg"><div class="feat-fill" style="width:79.5%"></div></div>
+          </div>
+
+          <div class="feat-bar-row has-tip" data-tip="Share of transactions that are direct debits. Part of the transaction type mix — suspicious vs clean customers show different type distributions. Low direct debit share can indicate unusual payment patterns." data-src="transactions.csv · Group L">
+            <div class="feat-label-row">
+              <span class="feat-name">Direct debit share <span class="src-badge">transactions</span></span>
+              <span class="feat-count">155</span>
+            </div>
+            <div class="feat-bg"><div class="feat-fill" style="width:13.7%"></div></div>
+          </div>
+
+          <div class="feat-bar-row has-tip" data-tip="Total account inflows ÷ total outflows. A high ratio suggests layering — funds entering but not exiting through normal economic channels, accumulating inconsistently with stated income." data-src="accounts.csv · Group H">
+            <div class="feat-label-row">
+              <span class="feat-name">Inflow / outflow ratio <span class="src-badge">accounts</span></span>
+              <span class="feat-count">126</span>
+            </div>
+            <div class="feat-bg"><div class="feat-fill" style="width:11.1%"></div></div>
+          </div>
+
+          <div class="feat-bar-row has-tip" data-tip="Maximum share any single counterparty represents of a customer's total transactions. Extremes are suspicious: very high concentration suggests layering to a shell company; very high diversity suggests placement." data-src="transactions.csv · Group F">
+            <div class="feat-label-row">
+              <span class="feat-name">Max counterparty concentration <span class="src-badge">transactions</span></span>
+              <span class="feat-count">114</span>
+            </div>
+            <div class="feat-bg"><div class="feat-fill" style="width:10.1%"></div></div>
+          </div>
+
+          <div class="feat-bar-row has-tip" data-tip="Count of unique counterparties transacted with. Legitimate customers show a stable set. Suspicious show extremes — many (dispersing funds widely) or very few (funnelling to one entity)." data-src="transactions.csv · Group F">
+            <div class="feat-label-row">
+              <span class="feat-name">Unique counterparties <span class="src-badge">transactions</span></span>
+              <span class="feat-count">69</span>
+            </div>
+            <div class="feat-bg"><div class="feat-fill" style="width:6.1%"></div></div>
+          </div>
+
+        </div>
+
+        <!-- full feature overview — hidden until toggled -->
+        <div style="margin-top:14px;padding-top:12px;border-top:1px solid rgba(255,255,255,0.06);">
+          <button id="fov-toggle" onclick="toggleFov()" style="background:none;border:none;cursor:pointer;display:flex;align-items:center;gap:8px;padding:0;">
+            <span style="font-size:10px;font-weight:700;letter-spacing:0.10em;text-transform:uppercase;color:rgba(161,0,255,0.8);">All 64 features — 12 groups</span>
+            <span id="fov-arrow" style="font-size:11px;color:rgba(161,0,255,0.6);transition:transform 0.2s;">▼</span>
+          </button>
+          <div id="fov-body" style="display:none;margin-top:10px;max-height:200px;overflow-y:auto;scrollbar-width:thin;scrollbar-color:rgba(161,0,255,0.3) transparent;">
+            <div class="feat-overview">
+              <div class="fov-group"><span class="fov-label">Identity &amp; KYC</span><span class="fov-src">customers</span><span class="fov-items">PEP status · Sanctions flag · KYC medium/high · Nationality mismatch · Customer type · Num accounts · Relationship days</span></div>
+              <div class="fov-group"><span class="fov-label">Income consistency</span><span class="fov-src">customers · baselines</span><span class="fov-items">Income / volume ratio · Missing income flag</span></div>
+              <div class="fov-group"><span class="fov-label">Velocity &amp; volume</span><span class="fov-src">transactions</span><span class="fov-items">Total count · Total volume · Avg amount · Max single txn · Std &amp; CV of amounts · Declined count &amp; ratio</span></div>
+              <div class="fov-group"><span class="fov-label">Structuring</span><span class="fov-src">transactions</span><span class="fov-items">Cash txn count · Structuring count (13–15k DKK band) · Cash volume · Structuring ratio</span></div>
+              <div class="fov-group"><span class="fov-label">Cash intensity</span><span class="fov-src">transactions</span><span class="fov-items">% cash txns · % cash volume · % cash deposits of all cash</span></div>
+              <div class="fov-group"><span class="fov-label">Counterparty network</span><span class="fov-src">transactions</span><span class="fov-items">Unique counterparties · % recurring · Max counterparty share</span></div>
+              <div class="fov-group"><span class="fov-label">Geographic &amp; country risk</span><span class="fov-src">transactions · country_risk</span><span class="fov-items">% intl txns · Unique countries · % high-risk country · High-risk count · Min CPI · Nationality risk flags</span></div>
+              <div class="fov-group"><span class="fov-label">Account structure</span><span class="fov-src">accounts</span><span class="fov-items">Num dormant accounts · % dormant · Foreign currency flag · Inflow/outflow ratio · Balance-to-inflow</span></div>
+              <div class="fov-group"><span class="fov-label">Temporal patterns</span><span class="fov-src">transactions</span><span class="fov-items">Monthly volume CV · Monthly count CV · Peak 7-day txn count · % off-hours (23:00–05:00)</span></div>
+              <div class="fov-group"><span class="fov-label">Baseline pass-through</span><span class="fov-src">baselines</span><span class="fov-items">Avg monthly count &amp; volume · Max single txn 6m · % intl &amp; cash · Unique counterparties 6m · Time entropy · Geographic spread · Dormancy count</span></div>
+              <div class="fov-group"><span class="fov-label">Baseline deviation</span><span class="fov-src">transactions · baselines</span><span class="fov-items">12m volume vs 6m baseline · 12m count vs baseline · 12m max vs baseline max</span></div>
+              <div class="fov-group"><span class="fov-label">Transaction type mix</span><span class="fov-src">transactions</span><span class="fov-items">Shares: card payment · cash deposit · cash withdrawal · direct debit · intl wire · standing order · transfer</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT: top 10 customers -->
+      <div class="panel" style="align-self:flex-start;">
+        <div class="panel-title">Top 10 highest-risk customers (scored across all 1,200)</div>
+        <table class="top10-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Customer</th>
+              <th>Score</th>
+              <th>Primary drivers</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>1</td><td class="cust-id">CUST_0117</td>
+              <td><span class="prob-chip">0.988</span></td>
+              <td><span class="feat-tag">Intl wire</span><span class="feat-tag secondary">Vol CV</span><span class="feat-tag tertiary">Declined</span></td>
+            </tr>
+            <tr>
+              <td>2</td><td class="cust-id">CUST_0511</td>
+              <td><span class="prob-chip">0.988</span></td>
+              <td><span class="feat-tag">Intl wire</span><span class="feat-tag secondary">Vol CV</span><span class="feat-tag tertiary">In/out ratio</span></td>
+            </tr>
+            <tr>
+              <td>3</td><td class="cust-id">CUST_0756</td>
+              <td><span class="prob-chip">0.982</span></td>
+              <td><span class="feat-tag">Declined</span><span class="feat-tag secondary">Vol CV</span><span class="feat-tag tertiary">In/out ratio</span></td>
+            </tr>
+            <tr>
+              <td>4</td><td class="cust-id">CUST_0553</td>
+              <td><span class="prob-chip">0.981</span></td>
+              <td><span class="feat-tag">Intl wire</span><span class="feat-tag secondary">Vol CV</span><span class="feat-tag tertiary">Declined</span></td>
+            </tr>
+            <tr>
+              <td>5</td><td class="cust-id">CUST_0776</td>
+              <td><span class="prob-chip">0.978</span></td>
+              <td><span class="feat-tag">Intl wire</span><span class="feat-tag secondary">Vol CV</span><span class="feat-tag tertiary">Declined</span></td>
+            </tr>
+            <tr>
+              <td>6</td><td class="cust-id">CUST_0983</td>
+              <td><span class="prob-chip">0.978</span></td>
+              <td><span class="feat-tag">Intl wire</span><span class="feat-tag secondary">Vol CV</span><span class="feat-tag tertiary">Declined</span></td>
+            </tr>
+            <tr>
+              <td>7</td><td class="cust-id">CUST_0644</td>
+              <td><span class="prob-chip">0.976</span></td>
+              <td><span class="feat-tag">Intl wire</span><span class="feat-tag secondary">Vol CV</span><span class="feat-tag tertiary">Declined</span></td>
+            </tr>
+            <tr>
+              <td>8</td><td class="cust-id">CUST_1161</td>
+              <td><span class="prob-chip">0.976</span></td>
+              <td><span class="feat-tag">Declined</span><span class="feat-tag secondary">Vol CV</span><span class="feat-tag tertiary">Intl wire</span></td>
+            </tr>
+            <tr>
+              <td>9</td><td class="cust-id">CUST_0778</td>
+              <td><span class="prob-chip">0.972</span></td>
+              <td><span class="feat-tag">Intl wire</span><span class="feat-tag secondary">Vol CV</span><span class="feat-tag tertiary">Counterparties</span></td>
+            </tr>
+            <tr>
+              <td>10</td><td class="cust-id">CUST_0748</td>
+              <td><span class="prob-chip">0.970</span></td>
+              <td><span class="feat-tag">Intl wire</span><span class="feat-tag secondary">Counterparties</span><span class="feat-tag tertiary">Declined</span></td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div style="margin-top:14px;padding-top:14px;border-top:1px solid rgba(255,255,255,0.06);">
+          <div style="font-size:11px;color:rgba(255,255,255,0.35);line-height:1.6;">
+            Per-customer XGBoost feature contributions — drivers reflect what pushed <em>that</em> customer's score, not global model weights.
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- floating tooltip -->
+    <div id="tip" style="display:none;position:fixed;z-index:999;max-width:320px;background:#1a1a1a;border:1px solid rgba(161,0,255,0.5);border-radius:6px;padding:12px 14px;pointer-events:none;">
+      <div id="tip-src" style="font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#A100FF;margin-bottom:6px;"></div>
+      <div id="tip-body" style="font-size:12px;color:rgba(255,255,255,0.75);line-height:1.55;"></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- NAV -->
+<div class="nav">
+  <button onclick="prevSlide()">← Prev</button>
+  <span class="slide-counter" id="counter">1 / 4</span>
+  <button onclick="nextSlide()">Next →</button>
+</div>
+
+<script>
+  const slides = document.querySelectorAll('.slide');
+  let current = 0;
+
+  function show(n) {
+    slides[current].classList.remove('active');
+    current = (n + slides.length) % slides.length;
+    slides[current].classList.add('active');
+    document.getElementById('counter').textContent = `${current + 1} / ${slides.length}`;
+  }
+
+  function nextSlide() { show(current + 1); }
+  function prevSlide()  { show(current - 1); }
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextSlide();
+    if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')   prevSlide();
+  });
+
+  // Feature overview toggle
+  function toggleFov() {
+    const body  = document.getElementById('fov-body');
+    const arrow = document.getElementById('fov-arrow');
+    const open  = body.style.display !== 'none';
+    body.style.display    = open ? 'none' : 'block';
+    arrow.style.transform = open ? '' : 'rotate(180deg)';
+  }
+
+  // Tooltip logic
+  const tip     = document.getElementById('tip');
+  const tipSrc  = document.getElementById('tip-src');
+  const tipBody = document.getElementById('tip-body');
+
+  document.querySelectorAll('.has-tip').forEach(el => {
+    el.addEventListener('mouseenter', e => {
+      tipSrc.textContent  = el.dataset.src;
+      tipBody.textContent = el.dataset.tip;
+      tip.style.display   = 'block';
+    });
+    el.addEventListener('mousemove', e => {
+      const x = e.clientX + 16, y = e.clientY + 16;
+      const tw = tip.offsetWidth, th = tip.offsetHeight;
+      tip.style.left = (x + tw > window.innerWidth  ? e.clientX - tw - 8 : x) + 'px';
+      tip.style.top  = (y + th > window.innerHeight ? e.clientY - th - 8 : y) + 'px';
+    });
+    el.addEventListener('mouseleave', () => { tip.style.display = 'none'; });
+  });
+</script>
+</body>
+</html>
