@@ -1519,6 +1519,11 @@
   document.addEventListener('DOMContentLoaded', () => {
     setTheme('dark');
     document.getElementById('today-date').textContent = new Date().toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'long',year:'numeric'});
+    const effArc = document.getElementById('eff-arc');
+    const effPctText = document.getElementById('eff-pct').textContent;
+    const effPct = parseFloat(effPctText) / 100;
+    const circumference = 251.2;
+    requestAnimationFrame(() => { effArc.style.strokeDashoffset = circumference * (1 - effPct); });
     showAlertQueue();
     loadInvestigationCase();
     document.addEventListener('keydown', e => { if (e.key === 'Escape') closeSubmitModalDirect(); });
