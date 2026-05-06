@@ -1,0 +1,7 @@
+{
+  "val_auc_roc": 0.8857,
+  "val_pr_auc": 0.4723,
+  "top50_flag_rate": 0.16,
+  "n_val": 200,
+  "n_suspicious": 9
+}
