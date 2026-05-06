@@ -508,7 +508,7 @@
   <div class="nav-sep"></div>
   <span class="nav-item active" id="nav-alert-queue" onclick="showAlertQueue()">Alert queue</span>
   <span class="nav-sep"></span>
-  <span class="nav-item" id="nav-investigation" onclick="showInvestigation()">Investigation</span>
+  <span class="nav-item" id="nav-investigation" onclick="showInvestigation(true)">Investigation</span>
   <span class="nav-sep"></span>
   <span class="nav-item" id="nav-rulings" onclick="showSubmittedRulings()">Submitted rulings</span>
   <div class="nav-right">
@@ -1163,7 +1163,7 @@
 </div>
 
 <script>
-  const CASES = [{"id":"ALT_18768","customer":"CUST_1162","rule":"Large Cash","date":"2024-12-26","risk":"high","status":"cleared","progress":39,"analyst":"Sofia L.","time":17,"customer_type":"corporate","nationality":"DK"},{"id":"ALT_18769","customer":"CUST_1162","rule":"Geographic Risk","date":"2024-12-25","risk":"high","status":"escalated","progress":86,"analyst":"Marcus T.","time":38,"customer_type":"corporate","nationality":"DK"},{"id":"ALT_19468","customer":"CUST_1199","rule":"Rapid Movement","date":"2024-12-19","risk":"low","status":"cleared","progress":91,"analyst":"Priya N.","time":40,"customer_type":"personal","nationality":"DK"},{"id":"ALT_18767","customer":"CUST_1162","rule":"Threshold","date":"2024-12-19","risk":"high","status":"escalated","progress":80,"analyst":"James B.","time":35,"customer_type":"corporate","nationality":"DK"},{"id":"ALT_18770","customer":"CUST_1162","rule":"Rapid Movement","date":"2024-12-18","risk":"high","status":"cleared","progress":34,"analyst":"Anika R.","time":15,"customer_type":"corporate","nationality":"DK"},{"id":"ALT_18766","customer":"CUST_1162","rule":"Large Cash","date":"2024-11-22","risk":"high","status":"escalated","progress":73,"analyst":"Tom H.","time":32,"customer_type":"corporate","nationality":"DK"},{"id":"ALT_19466","customer":"CUST_1199","rule":"Rapid Movement","date":"2024-11-22","risk":"low","status":"cleared","progress":95,"analyst":"Sofia L.","time":42,"customer_type":"personal","nationality":"DK"},{"id":"ALT_19465","customer":"CUST_1199","rule":"Threshold","date":"2024-11-22","risk":"low","status":"cleared","progress":84,"analyst":"Marcus T.","time":37,"customer_type":"personal","nationality":"DK"},{"id":"ALT_18765","customer":"CUST_1162","rule":"Rapid Movement","date":"2024-11-20","risk":"high","status":"cleared","progress":52,"analyst":"Priya N.","time":23,"customer_type":"corporate","nationality":"DK"},{"id":"ALT_19467","customer":"CUST_1199","rule":"Large Cash","date":"2024-11-20","risk":"low","status":"SAR_filed","progress":93,"analyst":"James B.","time":41,"customer_type":"personal","nationality":"DK"},{"id":"ALT_18764","customer":"CUST_1162","rule":"Structuring","date":"2024-11-17","risk":"high","status":"SAR_filed","progress":100,"analyst":"Anika R.","time":44,"customer_type":"corporate","nationality":"DK"},{"id":"ALT_19464","customer":"CUST_1199","rule":"Geographic Risk","date":"2024-11-17","risk":"low","status":"SAR_filed","progress":73,"analyst":"Tom H.","time":32,"customer_type":"personal","nationality":"DK"},{"id":"ALT_18763","customer":"CUST_1162","rule":"Geographic Risk","date":"2024-10-27","risk":"high","status":"escalated","progress":80,"analyst":"Sofia L.","time":35,"customer_type":"corporate","nationality":"DK"},{"id":"ALT_19463","customer":"CUST_1199","rule":"Threshold","date":"2024-10-27","risk":"low","status":"cleared","progress":68,"analyst":"Marcus T.","time":30,"customer_type":"personal","nationality":"DK"},{"id":"ALT_18762","customer":"CUST_1162","rule":"Threshold","date":"2024-10-16","risk":"high","status":"SAR_filed","progress":100,"analyst":"Priya N.","time":44,"customer_type":"corporate","nationality":"DK"},{"id":"ALT_19461","customer":"CUST_1199","rule":"Rapid Movement","date":"2024-10-12","risk":"low","status":"cleared","progress":52,"analyst":"James B.","time":23,"customer_type":"personal","nationality":"DK"},{"id":"ALT_18761","customer":"CUST_1162","rule":"Rapid Movement","date":"2024-09-28","risk":"high","status":"cleared","progress":61,"analyst":"Anika R.","time":27,"customer_type":"corporate","nationality":"DK"},{"id":"ALT_19459","customer":"CUST_1199","rule":"Large Cash","date":"2024-09-17","risk":"low","status":"escalated","progress":57,"analyst":"Tom H.","time":25,"customer_type":"personal","nationality":"DK"},{"id":"ALT_16842","customer":"CUST_0936","rule":"Threshold","date":"2024-12-30","risk":"moderate","status":"cleared","progress":77,"analyst":"Sofia L.","time":34,"customer_type":"sole_trader","nationality":"DK"},{"id":"ALT_16843","customer":"CUST_0936","rule":"Rapid Movement","date":"2024-12-28","risk":"moderate","status":"escalated","progress":66,"analyst":"Marcus T.","time":29,"customer_type":"sole_trader","nationality":"DK"},{"id":"ALT_16844","customer":"CUST_0936","rule":"Geographic Risk","date":"2024-12-22","risk":"moderate","status":"SAR_filed","progress":100,"analyst":"Priya N.","time":44,"customer_type":"sole_trader","nationality":"DK"},{"id":"ALT_16845","customer":"CUST_0937","rule":"Structuring","date":"2024-12-20","risk":"moderate","status":"escalated","progress":75,"analyst":"James B.","time":33,"customer_type":"SME","nationality":"SE"},{"id":"ALT_16846","customer":"CUST_0937","rule":"Dormant Activation","date":"2024-12-15","risk":"moderate","status":"cleared","progress":59,"analyst":"Anika R.","time":26,"customer_type":"SME","nationality":"SE"},{"id":"ALT_16847","customer":"CUST_0938","rule":"Large Cash","date":"2024-12-10","risk":"moderate","status":"SAR_filed","progress":100,"analyst":"Tom H.","time":44,"customer_type":"corporate","nationality":"NO"},{"id":"ALT_16848","customer":"CUST_0939","rule":"Threshold","date":"2024-12-05","risk":"moderate","status":"cleared","progress":70,"analyst":"Sofia L.","time":31,"customer_type":"personal","nationality":"DK"},{"id":"ALT_16849","customer":"CUST_0940","rule":"Rapid Movement","date":"2024-11-30","risk":"moderate","status":"escalated","progress":82,"analyst":"Marcus T.","time":36,"customer_type":"sole_trader","nationality":"FI"},{"id":"ALT_19460","customer":"CUST_1199","rule":"Structuring","date":"2024-12-01","risk":"low","status":"cleared","progress":45,"analyst":"Priya N.","time":20,"customer_type":"personal","nationality":"DK"},{"id":"ALT_19462","customer":"CUST_1199","rule":"Dormant Activation","date":"2024-10-20","risk":"low","status":"cleared","progress":55,"analyst":"James B.","time":24,"customer_type":"personal","nationality":"DK"},{"id":"ALT_16850","customer":"CUST_0941","rule":"Geographic Risk","date":"2024-11-25","risk":"moderate","status":"cleared","progress":64,"analyst":"Anika R.","time":28,"customer_type":"SME","nationality":"DE"},{"id":"ALT_16851","customer":"CUST_0942","rule":"Large Cash","date":"2024-11-18","risk":"moderate","status":"SAR_filed","progress":100,"analyst":"Tom H.","time":44,"customer_type":"corporate","nationality":"DK"}];
+  const CASES = [{"id":"ALT_18768","customer":"CUST_1162","rule":"Large Cash","date":"2024-12-26","risk":"high","status":"cleared","progress":39,"analyst":"Sofia L.","time":17,"customer_type":"corporate","nationality":"DK","score":91},{"id":"ALT_18769","customer":"CUST_1162","rule":"Geographic Risk","date":"2024-12-25","risk":"high","status":"escalated","progress":86,"analyst":"Marcus T.","time":38,"customer_type":"corporate","nationality":"DK","score":87},{"id":"ALT_19468","customer":"CUST_1199","rule":"Rapid Movement","date":"2024-12-19","risk":"low","status":"cleared","progress":91,"analyst":"Priya N.","time":40,"customer_type":"personal","nationality":"DK","score":22},{"id":"ALT_18767","customer":"CUST_1162","rule":"Threshold","date":"2024-12-19","risk":"high","status":"escalated","progress":80,"analyst":"James B.","time":35,"customer_type":"corporate","nationality":"DK","score":84},{"id":"ALT_18770","customer":"CUST_1162","rule":"Rapid Movement","date":"2024-12-18","risk":"high","status":"cleared","progress":34,"analyst":"Anika R.","time":15,"customer_type":"corporate","nationality":"DK","score":79},{"id":"ALT_18766","customer":"CUST_1162","rule":"Large Cash","date":"2024-11-22","risk":"high","status":"escalated","progress":73,"analyst":"Tom H.","time":32,"customer_type":"corporate","nationality":"DK","score":83},{"id":"ALT_19466","customer":"CUST_1199","rule":"Rapid Movement","date":"2024-11-22","risk":"low","status":"cleared","progress":95,"analyst":"Sofia L.","time":42,"customer_type":"personal","nationality":"DK","score":18},{"id":"ALT_19465","customer":"CUST_1199","rule":"Threshold","date":"2024-11-22","risk":"low","status":"cleared","progress":84,"analyst":"Marcus T.","time":37,"customer_type":"personal","nationality":"DK","score":29},{"id":"ALT_18765","customer":"CUST_1162","rule":"Rapid Movement","date":"2024-11-20","risk":"high","status":"cleared","progress":52,"analyst":"Priya N.","time":23,"customer_type":"corporate","nationality":"DK","score":88},{"id":"ALT_19467","customer":"CUST_1199","rule":"Large Cash","date":"2024-11-20","risk":"low","status":"SAR_filed","progress":93,"analyst":"James B.","time":41,"customer_type":"personal","nationality":"DK","score":35},{"id":"ALT_18764","customer":"CUST_1162","rule":"Structuring","date":"2024-11-17","risk":"high","status":"SAR_filed","progress":100,"analyst":"Anika R.","time":44,"customer_type":"corporate","nationality":"DK","score":96},{"id":"ALT_19464","customer":"CUST_1199","rule":"Geographic Risk","date":"2024-11-17","risk":"low","status":"SAR_filed","progress":73,"analyst":"Tom H.","time":32,"customer_type":"personal","nationality":"DK","score":41},{"id":"ALT_18763","customer":"CUST_1162","rule":"Geographic Risk","date":"2024-10-27","risk":"high","status":"escalated","progress":80,"analyst":"Sofia L.","time":35,"customer_type":"corporate","nationality":"DK","score":81},{"id":"ALT_19463","customer":"CUST_1199","rule":"Threshold","date":"2024-10-27","risk":"low","status":"cleared","progress":68,"analyst":"Marcus T.","time":30,"customer_type":"personal","nationality":"DK","score":27},{"id":"ALT_18762","customer":"CUST_1162","rule":"Threshold","date":"2024-10-16","risk":"high","status":"SAR_filed","progress":100,"analyst":"Priya N.","time":44,"customer_type":"corporate","nationality":"DK","score":93},{"id":"ALT_19461","customer":"CUST_1199","rule":"Rapid Movement","date":"2024-10-12","risk":"low","status":"cleared","progress":52,"analyst":"James B.","time":23,"customer_type":"personal","nationality":"DK","score":19},{"id":"ALT_18761","customer":"CUST_1162","rule":"Rapid Movement","date":"2024-09-28","risk":"high","status":"cleared","progress":61,"analyst":"Anika R.","time":27,"customer_type":"corporate","nationality":"DK","score":77},{"id":"ALT_19459","customer":"CUST_1199","rule":"Large Cash","date":"2024-09-17","risk":"low","status":"escalated","progress":57,"analyst":"Tom H.","time":25,"customer_type":"personal","nationality":"DK","score":38},{"id":"ALT_16842","customer":"CUST_0936","rule":"Threshold","date":"2024-12-30","risk":"moderate","status":"cleared","progress":77,"analyst":"Sofia L.","time":34,"customer_type":"sole_trader","nationality":"DK","score":61},{"id":"ALT_16843","customer":"CUST_0936","rule":"Rapid Movement","date":"2024-12-28","risk":"moderate","status":"escalated","progress":66,"analyst":"Marcus T.","time":29,"customer_type":"sole_trader","nationality":"DK","score":57},{"id":"ALT_16844","customer":"CUST_0936","rule":"Geographic Risk","date":"2024-12-22","risk":"moderate","status":"SAR_filed","progress":100,"analyst":"Priya N.","time":44,"customer_type":"sole_trader","nationality":"DK","score":72},{"id":"ALT_16845","customer":"CUST_0937","rule":"Structuring","date":"2024-12-20","risk":"moderate","status":"escalated","progress":75,"analyst":"James B.","time":33,"customer_type":"SME","nationality":"SE","score":65},{"id":"ALT_16846","customer":"CUST_0937","rule":"Dormant Activation","date":"2024-12-15","risk":"moderate","status":"cleared","progress":59,"analyst":"Anika R.","time":26,"customer_type":"SME","nationality":"SE","score":53},{"id":"ALT_16847","customer":"CUST_0938","rule":"Large Cash","date":"2024-12-10","risk":"moderate","status":"SAR_filed","progress":100,"analyst":"Tom H.","time":44,"customer_type":"corporate","nationality":"NO","score":69},{"id":"ALT_16848","customer":"CUST_0939","rule":"Threshold","date":"2024-12-05","risk":"moderate","status":"cleared","progress":70,"analyst":"Sofia L.","time":31,"customer_type":"personal","nationality":"DK","score":58},{"id":"ALT_16849","customer":"CUST_0940","rule":"Rapid Movement","date":"2024-11-30","risk":"moderate","status":"escalated","progress":82,"analyst":"Marcus T.","time":36,"customer_type":"sole_trader","nationality":"FI","score":63},{"id":"ALT_19460","customer":"CUST_1199","rule":"Structuring","date":"2024-12-01","risk":"low","status":"cleared","progress":45,"analyst":"Priya N.","time":20,"customer_type":"personal","nationality":"DK","score":24},{"id":"ALT_19462","customer":"CUST_1199","rule":"Dormant Activation","date":"2024-10-20","risk":"low","status":"cleared","progress":55,"analyst":"James B.","time":24,"customer_type":"personal","nationality":"DK","score":31},{"id":"ALT_16850","customer":"CUST_0941","rule":"Geographic Risk","date":"2024-11-25","risk":"moderate","status":"cleared","progress":64,"analyst":"Anika R.","time":28,"customer_type":"SME","nationality":"DE","score":60},{"id":"ALT_16851","customer":"CUST_0942","rule":"Large Cash","date":"2024-11-18","risk":"moderate","status":"SAR_filed","progress":100,"analyst":"Tom H.","time":44,"customer_type":"corporate","nationality":"DK","score":71}];
   const riskPriority = { high: 0, moderate: 1, low: 2 };
   let activeRisk = 'all';
   let selectedRuling = 'sar';
@@ -1187,6 +1187,25 @@
     });
   }
 
+  function updateRiskSummaryCards() {
+    const low = CASES.filter(c => c.risk === 'low').length;
+    const mod = CASES.filter(c => c.risk === 'moderate').length;
+    const high = CASES.filter(c => c.risk === 'high').length;
+    const total = CASES.length;
+    const lowEl = document.getElementById('cnt-low');
+    const modEl = document.getElementById('cnt-mod');
+    const highEl = document.getElementById('cnt-high');
+    const lowPct = document.querySelector('.card-low .card-foot-val');
+    const modPct = document.querySelector('.card-mod .card-foot-val');
+    const highPct = document.querySelector('.card-high .card-foot-val');
+    if (lowEl) lowEl.textContent = low;
+    if (modEl) modEl.textContent = mod;
+    if (highEl) highEl.textContent = high;
+    if (lowPct) lowPct.textContent = total ? (low / total * 100).toFixed(1) + '%' : '0%';
+    if (modPct) modPct.textContent = total ? (mod / total * 100).toFixed(1) + '%' : '0%';
+    if (highPct) highPct.textContent = total ? (high / total * 100).toFixed(1) + '%' : '0%';
+  }
+
   function setTheme(theme) {
     document.documentElement.setAttribute('data-theme', theme);
   }
@@ -1208,8 +1227,7 @@
     tbody.innerHTML = data.map((c,i)=>{
       const rCls = {high:'pill-high',moderate:'pill-mod',low:'pill-low'}[c.risk];
       const rLbl = {high:'High Risk',moderate:'Moderate',low:'Low Risk'}[c.risk];
-      const scoreMap = {high:92, moderate:68, low:34};
-      const score = scoreMap[c.risk] || 50;
+      const score = c.score;
       return `<tr style="animation-delay:${i * .03}s; cursor:pointer;" onclick="selectInvestigationCase('${c.id}')">
         <td><div class="case-id">${c.id}</div><div class="case-cust">${c.customer} · ${c.customer_type} · ${c.nationality}</div></td>
         <td><span class="rule-chip">${c.rule}</span></td>
@@ -1246,10 +1264,12 @@
     document.getElementById('nav-investigation').classList.remove('active');
     document.getElementById('nav-rulings').classList.remove('active');
     document.title = 'NordikBank AML — Alert Queue';
+    updateRiskSummaryCards();
     renderTable();
   }
 
-  function showInvestigation() {
+  function showInvestigation(resetToFirst) {
+    if (resetToFirst) investigationIndex = 0;
     document.getElementById('alert-queue-view').style.display = 'none';
     document.getElementById('investigation-view').style.display = 'block';
     document.getElementById('rulings-view').style.display = 'none';
@@ -1394,10 +1414,9 @@
     const c = getCurrentCase();
     const riskLabel = {high:'High risk', moderate:'Moderate risk', low:'Low risk'}[c.risk];
     const badgeType = {high:'high', moderate:'med', low:'low'}[c.risk];
-    const scoreMap = {high:84, moderate:62, low:28};
-    const score = scoreMap[c.risk] || 50;
+    const score = c.score;
     document.getElementById('investigation-case-id').textContent = c.id;
-    document.getElementById('case-breadcrumb').innerHTML = `<a href="#">Alert queue</a> / <strong>${c.id}</strong>`;
+    document.getElementById('case-breadcrumb').innerHTML = `<a href="#" onclick="showAlertQueue(); return false;">Alert queue</a> / <strong>${c.id}</strong>`;
     const badge = document.getElementById('investigation-risk-badge');
     badge.className = `badge badge-${badgeType}`;
     badge.innerHTML = `<svg width="7" height="7" viewBox="0 0 8 8"><circle cx="4" cy="4" r="4" fill="${c.risk==='high'? '#E24B4A': c.risk==='moderate'? '#BA7517':'#3B6D11'}"/></svg>${riskLabel}`;
@@ -1417,7 +1436,8 @@
     document.getElementById('investigation-prior-sar').textContent = c.status === 'SAR_filed' ? '1' : '0';
     document.getElementById('investigation-score-num').textContent = score;
     document.getElementById('investigation-score-thumb').style.left = `${Math.min(94, Math.max(6, score - 5))}%`;
-    document.getElementById('investigation-score-context').innerHTML = `<strong>Risk rank</strong> ${c.risk==='high'? 'top 5%': c.risk==='moderate'? 'top 25%':'bottom 40%'} of alerts`;
+    const scorePercentile = score >= 80 ? 'top 10%' : score >= 60 ? 'top 30%' : score >= 40 ? 'mid range' : 'bottom 40%';
+    document.getElementById('investigation-score-context').innerHTML = `<strong>Risk rank</strong> ${scorePercentile} of alerts`;
     document.getElementById('investigation-score-drivers').innerHTML = `Top drivers: <strong style="color: var(--accent);">${c.rule}</strong>, <strong style="color: var(--accent);">${c.status.replace('_',' ')}</strong>, <strong style="color: var(--accent);">${c.time} min review</strong>`;
     document.getElementById('final-ruling').value = selectedRuling;
     updateSubmitModal();
@@ -1470,8 +1490,7 @@
   function updateSubmitModal() {
     const caseData = getCurrentCase();
     const finalRuling = document.getElementById('final-ruling').value;
-    const scoreMap = {high:84, moderate:62, low:28};
-    const score = scoreMap[caseData.risk] || 50;
+    const score = caseData.score;
     const aiBelievesFraud = ['high','moderate'].includes(caseData.risk);
     const aiRecommendation = aiBelievesFraud ? 'sar' : 'clear';
     const isOverruling = finalRuling !== aiRecommendation;
@@ -1524,6 +1543,7 @@
     const effPct = parseFloat(effPctText) / 100;
     const circumference = 251.2;
     requestAnimationFrame(() => { effArc.style.strokeDashoffset = circumference * (1 - effPct); });
+    updateRiskSummaryCards();
     showAlertQueue();
     loadInvestigationCase();
     document.addEventListener('keydown', e => { if (e.key === 'Escape') closeSubmitModalDirect(); });
