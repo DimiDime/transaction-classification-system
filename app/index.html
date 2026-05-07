@@ -1,0 +1,1629 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NordikBank AML — Alert Queue</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --risk-high: #E24B4A; --risk-high-bg: #FCEBEB; --risk-high-border: #F09595;
+    --risk-med: #BA7517; --risk-med-bg: #FAEEDA; --risk-med-border: #FAC775;
+    --risk-low: #3B6D11; --risk-low-bg: #EAF3DE; --risk-low-border: #C0DD97;
+    --accent: #534AB7; --accent-light: #EEEDFE; --accent-border: #AFA9EC;
+    --text: #1a1a1a; --muted: #6b6b6b;
+    --surface: #ffffff; --surface2: #f5f5f3;
+    --border: rgba(0,0,0,0.1); --border-med: rgba(0,0,0,0.18);
+    --radius-md: 8px; --radius-lg: 12px;
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+    background: #edecea;
+    color: var(--text);
+    font-size: 14px;
+    min-height: 100vh;
+  }
+
+  /* ── Top nav ── */
+  .nav {
+    background: #26215C;
+    padding: 0 24px;
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    height: 48px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .nav-logo { font-size: 15px; font-weight: 600; color: #fff; letter-spacing: -0.3px; }
+  .nav-logo span { color: #C2A3FF; }
+  .nav-sep { width: 1px; height: 20px; background: rgba(255,255,255,0.2); }
+  .nav-item { font-size: 13px; color: rgba(255,255,255,0.6); cursor: pointer; padding: 4px 0; }
+  .nav-item.active { color: #fff; border-bottom: 2px solid #C2A3FF; }
+  .nav-right { margin-left: auto; display: flex; align-items: center; gap: 12px; }
+  .nav-analyst { font-size: 12px; color: rgba(255,255,255,0.7); }
+  .nav-avatar { width: 28px; height: 28px; border-radius: 50%; background: #534AB7; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 600; color: #fff; }
+
+  /* ── Page chrome ── */
+  .page { max-width: 1160px; margin: 0 auto; padding: 20px 20px 40px; display: flex; flex-direction: column; gap: 12px; }
+
+  /* ── Top bar ── */
+  .topbar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .breadcrumb { font-size: 12px; color: var(--muted); }
+  .breadcrumb a { color: var(--accent); text-decoration: none; }
+  .breadcrumb a:hover { text-decoration: underline; }
+  .badge { display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; border-radius: 100px; font-size: 12px; font-weight: 500; border: 0.5px solid transparent; }
+  .badge-high { background: var(--risk-high-bg); color: var(--risk-high); border-color: var(--risk-high-border); }
+  .badge-med  { background: var(--risk-med-bg);  color: var(--risk-med);  border-color: var(--risk-med-border); }
+  .badge-low  { background: var(--risk-low-bg);  color: var(--risk-low);  border-color: var(--risk-low-border); }
+  .badge-info { background: var(--accent-light); color: var(--accent); border-color: var(--accent-border); font-size: 11px; padding: 3px 8px; }
+  .topbar-actions { margin-left: auto; display: flex; gap: 8px; }
+  .btn { padding: 7px 16px; border-radius: var(--radius-md); border: 0.5px solid var(--border-med); background: var(--surface); font-size: 13px; cursor: pointer; color: var(--text); transition: background 0.15s; }
+  .btn:hover { background: var(--surface2); }
+  .btn-primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .btn-primary:hover { background: #3C3489; }
+  .btn-danger { background: var(--risk-high); color: #fff; border-color: var(--risk-high); }
+  .btn-danger:hover { background: #A32D2D; }
+
+  /* ── Layout grids ── */
+  .grid-top { display: grid; grid-template-columns: 270px 1fr 210px; gap: 12px; }
+  .grid-mid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .grid-bot { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+  @media (max-width: 960px) {
+    .grid-top { grid-template-columns: 1fr 1fr; }
+    .grid-top .score-card { grid-column: 1 / -1; }
+    .grid-mid, .grid-bot { grid-template-columns: 1fr; }
+  }
+
+  /* ── Card ── */
+  .card {
+    background: var(--surface);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 14px 16px;
+  }
+  .card-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.7px; font-weight: 500; margin-bottom: 10px; }
+
+  /* ── Profile card ── */
+  .profile-header { display: flex; gap: 12px; align-items: center; margin-bottom: 12px; }
+  .avatar { width: 48px; height: 48px; border-radius: 50%; background: var(--accent-light); display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 600; color: var(--accent); flex-shrink: 0; }
+  .profile-name { font-size: 16px; font-weight: 600; }
+  .profile-meta { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .kv-row { display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 0.5px solid var(--border); font-size: 13px; }
+  .kv-row:last-child { border-bottom: none; }
+  .kv-key { color: var(--muted); }
+  .kv-val { font-weight: 500; text-align: right; }
+  .kv-warn { color: var(--risk-med); }
+  .kv-ok { color: var(--risk-low); }
+
+  /* ── Risk score ── */
+  .score-card { display: flex; flex-direction: column; align-items: center; justify-content: center; }
+  .score-num { font-size: 52px; font-weight: 700; line-height: 1; margin: 8px 0 2px; }
+  .score-denom { font-size: 16px; color: var(--muted); }
+  .score-bar-wrap { width: 100%; margin-top: 10px; }
+  .score-bar-track { width: 100%; height: 8px; border-radius: 4px; background: var(--surface2); overflow: hidden; position: relative; }
+  .score-bar-gradient { position: absolute; inset: 0; background: linear-gradient(90deg, #639922 0%, #BA7517 50%, #E24B4A 100%); border-radius: 4px; }
+  .score-bar-thumb { position: absolute; top: -3px; width: 14px; height: 14px; border-radius: 50%; background: var(--risk-high); border: 2px solid #fff; box-shadow: 0 1px 4px rgba(0,0,0,0.2); left: calc(84% - 7px); }
+  .score-ticks { display: flex; justify-content: space-between; font-size: 10px; color: var(--muted); margin-top: 4px; }
+  .score-context { margin-top: 10px; font-size: 12px; color: var(--muted); text-align: center; line-height: 1.5; }
+  .score-context strong { color: var(--risk-high); }
+
+  /* ── Signals ── */
+  .signals-list { display: flex; flex-direction: column; gap: 8px; }
+  .signal-row { display: flex; align-items: flex-start; gap: 10px; padding: 8px 10px; border-radius: var(--radius-md); background: var(--surface2); }
+  .signal-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; margin-top: 4px; }
+  .sig-high { background: var(--risk-high); }
+  .sig-med  { background: var(--risk-med); }
+  .sig-low  { background: #888; }
+  .signal-text { flex: 1; font-size: 13px; line-height: 1.4; }
+  .signal-tag { font-size: 11px; padding: 2px 7px; border-radius: 4px; white-space: nowrap; flex-shrink: 0; }
+  .tag-high { background: var(--risk-high-bg); color: var(--risk-high); }
+  .tag-med  { background: var(--risk-med-bg);  color: var(--risk-med); }
+  .tag-low  { background: #f1efea; color: #5f5e5a; }
+
+  /* ── Bar chart ── */
+  .bar-chart { display: flex; flex-direction: column; gap: 7px; }
+  .bar-row { display: flex; align-items: center; gap: 8px; }
+  .bar-key { font-size: 12px; color: var(--muted); width: 56px; flex-shrink: 0; text-align: right; }
+  .bar-track { flex: 1; height: 18px; background: var(--surface2); border-radius: 3px; overflow: hidden; }
+  .bar-fill { height: 100%; border-radius: 3px; }
+  .bar-normal { background: var(--accent); opacity: 0.7; }
+  .bar-high   { background: var(--risk-high); }
+  .bar-val { font-size: 12px; font-weight: 500; width: 44px; color: var(--text); }
+
+  /* ── Geo chips ── */
+  .geo-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+  .geo-chip { display: flex; align-items: center; gap: 5px; padding: 5px 12px; border-radius: 100px; font-size: 12px; border: 0.5px solid var(--border); background: var(--surface2); }
+  .geo-chip.suspicious { border-color: var(--risk-high-border); background: var(--risk-high-bg); color: var(--risk-high); font-weight: 500; }
+  .geo-chip.new-flag { border-color: var(--risk-med-border); background: var(--risk-med-bg); color: var(--risk-med); }
+
+  /* ── Counterparties ── */
+  .cp-list { display: flex; flex-direction: column; gap: 0; }
+  .cp-row { display: flex; align-items: center; gap: 8px; font-size: 12px; padding: 6px 0; border-bottom: 0.5px solid var(--border); }
+  .cp-row:last-child { border-bottom: none; }
+  .cp-avatar { width: 26px; height: 26px; border-radius: 50%; background: var(--surface2); display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 600; color: var(--muted); flex-shrink: 0; border: 0.5px solid var(--border); }
+  .cp-name { flex: 1; font-weight: 500; }
+  .cp-freq { color: var(--muted); }
+  .cp-flag { font-size: 11px; padding: 2px 7px; border-radius: 4px; font-weight: 500; }
+
+  /* ── Velocity ── */
+  .velocity-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .vel-card { background: var(--surface2); border-radius: var(--radius-md); padding: 10px 12px; border: 0.5px solid var(--border); }
+  .vel-val { font-size: 20px; font-weight: 600; line-height: 1.1; }
+  .vel-label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-top: 2px; }
+  .vel-delta { font-size: 11px; font-weight: 500; margin-top: 4px; }
+  .delta-up { color: var(--risk-high); }
+  .delta-ok { color: var(--risk-low); }
+
+  .alert-box { margin-top: 10px; padding: 10px 12px; background: var(--risk-high-bg); border-left: 3px solid var(--risk-high); border-radius: 0 6px 6px 0; }
+  .alert-box-title { font-size: 12px; font-weight: 600; color: var(--risk-high); }
+  .alert-box-body { font-size: 11px; color: var(--muted); margin-top: 3px; line-height: 1.4; }
+
+  /* ── Timeline ── */
+  .timeline-scroll { overflow-x: auto; padding-bottom: 4px; }
+  .timeline-track { display: flex; gap: 0; position: relative; padding: 22px 8px 8px; min-width: 500px; }
+  .timeline-line { position: absolute; top: 29px; left: 16px; right: 16px; height: 2px; background: var(--border); }
+  .tl-event { display: flex; flex-direction: column; align-items: center; gap: 4px; flex: 1; cursor: default; }
+  .tl-dot { width: 16px; height: 16px; border-radius: 50%; border: 2px solid var(--surface); position: relative; z-index: 1; }
+  .tl-dot-high { background: var(--risk-high); box-shadow: 0 0 0 3px rgba(226,75,74,0.2); }
+  .tl-dot-med  { background: var(--risk-med); box-shadow: 0 0 0 3px rgba(186,117,23,0.2); }
+  .tl-dot-norm { background: #c8c7c0; }
+  .tl-month { font-size: 10px; color: var(--muted); font-weight: 500; }
+  .tl-label { font-size: 10px; text-align: center; color: var(--muted); max-width: 60px; line-height: 1.3; }
+
+  /* ── Case history ── */
+  .prev-cases { display: flex; flex-direction: column; gap: 6px; margin-top: 6px; }
+  .prev-case { display: flex; align-items: center; gap: 8px; font-size: 12px; }
+  .case-id { font-weight: 500; color: var(--accent); }
+  .case-date { color: var(--muted); }
+
+  /* ── Ruling ── */
+  .ruling-area { display: flex; flex-direction: column; gap: 8px; }
+  .ruling-btn { padding: 10px 14px; border-radius: var(--radius-md); border: 0.5px solid var(--border); background: var(--surface2); cursor: pointer; text-align: left; transition: all 0.15s; width: 100%; }
+  .ruling-btn:hover { background: #edecea; }
+  .ruling-btn.selected-sar      { border-color: var(--risk-high-border); background: var(--risk-high-bg); }
+  .ruling-btn.selected-clear    { border-color: var(--risk-low-border);  background: var(--risk-low-bg); }
+  .ruling-btn.selected-escalate { border-color: var(--risk-med-border);  background: var(--risk-med-bg); }
+  .ruling-title { font-size: 13px; font-weight: 600; }
+  .ruling-desc  { font-size: 11px; color: var(--muted); margin-top: 3px; line-height: 1.4; }
+  .notes-area { margin-top: 10px; }
+  .notes-area textarea { width: 100%; min-height: 64px; background: var(--surface2); border: 0.5px solid var(--border); border-radius: var(--radius-md); font-size: 12px; color: var(--text); padding: 8px 10px; resize: vertical; font-family: inherit; }
+  .notes-area textarea:focus { outline: none; border-color: var(--accent); }
+
+  /* ── Progress bar ── */
+  .progress-bar { display: flex; align-items: center; gap: 16px; padding: 12px 16px; background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius-lg); margin-bottom: 12px; }
+  .progress-fill { flex: 1; height: 8px; background: var(--surface2); border-radius: 4px; overflow: hidden; }
+  .progress-inner { height: 100%; background: linear-gradient(90deg, var(--risk-low) 0%, var(--risk-med) 50%, var(--risk-high) 100%); width: 65%; }
+  .progress-text { font-size: 13px; color: var(--text); font-weight: 500; }
+  .efficiency-score { font-size: 12px; color: var(--muted); }
+
+  /* ── Greeting ── */
+  .greeting { font-size: 18px; font-weight: 600; color: var(--text); margin-bottom: 20px; }
+
+  /* ── Status cards ── */
+  .status-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 20px; }
+  .status-card { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 16px; text-align: center; }
+  .status-count { font-size: 32px; font-weight: 700; margin-bottom: 4px; }
+  .status-label { font-size: 14px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
+  .status-low .status-count { color: var(--risk-low); }
+  .status-med .status-count { color: var(--risk-med); }
+  .status-high .status-count { color: var(--risk-high); }
+
+  /* ── Cases table ── */
+  .cases-table { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; }
+  .table-header { display: grid; grid-template-columns: 1fr 120px 120px 120px; gap: 12px; padding: 12px 16px; background: var(--surface2); border-bottom: 0.5px solid var(--border); font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 500; }
+  .table-row { display: grid; grid-template-columns: 1fr 120px 120px 120px; gap: 12px; padding: 12px 16px; border-bottom: 0.5px solid var(--border); align-items: center; }
+  .table-row:last-child { border-bottom: none; }
+  .case-id { font-weight: 600; color: var(--accent); }
+  .case-status { display: flex; align-items: center; gap: 6px; }
+  .case-badge { padding: 4px 8px; border-radius: 100px; font-size: 11px; font-weight: 500; }
+  .case-badge.low { background: var(--risk-low-bg); color: var(--risk-low); }
+  .case-badge.med { background: var(--risk-med-bg); color: var(--risk-med); }
+  .case-badge.high { background: var(--risk-high-bg); color: var(--risk-high); }
+  .progress-bar-small { width: 80px; height: 6px; background: var(--surface2); border-radius: 3px; overflow: hidden; }
+  .progress-fill-small { height: 100%; background: var(--accent); }
+  .case-assignee { font-size: 12px; color: var(--muted); }
+
+  /* ── Rulings table ── */
+  .rulings-table { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; }
+  .rulings-header { display: grid; grid-template-columns: 1fr 100px 120px 100px 120px 40px; gap: 12px; padding: 12px 16px; background: var(--surface2); border-bottom: 0.5px solid var(--border); font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 500; }
+  .rulings-row { display: grid; grid-template-columns: 1fr 100px 120px 100px 120px 40px; gap: 12px; padding: 12px 16px; border-bottom: 0.5px solid var(--border); align-items: center; cursor: pointer; transition: background 0.15s; }
+  .rulings-row:hover { background: var(--surface2); }
+  .rulings-row:last-child { border-bottom: none; }
+  .ruling-case-id { font-weight: 600; color: var(--accent); }
+  .ruling-type { display: flex; align-items: center; gap: 6px; }
+  .ruling-badge { padding: 4px 8px; border-radius: 100px; font-size: 11px; font-weight: 500; }
+  .ruling-badge.sar { background: var(--risk-high-bg); color: var(--risk-high); }
+  .ruling-badge.escalate { background: var(--risk-med-bg); color: var(--risk-med); }
+  .ruling-badge.clear { background: var(--risk-low-bg); color: var(--risk-low); }
+  .ruling-submitter { font-size: 12px; color: var(--muted); }
+  .ruling-date { font-size: 12px; color: var(--muted); }
+  .ruling-outcome { font-size: 12px; font-weight: 500; }
+  .ruling-outcome.confirmed { color: var(--risk-high); }
+  .ruling-outcome.false-positive { color: var(--risk-low); }
+  .ruling-outcome.pending { color: var(--muted); }
+  .ruling-notes { position: relative; cursor: help; }
+  .ruling-notes-icon { font-size: 14px; color: var(--muted); }
+  .ruling-notes-tooltip { position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius-md); padding: 8px 12px; font-size: 12px; color: var(--text); white-space: nowrap; opacity: 0; pointer-events: none; transition: opacity 0.15s; z-index: 100; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+  .ruling-notes:hover .ruling-notes-tooltip { opacity: 1; }
+
+  .rulings-panel { display: flex; flex-direction: column; gap: 16px; margin-bottom: 16px; }
+  .rulings-toolbar { display: grid; grid-template-columns: 1fr repeat(2, 180px); gap: 12px; align-items: end; padding: 14px 16px 10px; background: var(--surface2); border-bottom: 0.5px solid var(--border); }
+  .rulings-toolbar label { display: block; font-size: 11px; color: var(--muted); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .rulings-toolbar select, .rulings-toolbar button { width: 100%; padding: 10px 12px; border-radius: var(--radius-md); border: 0.5px solid var(--border); background: var(--surface); color: var(--text); font-size: 13px; }
+  .rulings-chart-card { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 16px; }
+  .rulings-summary { display: grid; grid-template-columns: minmax(0, 1fr) 220px; gap: 16px; }
+  @media (max-width: 900px) {
+    .rulings-summary { grid-template-columns: 1fr; }
+  }
+  .accuracy-card { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 14px 14px 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; max-width: 220px; min-height: 0; }
+  .accuracy-card .card-label { font-size: 14px; font-weight: 700; color: var(--text); text-transform: none; width: 100%; text-align: left; margin-bottom: 8px; }
+  .accuracy-ring { width: 110px; height: 110px; border-radius: 50%; display: grid; place-items:center; background: conic-gradient(var(--accent) 0deg, var(--accent) var(--accuracy-pct), var(--surface2) 0deg); position: relative; }
+  .accuracy-ring::after { content: ''; position: absolute; inset: 20px; border-radius: 50%; background: var(--surface); }
+  .accuracy-ring-inner { position: relative; width: 70px; height: 70px; border-radius: 50%; display: grid; place-items:center; background: var(--surface); z-index: 1; }
+  .accuracy-value { font-size: 26px; font-weight: 800; }
+  .accuracy-desc { font-size: 12px; color: var(--muted); text-align: center; line-height: 1.4; margin-bottom: 0; }
+  .detail-row { display: grid; grid-template-columns: 120px 1fr; gap: 10px; align-items:start; margin-bottom: 14px; }
+  .detail-row strong { font-size: 12px; color: var(--muted); }
+  .timeline-legend { display: flex; gap: 14px; flex-wrap: wrap; margin-bottom: 12px; }
+  .timeline-legend span { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); }
+  .timeline-legend .legend-dot { width: 10px; height: 10px; border-radius: 999px; display: inline-block; }
+  .timeline-months { display: grid; gap: 12px; }
+  .timeline-month { display: grid; grid-template-columns: 96px 1fr 32px; align-items: center; gap: 12px; padding: 10px 0; cursor: pointer; }
+  .timeline-month span { font-size: 12px; color: var(--text); }
+  .timeline-month.active span { font-weight: 700; color: var(--accent); }
+  .timeline-month-total { font-size: 12px; font-weight: 600; color: var(--text); text-align: right; }
+  .timeline-bar-stack { position: relative; height: 16px; border-radius: 10px; background: var(--surface2); overflow: hidden; }
+  .timeline-bar-stack span { position: absolute; top: 0; height: 100%; }
+  .timeline-bar-cleared { background: var(--risk-low); }
+  .timeline-bar-escalated { background: var(--risk-med); }
+  .timeline-bar-sar { background: var(--risk-high); }
+
+  /* Fraud detection queue page styling */
+  :root {
+    --bg:#080b11; --surf1:#0e1219; --surf2:#131820; --surf3:#1a2030;
+    --border:#1e2535; --border2:#252e42; --text:#d8e0f0; --text2:#8a9ab8;
+    --muted:#5a6a8a; --faint:#2e3a52; --shadow:rgba(0,0,0,.5);
+    --scanline:rgba(0,0,0,.18); --grid-line:rgba(30,37,53,.6);
+    --toggle-bg:#1a2030; --toggle-knob:#3b82f6;
+    --low:#10b981; --low-bg:rgba(16,185,129,.1); --low-ring:rgba(16,185,129,.28);
+    --mod:#f59e0b; --mod-bg:rgba(245,158,11,.1); --mod-ring:rgba(245,158,11,.28);
+    --high:#f43f5e; --high-bg:rgba(244,63,94,.1); --high-ring:rgba(244,63,94,.28);
+    --accent:#3b82f6; --accent-bg:rgba(59,130,246,.12);
+  }
+  [data-theme="light"] {
+    --bg:#f0f4fa; --surf1:#ffffff; --surf2:#f5f8ff; --surf3:#eaeff8;
+    --border:#d4dcec; --border2:#c0ccdf; --text:#1a2235; --text2:#4a5a78;
+    --muted:#7a8aaa; --faint:#c8d4e8; --shadow:rgba(0,0,0,.1);
+    --scanline:transparent; --grid-line:rgba(180,200,230,.5);
+    --toggle-bg:#dbe4f0; --toggle-knob:#f59e0b;
+    --low:#10b981; --low-bg:rgba(16,185,129,.1); --low-ring:rgba(16,185,129,.28);
+    --mod:#f59e0b; --mod-bg:rgba(245,158,11,.1); --mod-ring:rgba(245,158,11,.28);
+    --high:#f43f5e; --high-bg:rgba(244,63,94,.1); --high-ring:rgba(244,63,94,.28);
+    --accent:#3b82f6; --accent-bg:rgba(59,130,246,.12);
+  }
+  html{scroll-behavior:smooth}
+  body{background:var(--bg);color:var(--text);font-family:'Epilogue',sans-serif;min-height:100vh;padding-bottom:60px;position:relative;overflow-x:hidden;transition:background .3s,color .3s;z-index:0}
+  body::before{content:'';position:fixed;inset:0;z-index:-1;pointer-events:none;background-image:repeating-linear-gradient(0deg,transparent,transparent 2px,var(--scanline) 2px,var(--scanline) 3px)}
+  body::after{content:'';position:fixed;inset:0;z-index:-1;pointer-events:none;background-image:linear-gradient(var(--grid-line) 1px,transparent 1px),linear-gradient(90deg,var(--grid-line) 1px,transparent 1px);background-size:56px 56px}
+  #alert-queue-view .container{position:relative;z-index:1;max-width:1180px;margin:0 auto;padding:0 24px}
+  #alert-queue-view header{border-bottom:1px solid var(--border);padding:18px 0;backdrop-filter:blur(12px);background:rgba(8,11,17,.85);position:sticky;top:48px;z-index:100;transition:background .3s,border-color .3s}
+  [data-theme="light"] #alert-queue-view header{background:rgba(240,244,250,.92)}
+  #alert-queue-view .header-inner{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+  #alert-queue-view .brand{display:flex;align-items:center;gap:12px}
+  #alert-queue-view .brand-shield{width:38px;height:38px;background:var(--high-bg);border:1px solid var(--high);border-radius:10px;display:grid;place-items:center;box-shadow:0 0 18px rgba(244,63,94,.2)}
+  #alert-queue-view .brand-shield svg{width:18px;height:18px;stroke:var(--high);fill:none;stroke-width:1.8}
+  #alert-queue-view .brand-name{font-size:.95rem;font-weight:700;letter-spacing:-.01em}
+  #alert-queue-view .brand-sub{font-size:.65rem;font-family:'IBM Plex Mono',monospace;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;margin-top:1px}
+  #alert-queue-view .header-right{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+  #alert-queue-view .live-pill{display:flex;align-items:center;gap:7px;background:var(--low-bg);border:1px solid var(--low-ring);border-radius:20px;padding:5px 12px;font-size:.65rem;font-family:'IBM Plex Mono',monospace;color:var(--low);letter-spacing:.08em}
+  #alert-queue-view .live-dot{width:6px;height:6px;background:var(--low);border-radius:50%;animation:blink 2s ease infinite}
+  #alert-queue-view .date-chip{font-family:'IBM Plex Mono',monospace;font-size:.7rem;color:var(--muted);background:var(--surf2);border:1px solid var(--border);border-radius:8px;padding:6px 12px}
+  #alert-queue-view .date-chip span{color:var(--text);font-weight:500}
+  #alert-queue-view .theme-toggle{display:flex;align-items:center;gap:8px;cursor:pointer;user-select:none}
+  #alert-queue-view .toggle-track{width:42px;height:24px;border-radius:99px;background:var(--toggle-bg);border:1px solid var(--border2);position:relative;transition:background .3s,border-color .3s;flex-shrink:0}
+  #alert-queue-view .toggle-knob{position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:var(--toggle-knob);transition:transform .25s cubic-bezier(.4,0,.2,1),background .3s;box-shadow:0 1px 4px rgba(0,0,0,.3)}
+  [data-theme="light"] #alert-queue-view .toggle-knob{transform:translateX(18px)}
+  #alert-queue-view .review-banner{background:var(--surf1);border-bottom:1px solid var(--border);padding:18px 0;transition:background .3s,border-color .3s;animation:slideDown .5s ease both}
+  #alert-queue-view .review-grid{display:grid;grid-template-columns:1fr 210px 120px;align-items:center;gap:24px}
+  #alert-queue-view .review-label{font-size:.65rem;font-family:'IBM Plex Mono',monospace;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+  #alert-queue-view .review-numbers{display:flex;align-items:baseline;gap:6px;margin-bottom:10px}
+  #alert-queue-view .review-count{font-size:1.5rem;font-weight:800}
+  #alert-queue-view .review-total{font-size:.78rem;color:var(--muted);font-family:'IBM Plex Mono',monospace}
+  #alert-queue-view .review-pct{font-size:.78rem;color:var(--accent);font-family:'IBM Plex Mono',monospace;margin-left:auto}
+  #alert-queue-view .mega-track{height:10px;background:var(--surf3);border-radius:99px;overflow:hidden;border:1px solid var(--border)}
+  #alert-queue-view .mega-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,var(--accent),#818cf8);width:0%;transition:width 1.2s cubic-bezier(.4,0,.2,1);position:relative}
+  #alert-queue-view .mega-fill::after{content:'';position:absolute;right:0;top:0;bottom:0;width:40px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.3));border-radius:0 99px 99px 0;animation:shimmer 2s ease infinite}
+  #alert-queue-view .breakdown-row{display:flex;gap:16px;margin-top:8px;font-family:'IBM Plex Mono',monospace;font-size:.62rem;color:var(--muted)}
+  #alert-queue-view .bd-item{display:flex;align-items:center;gap:5px}
+  #alert-queue-view .bd-dot{width:6px;height:6px;border-radius:50%}
+  #alert-queue-view .stat-mini{background:var(--surf2);border:1px solid var(--border);border-radius:12px;padding:11px 14px;text-align:center;transition:background .3s}
+  #alert-queue-view .stat-mini-label{font-size:.6rem;font-family:'IBM Plex Mono',monospace;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin-bottom:4px}
+  #alert-queue-view .stat-mini-val{font-size:1.2rem;font-weight:800}
+  #alert-queue-view .eff-ring{position:relative;width:90px;height:90px;margin:0 auto}
+  #alert-queue-view .eff-ring svg{width:90px;height:90px;transform:rotate(-90deg)}
+  #alert-queue-view .eff-ring-bg{fill:none;stroke:var(--surf3);stroke-width:8}
+  #alert-queue-view .eff-ring-fill{fill:none;stroke:var(--low);stroke-width:8;stroke-linecap:round;stroke-dasharray:251.2;stroke-dashoffset:251.2;transition:stroke-dashoffset 1.4s cubic-bezier(.4,0,.2,1)}
+  #alert-queue-view .eff-label{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+  #alert-queue-view .eff-pct{font-size:1.1rem;font-weight:800;color:var(--low)}
+  #alert-queue-view .eff-name{font-size:.5rem;font-family:'IBM Plex Mono',monospace;color:var(--muted);letter-spacing:.08em}
+  #alert-queue-view .main{padding-top:28px}
+  #alert-queue-view .section-label{font-family:'IBM Plex Mono',monospace;font-size:.62rem;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin-bottom:12px}
+  #alert-queue-view .cards{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:32px}
+  #alert-queue-view .card{background:var(--surf1);border-radius:16px;padding:22px 22px 18px;border:1px solid var(--border);position:relative;overflow:hidden;transition:transform .2s,box-shadow .2s,background .3s,border-color .3s;animation:fadeUp .5s ease both}
+  #alert-queue-view .card:hover{transform:translateY(-4px)}
+  #alert-queue-view .card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px}
+  #alert-queue-view .card-low::before{background:var(--low);box-shadow:0 0 14px var(--low-ring)}
+  #alert-queue-view .card-mod::before{background:var(--mod);box-shadow:0 0 14px var(--mod-ring)}
+  #alert-queue-view .card-high::before{background:var(--high);box-shadow:0 0 14px var(--high-ring)}
+  #alert-queue-view .card::after{content:'';position:absolute;width:120px;height:120px;border-radius:50%;right:-30px;bottom:-30px;pointer-events:none}
+  #alert-queue-view .card-low::after{background:radial-gradient(circle,var(--low-bg) 0%,transparent 70%)}
+  #alert-queue-view .card-mod::after{background:radial-gradient(circle,var(--mod-bg) 0%,transparent 70%)}
+  #alert-queue-view .card-high::after{background:radial-gradient(circle,var(--high-bg) 0%,transparent 70%)}
+  #alert-queue-view .card-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px}
+  #alert-queue-view .card-badge{font-family:'IBM Plex Mono',monospace;font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;padding:3px 9px;border-radius:20px}
+  #alert-queue-view .card-low .card-badge{background:var(--low-bg);color:var(--low);border:1px solid var(--low-ring)}
+  #alert-queue-view .card-mod .card-badge{background:var(--mod-bg);color:var(--mod);border:1px solid var(--mod-ring)}
+  #alert-queue-view .card-high .card-badge{background:var(--high-bg);color:var(--high);border:1px solid var(--high-ring)}
+  #alert-queue-view .card-icon{width:34px;height:34px;border-radius:10px;display:grid;place-items:center}
+  #alert-queue-view .card-low .card-icon{background:var(--low-bg)} #alert-queue-view .card-mod .card-icon{background:var(--mod-bg)} #alert-queue-view .card-high .card-icon{background:var(--high-bg)}
+  #alert-queue-view .card-icon svg{width:17px;height:17px;fill:none;stroke-width:1.8}
+  #alert-queue-view .card-low .card-icon svg{stroke:var(--low)} #alert-queue-view .card-mod .card-icon svg{stroke:var(--mod)} #alert-queue-view .card-high .card-icon svg{stroke:var(--high)}
+  #alert-queue-view .card-count{font-size:2.8rem;font-weight:800;line-height:1;letter-spacing:-.04em;margin-bottom:5px}
+  #alert-queue-view .card-low .card-count{color:var(--low)} #alert-queue-view .card-mod .card-count{color:var(--mod)} #alert-queue-view .card-high .card-count{color:var(--high)}
+  #alert-queue-view .card-desc{font-size:.72rem;color:var(--muted);font-family:'IBM Plex Mono',monospace}
+  #alert-queue-view .card-foot{margin-top:14px;padding-top:12px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+  #alert-queue-view .card-foot-label{font-size:.65rem;color:var(--muted);font-family:'IBM Plex Mono',monospace}
+  #alert-queue-view .card-foot-val{font-size:.7rem;font-weight:600;font-family:'IBM Plex Mono',monospace}
+  #alert-queue-view .card-low .card-foot-val{color:var(--low)} #alert-queue-view .card-mod .card-foot-val{color:var(--mod)} #alert-queue-view .card-high .card-foot-val{color:var(--high)}
+  #alert-queue-view .toolbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+  #alert-queue-view .filter-btn{font-family:'IBM Plex Mono',monospace;font-size:.65rem;letter-spacing:.08em;padding:5px 12px;border-radius:8px;border:1px solid var(--border);background:var(--surf2);color:var(--muted);cursor:pointer;transition:all .15s;user-select:none}
+  #alert-queue-view .filter-btn:hover{border-color:var(--border2);color:var(--text)}
+  #alert-queue-view .filter-btn.active{background:var(--accent-bg);border-color:var(--accent);color:var(--accent)}
+  #alert-queue-view .filter-btn.active-low{background:var(--low-bg);border-color:var(--low);color:var(--low)}
+  #alert-queue-view .filter-btn.active-mod{background:var(--mod-bg);border-color:var(--mod);color:var(--mod)}
+  #alert-queue-view .filter-btn.active-high{background:var(--high-bg);border-color:var(--high);color:var(--high)}
+  #alert-queue-view .toolbar-sep{width:1px;height:18px;background:var(--border)}
+  #alert-queue-view .toolbar-right{margin-left:auto}
+  #alert-queue-view .case-count-badge{font-family:'IBM Plex Mono',monospace;font-size:.62rem;color:var(--muted);background:var(--surf2);border:1px solid var(--border);border-radius:20px;padding:4px 10px}
+  #alert-queue-view .table-wrap{background:var(--surf1);border:1px solid var(--border);border-radius:16px;overflow:hidden;transition:background .3s,border-color .3s;animation:fadeUp .5s .2s ease both}
+  #alert-queue-view .table-header{padding:16px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:12px}
+  #alert-queue-view .table-title{font-size:.92rem;font-weight:700}
+  #alert-queue-view .table-sub{font-size:.68rem;color:var(--muted);font-family:'IBM Plex Mono',monospace;margin-top:2px}
+  #alert-queue-view .tbl{width:100%;border-collapse:collapse}
+  #alert-queue-view thead th{padding:9px 16px;text-align:left;font-family:'IBM Plex Mono',monospace;font-size:.6rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);background:var(--surf2);border-bottom:1px solid var(--border);white-space:nowrap}
+  #alert-queue-view tbody tr{border-bottom:1px solid var(--border);transition:background .12s;animation:fadeUp .3s ease both}
+  #alert-queue-view tbody tr:last-child{border-bottom:none}
+  #alert-queue-view tbody tr:hover{background:var(--surf2)}
+  #alert-queue-view td{padding:12px 16px;font-size:.82rem;vertical-align:middle}
+  #alert-queue-view .case-id{font-family:'IBM Plex Mono',monospace;font-size:.7rem;color:var(--accent)}
+  #alert-queue-view .case-cust{font-size:.63rem;color:var(--muted);font-family:'IBM Plex Mono',monospace;margin-top:2px}
+  #alert-queue-view .rule-chip{display:inline-block;font-family:'IBM Plex Mono',monospace;font-size:.63rem;background:var(--surf3);border:1px solid var(--border2);border-radius:6px;padding:3px 8px;white-space:nowrap}
+  #alert-queue-view .risk-pill{display:inline-flex;align-items:center;gap:5px;border-radius:20px;padding:3px 9px;font-family:'IBM Plex Mono',monospace;font-size:.63rem;letter-spacing:.06em;white-space:nowrap}
+  #alert-queue-view .risk-dot{width:5px;height:5px;border-radius:50%}
+  #alert-queue-view .pill-low{background:var(--low-bg);color:var(--low);border:1px solid var(--low-ring)}
+  #alert-queue-view .pill-mod{background:var(--mod-bg);color:var(--mod);border:1px solid var(--mod-ring)}
+  #alert-queue-view .pill-high{background:var(--high-bg);color:var(--high);border:1px solid var(--high-ring)}
+  #alert-queue-view .s-cleared{background:var(--low-bg);color:var(--low);border:1px solid var(--low-ring)}
+  #alert-queue-view .s-sar{background:var(--high-bg);color:var(--high);border:1px solid var(--high-ring)}
+  #alert-queue-view .s-escalated{background:var(--mod-bg);color:var(--mod);border:1px solid var(--mod-ring)}
+  #alert-queue-view .prog-cell{min-width:120px}
+  #alert-queue-view .prog-head{display:flex;justify-content:space-between;margin-bottom:4px}
+  #alert-queue-view .prog-pct{font-family:'IBM Plex Mono',monospace;font-size:.62rem;color:var(--muted)}
+  #alert-queue-view .prog-time{font-family:'IBM Plex Mono',monospace;font-size:.62rem;color:var(--faint)}
+  #alert-queue-view .prog-track{height:5px;background:var(--surf3);border-radius:99px;overflow:hidden}
+  #alert-queue-view .prog-fill{height:100%;border-radius:99px;transition:width .8s cubic-bezier(.4,0,.2,1)}
+  #alert-queue-view .prog-low{background:linear-gradient(90deg,#059669,var(--low))}
+  #alert-queue-view .prog-mod{background:linear-gradient(90deg,#d97706,var(--mod))}
+  #alert-queue-view .prog-high{background:linear-gradient(90deg,#be123c,var(--high))}
+  #alert-queue-view .analyst-cell{display:inline-flex;align-items:center;gap:7px;cursor:pointer;padding:4px 8px 4px 4px;border-radius:20px;border:1px solid transparent;transition:border-color .15s,background .15s}
+  #alert-queue-view .analyst-cell:hover{border-color:var(--border2);background:var(--surf3)}
+  #alert-queue-view .avatar{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font-size:.6rem;font-weight:700;flex-shrink:0}
+  #alert-queue-view .av-0{background:rgba(59,130,246,.2);color:#93c5fd}
+  #alert-queue-view .av-1{background:rgba(168,85,247,.2);color:#d8b4fe}
+  #alert-queue-view .av-2{background:rgba(20,184,166,.2);color:#5eead4}
+  #alert-queue-view .av-3{background:rgba(245,158,11,.2);color:#fcd34d}
+  #alert-queue-view .av-4{background:rgba(244,63,94,.2);color:#fda4af}
+  #alert-queue-view .av-5{background:rgba(16,185,129,.2);color:#6ee7b7}
+  #alert-queue-view .analyst-name{font-size:.78rem}
+  #alert-queue-view .date-cell{font-family:'IBM Plex Mono',monospace;font-size:.68rem;color:var(--muted);white-space:nowrap}
+  #alert-queue-view .empty-row td{text-align:center;padding:40px;color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:.78rem}
+  #alert-queue-view .modal-overlay{position:fixed;inset:0;z-index:999;background:rgba(0,0,0,.55);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;pointer-events:none;transition:opacity .2s}
+  #alert-queue-view .modal-overlay.open{opacity:1;pointer-events:all}
+  #alert-queue-view .modal{background:var(--surf1);border:1px solid var(--border);border-radius:20px;width:100%;max-width:680px;max-height:88vh;overflow-y:auto;box-shadow:0 24px 80px var(--shadow);transform:translateY(20px) scale(.97);transition:transform .25s cubic-bezier(.4,0,.2,1),background .3s}
+  #alert-queue-view .modal-overlay.open .modal{transform:none}
+  #alert-queue-view .modal-head{padding:22px 24px 18px;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;justify-content:space-between;gap:16px;position:sticky;top:0;background:var(--surf1);z-index:2;border-radius:20px 20px 0 0;transition:background .3s}
+  #alert-queue-view .modal-avatar{width:48px;height:48px;border-radius:50%;display:grid;place-items:center;font-size:1rem;font-weight:700}
+  #submit-modal.modal-overlay{position:fixed;inset:0;z-index:999;background:rgba(0,0,0,.55);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;pointer-events:none;transition:opacity .2s}
+  #submit-modal.modal-overlay.open{opacity:1;pointer-events:all}
+  #submit-modal .modal{background:var(--surf1);border:1px solid var(--border);border-radius:20px;width:100%;max-width:680px;max-height:88vh;overflow-y:auto;box-shadow:0 24px 80px var(--shadow);transform:translateY(20px) scale(.97);transition:transform .25s cubic-bezier(.4,0,.2,1),background .3s}
+  #submit-modal.modal-overlay.open .modal{transform:none}
+  #submit-modal .modal-head{padding:22px 24px 18px;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;justify-content:space-between;gap:16px;position:sticky;top:0;background:var(--surf1);z-index:2;border-radius:20px 20px 0 0;transition:background .3s}
+  #submit-modal .modal-close{width:32px;height:32px;border-radius:50%;background:var(--surf3);border:1px solid var(--border);display:grid;place-items:center;cursor:pointer;color:var(--muted);font-size:1rem;transition:background .15s,color .15s;flex-shrink:0;margin-top:2px}
+  #submit-modal .modal-close:hover{background:var(--high-bg);color:var(--high);border-color:var(--high-ring)}
+  #submit-modal .modal-body{padding:20px 24px}
+  #submit-modal .modal-name{font-size:1.1rem;font-weight:700}
+  #submit-modal .modal-sub{font-size:.68rem;font-family:'IBM Plex Mono',monospace;color:var(--muted);margin-top:2px}
+  #notification-modal.modal-overlay{position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,.55);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;pointer-events:none;transition:opacity .2s}
+  #notification-modal.modal-overlay.open{opacity:1;pointer-events:all}
+  #notification-modal .modal{background:var(--surf1);border:1px solid var(--border);border-radius:20px;width:100%;max-width:400px;max-height:50vh;overflow-y:auto;box-shadow:0 24px 80px var(--shadow);transform:translateY(20px) scale(.97);transition:transform .25s cubic-bezier(.4,0,.2,1),background .3s}
+  #notification-modal.modal-overlay.open .modal{transform:none}
+  #ruling-detail-modal.modal-overlay{position:fixed;inset:0;z-index:999;background:rgba(0,0,0,.55);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;pointer-events:none;transition:opacity .2s}
+  #ruling-detail-modal.modal-overlay.open{opacity:1;pointer-events:all}
+  #ruling-detail-modal .modal{background:var(--surf1);border:1px solid var(--border);border-radius:20px;width:100%;max-width:680px;max-height:88vh;overflow-y:auto;box-shadow:0 24px 80px var(--shadow);transform:translateY(20px) scale(.97);transition:transform .25s cubic-bezier(.4,0,.2,1),background .3s}
+  #ruling-detail-modal.modal-overlay.open .modal{transform:none}
+  #ruling-detail-modal .modal-head{padding:22px 24px 18px;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;justify-content:space-between;gap:16px;position:sticky;top:0;background:var(--surf1);z-index:2;border-radius:20px 20px 0 0;transition:background .3s}
+  #ruling-detail-modal .modal-close{width:32px;height:32px;border-radius:50%;background:var(--surf3);border:1px solid var(--border);display:grid;place-items:center;cursor:pointer;color:var(--muted);font-size:1rem;transition:background .15s,color .15s;flex-shrink:0;margin-top:2px}
+  #ruling-detail-modal .modal-close:hover{background:var(--high-bg);color:var(--high);border-color:var(--high-ring)}
+  #ruling-detail-modal .modal-body{padding:20px 24px}
+  #ruling-detail-modal .modal-name{font-size:1.1rem;font-weight:700}
+  #ruling-detail-modal .modal-sub{font-size:.68rem;font-family:'IBM Plex Mono',monospace;color:var(--muted);margin-top:2px}
+  #alert-queue-view .modal-name{font-size:1.1rem;font-weight:700}
+  #alert-queue-view .modal-sub{font-size:.68rem;font-family:'IBM Plex Mono',monospace;color:var(--muted);margin-top:2px}
+  #alert-queue-view .modal-close{width:32px;height:32px;border-radius:50%;background:var(--surf3);border:1px solid var(--border);display:grid;place-items:center;cursor:pointer;color:var(--muted);font-size:1rem;transition:background .15s,color .15s;flex-shrink:0;margin-top:2px}
+  #alert-queue-view .modal-close:hover{background:var(--high-bg);color:var(--high);border-color:var(--high-ring)}
+  #alert-queue-view .modal-body{padding:20px 24px}
+  #alert-queue-view .score-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:22px}
+  #alert-queue-view .score-card{background:var(--surf2);border:1px solid var(--border);border-radius:14px;padding:16px 18px;position:relative;overflow:hidden}
+  #alert-queue-view .score-label{font-family:'IBM Plex Mono',monospace;font-size:.6rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+  #alert-queue-view .score-big{font-size:2.2rem;font-weight:800;line-height:1;margin-bottom:6px}
+  #alert-queue-view .score-desc{font-size:.68rem;color:var(--muted);font-family:'IBM Plex Mono',monospace}
+  #alert-queue-view .score-bar-wrap{margin-top:10px}
+  #alert-queue-view .score-bar-row{display:flex;justify-content:space-between;font-family:'IBM Plex Mono',monospace;font-size:.58rem;color:var(--muted)}
+  #alert-queue-view .score-bar-track{height:5px;background:var(--surf3);border-radius:99px;overflow:hidden;margin-top:4px}
+  #alert-queue-view .score-bar-fill{height:100%;border-radius:99px;width:0%;transition:width 1s .1s cubic-bezier(.4,0,.2,1)}
+  #alert-queue-view .sc-qty .score-bar-fill{background:linear-gradient(90deg,var(--accent),#818cf8)}
+  #alert-queue-view .sc-qual .score-bar-fill{background:linear-gradient(90deg,var(--low),#34d399)}
+  #alert-queue-view .stats-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:22px}
+  #alert-queue-view .stat-box{background:var(--surf2);border:1px solid var(--border);border-radius:10px;padding:10px 12px;text-align:center}
+  #alert-queue-view .stat-box-val{font-size:1.1rem;font-weight:700}
+  #alert-queue-view .stat-box-lbl{font-size:.58rem;font-family:'IBM Plex Mono',monospace;color:var(--muted);letter-spacing:.08em;margin-top:2px}
+  #alert-queue-view .risk-breakdown{margin-bottom:22px}
+  #alert-queue-view .rb-title{font-family:'IBM Plex Mono',monospace;font-size:.6rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+  #alert-queue-view .rb-bar-wrap{display:flex;height:10px;border-radius:99px;overflow:hidden;gap:2px}
+  #alert-queue-view .rb-seg{border-radius:3px}
+  #alert-queue-view .rb-low{background:var(--low)} #alert-queue-view .rb-mod{background:var(--mod)} #alert-queue-view .rb-high{background:var(--high)}
+  #alert-queue-view .rb-legend{display:flex;gap:14px;margin-top:8px;font-family:'IBM Plex Mono',monospace;font-size:.62rem;color:var(--muted);flex-wrap:wrap}
+  #alert-queue-view .rb-item{display:flex;align-items:center;gap:5px}
+  #alert-queue-view .rb-dot{width:6px;height:6px;border-radius:50%}
+  #alert-queue-view .recent-title{font-family:'IBM Plex Mono',monospace;font-size:.6rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+  #alert-queue-view .mini-tbl{width:100%;border-collapse:collapse}
+  #alert-queue-view .mini-tbl thead th{padding:7px 10px;text-align:left;font-family:'IBM Plex Mono',monospace;font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);background:var(--surf2);border-bottom:1px solid var(--border)}
+  #alert-queue-view .mini-tbl tbody tr{border-bottom:1px solid var(--border);transition:background .12s}
+  #alert-queue-view .mini-tbl tbody tr:last-child{border-bottom:none}
+  #alert-queue-view .mini-tbl tbody tr:hover{background:var(--surf2)}
+  #alert-queue-view .mini-tbl td{padding:9px 10px;font-size:.76rem}
+  #alert-queue-view .mini-id{font-family:'IBM Plex Mono',monospace;font-size:.65rem;color:var(--accent)}
+  @media(max-width:860px){#alert-queue-view .cards{grid-template-columns:1fr}#alert-queue-view .review-grid{grid-template-columns:1fr 1fr}#alert-queue-view .eff-wrap{display:none!important}#alert-queue-view td:nth-child(5),#alert-queue-view thead th:nth-child(5){display:none}}
+  @media(max-width:640px){#alert-queue-view .review-grid{grid-template-columns:1fr}#alert-queue-view .stats-strip{grid-template-columns:repeat(2,1fr)}#alert-queue-view td:nth-child(6),#alert-queue-view thead th:nth-child(6){display:none}#alert-queue-view td:nth-child(7),#alert-queue-view thead th:nth-child(7){display:none}}
+</style>
+</head>
+<body>
+
+<!-- Nav -->
+<nav class="nav">
+  <div class="nav-logo">Nordik<span>Bank</span></div>
+  <div class="nav-sep"></div>
+  <span class="nav-item active" id="nav-alert-queue" onclick="showAlertQueue()">Alert queue</span>
+  <span class="nav-sep"></span>
+  <span class="nav-item" id="nav-investigation" onclick="showInvestigation(true)">Investigation</span>
+  <span class="nav-sep"></span>
+  <span class="nav-item" id="nav-rulings" onclick="showSubmittedRulings()">Submitted rulings</span>
+  <div class="nav-right">
+    <span class="nav-analyst">M. Hansen · AML Analyst</span>
+    <div class="nav-avatar">MH</div>
+  </div>
+</nav>
+
+<div class="page">
+
+  <!-- Alert Queue View -->
+  <div id="alert-queue-view" style="display: none;">
+    <header>
+      <div class="container">
+        <div class="header-inner">
+          <div class="brand">
+            <div class="brand-shield">
+              <svg viewBox="0 0 24 24"><path d="M12 2L3 7v5c0 5.5 3.8 10.7 9 12 5.2-1.3 9-6.5 9-12V7L12 2z"/></svg>
+            </div>
+            <div>
+              <div class="brand-name">Good morning!</div>
+              <div class="brand-sub">This is an overview of your day in front of you!</div>
+            </div>
+          </div>
+          <div class="header-right">
+            <div class="date-chip">Today: <span id="today-date"></span></div>
+            <div class="theme-toggle" onclick="toggleTheme()" title="Toggle light/dark mode">
+              <span style="font-size:.9rem">🌙</span>
+              <div class="toggle-track"><div class="toggle-knob"></div></div>
+              <span style="font-size:.9rem">☀️</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <div class="review-banner">
+      <div class="container">
+        <div class="review-grid">
+          <div>
+            <div class="review-label">Case Review Progress</div>
+            <div class="review-numbers">
+              <span class="review-count" id="rev-count">14,594</span>
+              <span class="review-total">/ 19,469 cases</span>
+              <span class="review-pct" id="rev-pct">75.0%</span>
+            </div>
+            <div class="mega-track"><div class="mega-fill" id="mega-fill" style="width:75%"></div></div>
+            <div class="breakdown-row">
+              <div class="bd-item"><div class="bd-dot" style="background:var(--low)"></div><span style="color:var(--low)">10,810 cleared</span></div>
+              <div class="bd-item"><div class="bd-dot" style="background:var(--high)"></div><span style="color:var(--high)">3,784 SAR filed</span></div>
+              <div class="bd-item"><div class="bd-dot" style="background:var(--mod)"></div><span style="color:var(--mod)">4,875 escalated</span></div>
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:10px;">
+            <div class="stat-mini"><div class="stat-mini-label">SAR Rate</div><div class="stat-mini-val" style="color:var(--mod)">19.4%</div></div>
+            <div class="stat-mini"><div class="stat-mini-label">Avg Investigation</div><div class="stat-mini-val" style="color:var(--accent)">29.6 min</div></div>
+          </div>
+          <div class="eff-wrap" style="display:flex;justify-content:center;align-items:center;">
+            <div>
+              <div class="section-label" style="text-align:center;margin-bottom:8px;">Efficiency</div>
+              <div class="eff-ring">
+                <svg viewBox="0 0 90 90">
+                  <circle class="eff-ring-bg" cx="45" cy="45" r="40"/>
+                  <circle class="eff-ring-fill" cx="45" cy="45" r="40" id="eff-arc"/>
+                </svg>
+                <div class="eff-label"><div class="eff-pct" id="eff-pct">75%</div><div class="eff-name">SCORE</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="main">
+      <div class="container">
+
+        <div class="section-label">Risk Summary · Total number of flagged transactions</div>
+        <div class="cards">
+          <div class="card card-low">
+            <div class="card-header">
+              <span class="card-badge">Low Risk</span>
+              <div class="card-icon"><svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div>
+            </div>
+            <div class="card-count" id="cnt-low">17,742</div>
+            <div class="card-desc">KYC rating: Low · Routine monitoring</div>
+            <div class="card-foot"><span class="card-foot-label">% of total alerts</span><span class="card-foot-val">91.1%</span></div>
+          </div>
+          <div class="card card-mod">
+            <div class="card-header">
+              <span class="card-badge">Moderate Risk</span>
+              <div class="card-icon"><svg viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
+            </div>
+            <div class="card-count" id="cnt-mod">1,631</div>
+            <div class="card-desc">KYC rating: Medium · Enhanced due diligence</div>
+            <div class="card-foot"><span class="card-foot-label">% of total alerts</span><span class="card-foot-val">8.4%</span></div>
+          </div>
+          <div class="card card-high">
+            <div class="card-header">
+              <span class="card-badge">High Risk</span>
+              <div class="card-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div>
+            </div>
+            <div class="card-count" id="cnt-high">96</div>
+            <div class="card-desc">KYC rating: High · Immediate escalation</div>
+            <div class="card-foot"><span class="card-foot-label">% of total alerts</span><span class="card-foot-val">0.5%</span></div>
+          </div>
+        </div>
+
+        <div class="section-label"> Alert queue and suggested workflow · Latest 30 alerts </div>
+        <div class="toolbar">
+          <button class="filter-btn active" onclick="setFilter('all',this)">All</button>
+          <button class="filter-btn" onclick="setFilter('low',this)">Low Risk</button>
+          <button class="filter-btn" onclick="setFilter('moderate',this)">Moderate</button>
+          <button class="filter-btn" onclick="setFilter('high',this)">High Risk</button>
+          <div class="toolbar-right"><span class="case-count-badge" id="showing-label">Showing 30 cases</span></div>
+        </div>
+
+        <div class="table-wrap">
+          <div class="table-header">
+            <div>
+              <div class="table-title">Case Queue</div>
+              <div class="table-sub">Sorted by AI risk detection level · Click on case to open customer 360 view</div>
+            </div>
+          </div>
+          <table class="tbl">
+            <thead><tr>
+              <th>Case ID</th><th>Trigger Rule</th><th>Risk Level</th>
+              <th>AI Risk Score</th><th>Date</th>
+            </tr></thead>
+            <tbody id="cases-tbody"></tbody>
+          </table>
+        </div>
+
+        <footer>FRAUD DETECTION SYSTEM · DATA: alert_history.csv · customers.csv · accounts.csv · transactions.csv · 19,469 alerts · 1,200 customers</footer>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Investigation and customer 360 View -->
+  <div id="investigation-view" style="display: none;">
+  <div class="topbar">
+    <div class="breadcrumb" id="case-breadcrumb"><a href="javascript:void(0)" id="case-breadcrumb-link" onclick="showAlertQueue()">Alert queue</a> / <strong id="investigation-case-id"></strong></div>
+    <div class="badge badge-high" id="investigation-risk-badge"></div>
+    <div class="badge badge-info" id="investigation-opened"></div>
+    <div class="badge badge-info" id="investigation-sla"></div>
+    <div class="topbar-actions">
+      <button class="btn" onclick="changeInvestigation(-1)">← Previous case</button>
+      <button class="btn" onclick="changeInvestigation(1)">Next case →</button>
+      <button class="btn btn-primary" onclick="openSubmitModal()">Submit ruling</button>
+    </div>
+  </div>
+
+  <!-- Row 1: Profile / Signals / Score -->
+  <div class="grid-top">
+
+    <!-- Profile -->
+    <div class="card">
+      <div class="card-label">Customer profile</div>
+      <div class="profile-header">
+        <div class="avatar" id="investigation-avatar"></div>
+        <div>
+          <div class="profile-name" id="investigation-customer-name"></div>
+          <div class="profile-meta" id="investigation-customer-meta"></div>
+        </div>
+      </div>
+      <div class="kv-row"><span class="kv-key">Customer ID</span><span class="kv-val" id="investigation-customer-id"></span></div>
+      <div class="kv-row"><span class="kv-key">Segment</span><span class="kv-val" id="investigation-customer-segment"></span></div>
+      <div class="kv-row"><span class="kv-key">Occupation</span><span class="kv-val" id="investigation-customer-occupation"></span></div>
+      <div class="kv-row"><span class="kv-key">Declared income</span><span class="kv-val" id="investigation-income"></span></div>
+      <div class="kv-row"><span class="kv-key">Residence</span><span class="kv-val" id="investigation-residence"></span></div>
+      <div class="kv-row"><span class="kv-key">PEP / Sanctions</span><span class="kv-val kv-ok" id="investigation-pep"></span></div>
+      <div class="kv-row"><span class="kv-key">KYC last reviewed</span><span class="kv-val" id="investigation-kyc"></span></div>
+      <div class="kv-row"><span class="kv-key">Account type</span><span class="kv-val" id="investigation-account"></span></div>
+      <div class="kv-row"><span class="kv-key">Prior SARs filed</span><span class="kv-val" id="investigation-prior-sar"></span></div>
+    </div>
+
+    <!-- Signals -->
+    <div class="card">
+      <div class="card-label">Risk signals — why this customer was flagged</div>
+      <div class="signals-list" id="investigation-signals-list"></div>
+    </div>
+
+    <!-- Risk score -->
+    <div class="card score-card">
+      <div class="card-label" style="text-align:center;">AI risk score</div>
+      <div class="score-num" id="investigation-score-num"></div>
+      <div class="score-denom">/100</div>
+      <div class="score-bar-wrap">
+        <div class="score-bar-track">
+          <div class="score-bar-gradient"></div>
+          <div class="score-bar-thumb" id="investigation-score-thumb"></div>
+        </div>
+        <div class="score-ticks"><span>0 — Low</span><span>100 — High</span></div>
+      </div>
+      <div class="score-context" id="investigation-score-context"></div>
+      <div style="margin-top: 12px; font-size: 12px; color: var(--muted); text-align: center; padding: 8px; background: var(--accent-light); border-radius: var(--radius-md); line-height: 1.5;" id="investigation-score-drivers"></div>
+    </div>
+
+  </div>
+
+  <!-- Row 2: Volume chart / Geo + Counterparties -->
+  <div class="grid-mid">
+
+    <!-- Volume chart -->
+    <div class="card" id="investigation-volume-card">
+      <div class="card-label" id="investigation-volume-label">Transaction volume — monthly (DKK 000s)</div>
+      <div class="bar-chart" id="investigation-bar-chart"></div>
+      <div style="margin-top:10px; display:flex; gap:16px; font-size:11px;" id="investigation-volume-legend"></div>
+    </div>
+
+    <!-- Geo + counterparties -->
+    <div class="card">
+      <div class="card-label">Geographic footprint</div>
+      <div class="geo-chips" id="investigation-geo-chips"></div>
+      <div class="card-label">Top counterparties</div>
+      <div class="cp-list" id="investigation-cp-list"></div>
+    </div>
+
+  </div>
+
+  <!-- Row 3: Velocity / Timeline / Ruling -->
+  <div class="grid-bot">
+
+    <!-- Velocity -->
+    <div class="card">
+      <div class="card-label">Velocity metrics — 90-day window</div>
+      <div class="velocity-grid" id="investigation-velocity-grid"></div>
+      <div id="investigation-alert-box"></div>
+    </div>
+
+    <!-- Timeline + history -->
+    <div class="card">
+      <div class="card-label">Activity timeline</div>
+      <div class="timeline-scroll">
+        <div class="timeline-track" id="investigation-timeline-track">
+          <div class="timeline-line"></div>
+        </div>
+      </div>
+      <div class="card-label" style="margin-top:12px;">Previous cases</div>
+      <div class="prev-cases" id="investigation-prev-cases"></div>
+      <div style="margin-top:10px; font-size:11px; color:var(--muted); padding:8px; background:var(--accent-light); border-radius: var(--radius-md);" id="investigation-prev-note"></div>
+    </div>
+
+    <!-- Ruling -->
+    <div class="card">
+      <div class="card-label">Investigation ruling</div>
+      <div class="ruling-area" id="rulings">
+        <button class="ruling-btn" id="r-sar" onclick="selectRuling('sar')">
+          <div class="ruling-title" style="color:var(--risk-high);">⚑ File SAR</div>
+          <div class="ruling-desc">Submit suspicious activity report to FIU. Structuring + geo risk pattern meets filing threshold.</div>
+        </button>
+        <button class="ruling-btn" id="r-escalate" onclick="selectRuling('escalate')">
+          <div class="ruling-title" style="color:var(--risk-med);">↑ Escalate — request more information</div>
+          <div class="ruling-desc">Request KYC refresh and written business justification before deciding.</div>
+        </button>
+        <button class="ruling-btn" id="r-clear" onclick="selectRuling('clear')">
+          <div class="ruling-title" style="color:var(--risk-low);">✓ Clear — false positive</div>
+          <div class="ruling-desc">Activity is legitimate. Document reason and close the case.</div>
+        </button>
+      </div>
+      <div class="notes-area">
+        <div class="card-label" style="margin-top:10px;">Investigation notes</div>
+        <textarea id="notes" placeholder="Document evidence, reasoning, and any additional context…"></textarea>
+      </div>
+      <div style="margin-top: 10px; display:flex; gap:8px;">
+        <button class="btn" style="flex:1;" onclick="clearForm()">Clear</button>
+        <button class="btn btn-primary" style="flex:2;" onclick="openSubmitModal()">Submit ruling</button>
+      </div>
+    </div>
+
+  </div>
+
+
+  </div>
+
+  <!-- Submitted Rulings View -->
+  <div id="rulings-view" style="display: none;">
+    <div class="rulings-panel">
+      <div class="rulings-summary">
+        <div class="rulings-chart-card">
+          <div class="card-label">Review timeline</div>
+        <div class="timeline-legend">
+          <span><span class="legend-dot" style="background: var(--risk-low);"></span>Cleared</span>
+          <span><span class="legend-dot" style="background: var(--risk-med);"></span>Escalated</span>
+          <span><span class="legend-dot" style="background: var(--risk-high);"></span>SAR Filed</span>
+        </div>
+        <div class="timeline-months" id="rulings-months"></div>
+        <div style="margin-top: 12px; font-size: 12px; color: var(--muted);">Click a month to filter the table below.</div>
+      </div>
+      <div class="accuracy-card">
+        <div class="card-label">SAR accuracy</div>
+        <div class="accuracy-ring" id="accuracy-ring" style="--accuracy-pct: 67%;">
+          <div class="accuracy-ring-inner">
+            <div class="accuracy-value" id="accuracy-value">67%</div>
+          </div>
+        </div>
+        <div class="accuracy-desc" id="accuracy-subline">2 of 3 SAR cases confirmed fraud</div>
+      </div>
+    </div>
+      <div class="rulings-toolbar">
+        <div>
+          <label for="outcome-filter">Outcome</label>
+          <select id="outcome-filter" onchange="applyRulingsFilters()">
+            <option value="all">All outcomes</option>
+            <option value="clear">Cleared</option>
+            <option value="escalate">Escalated</option>
+            <option value="sar">SAR Filed</option>
+          </select>
+        </div>
+        <div>
+          <label for="score-filter">AI risk detection</label>
+          <select id="score-filter" onchange="applyRulingsFilters()">
+            <option value="all">All scores</option>
+            <option value="high">80+ risk score</option>
+            <option value="medium">60–79 risk score</option>
+            <option value="low">Below 60</option>
+          </select>
+        </div>
+        <div>
+          <label for="month-filter">Month</label>
+          <select id="month-filter" onchange="selectRulingsMonth(this.value)">
+            <option value="all">All months</option>
+            <option value="2024-05">May 2024</option>
+            <option value="2024-04">Apr 2024</option>
+            <option value="2024-03">Mar 2024</option>
+            <option value="2024-02">Feb 2024</option>
+            <option value="2024-01">Jan 2024</option>
+            <option value="2023-12">Dec 2023</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Rulings table -->
+    <div class="rulings-table">
+      <div class="rulings-header">
+        <div>Case</div>
+        <div>Ruling</div>
+        <div>Submitted by</div>
+        <div>Date</div>
+        <div>Outcome</div>
+        <div>Notes</div>
+      </div>
+      <div class="rulings-row" data-case-id="CASE-2024-3801" data-submitter="M. Hansen" data-date="2024-05-01" data-outcome="sar" data-score="92" data-ruling="SAR Filed" data-notes="Structuring pattern with high-risk jurisdictions. Customer admitted to tax evasion when contacted by authorities." onclick="showRulingDetails(this)">
+        <div class="ruling-case-id">CASE-2024-3801</div>
+        <div class="ruling-type">
+          <div class="ruling-badge sar">SAR Filed</div>
+        </div>
+        <div class="ruling-submitter">M. Hansen</div>
+        <div class="ruling-date">2024-05-01</div>
+        <div class="ruling-outcome confirmed">Confirmed fraud</div>
+        <div class="ruling-notes">
+          <span class="ruling-notes-icon">📝</span>
+          <div class="ruling-notes-tooltip">Structuring pattern with high-risk jurisdictions. Customer admitted to tax evasion when contacted by authorities.</div>
+        </div>
+      </div>
+      <div class="rulings-row" data-case-id="CASE-2024-3756" data-submitter="A. Jensen" data-date="2024-04-28" data-outcome="clear" data-score="42" data-ruling="Cleared" data-notes="Volume spike explained by legitimate business expansion. KYC documents verified." onclick="showRulingDetails(this)">
+        <div class="ruling-case-id">CASE-2024-3756</div>
+        <div class="ruling-type">
+          <div class="ruling-badge clear">Cleared</div>
+        </div>
+        <div class="ruling-submitter">A. Jensen</div>
+        <div class="ruling-date">2024-04-28</div>
+        <div class="ruling-outcome false-positive">False positive</div>
+        <div class="ruling-notes">
+          <span class="ruling-notes-icon">📝</span>
+          <div class="ruling-notes-tooltip">Volume spike explained by legitimate business expansion. KYC documents verified.</div>
+        </div>
+      </div>
+      <div class="rulings-row" data-case-id="CASE-2024-3723" data-submitter="L. Nielsen" data-date="2024-04-25" data-outcome="escalate" data-score="68" data-ruling="Escalated" data-notes="Requested additional documentation from customer. Awaiting KYC refresh and business justification." onclick="showRulingDetails(this)">
+        <div class="ruling-case-id">CASE-2024-3723</div>
+        <div class="ruling-type">
+          <div class="ruling-badge escalate">Escalated</div>
+        </div>
+        <div class="ruling-submitter">L. Nielsen</div>
+        <div class="ruling-date">2024-04-25</div>
+        <div class="ruling-outcome pending">Under review</div>
+        <div class="ruling-notes">
+          <span class="ruling-notes-icon">📝</span>
+          <div class="ruling-notes-tooltip">Requested additional documentation from customer. Awaiting KYC refresh and business justification.</div>
+        </div>
+      </div>
+      <div class="rulings-row" data-case-id="CASE-2024-3689" data-submitter="M. Hansen" data-date="2024-04-20" data-outcome="sar" data-score="88" data-ruling="SAR Filed" data-notes="Multiple shell company connections. Funds traced to sanctioned entities. Criminal investigation initiated." onclick="showRulingDetails(this)">
+        <div class="ruling-case-id">CASE-2024-3689</div>
+        <div class="ruling-type">
+          <div class="ruling-badge sar">SAR Filed</div>
+        </div>
+        <div class="ruling-submitter">M. Hansen</div>
+        <div class="ruling-date">2024-04-20</div>
+        <div class="ruling-outcome confirmed">Confirmed fraud</div>
+        <div class="ruling-notes">
+          <span class="ruling-notes-icon">📝</span>
+          <div class="ruling-notes-tooltip">Multiple shell company connections. Funds traced to sanctioned entities. Criminal investigation initiated.</div>
+        </div>
+      </div>
+      <div class="rulings-row" data-case-id="CASE-2024-3654" data-submitter="A. Jensen" data-date="2024-04-15" data-outcome="clear" data-score="34" data-ruling="Cleared" data-notes="Round number transactions explained by payroll deposits. Verified with employer records." onclick="showRulingDetails(this)">
+        <div class="ruling-case-id">CASE-2024-3654</div>
+        <div class="ruling-type">
+          <div class="ruling-badge clear">Cleared</div>
+        </div>
+        <div class="ruling-submitter">A. Jensen</div>
+        <div class="ruling-date">2024-04-15</div>
+        <div class="ruling-outcome false-positive">False positive</div>
+        <div class="ruling-notes">
+          <span class="ruling-notes-icon">📝</span>
+          <div class="ruling-notes-tooltip">Round number transactions explained by payroll deposits. Verified with employer records.</div>
+        </div>
+      </div>
+      <div class="rulings-row" data-case-id="CASE-2024-3621" data-submitter="L. Nielsen" data-date="2024-04-10" data-outcome="sar" data-score="72" data-ruling="SAR Filed" data-notes="Complex money laundering scheme involving multiple jurisdictions. Referred to special investigations unit." onclick="showRulingDetails(this)">
+        <div class="ruling-case-id">CASE-2024-3621</div>
+        <div class="ruling-type">
+          <div class="ruling-badge sar">SAR Filed</div>
+        </div>
+        <div class="ruling-submitter">L. Nielsen</div>
+        <div class="ruling-date">2024-04-10</div>
+        <div class="ruling-outcome pending">Under review</div>
+        <div class="ruling-notes">
+          <span class="ruling-notes-icon">📝</span>
+          <div class="ruling-notes-tooltip">Complex money laundering scheme involving multiple jurisdictions. Referred to special investigations unit.</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+<div id="ruling-detail-modal" class="modal-overlay" onclick="closeRulingDetailModal(event)">
+  <div class="modal">
+    <div class="modal-head">
+      <div>
+        <div class="modal-name" id="detail-case-title">Case details</div>
+        <div class="modal-sub" id="detail-case-sub">Click a case to see more information</div>
+      </div>
+      <div class="modal-close" onclick="closeRulingDetailModalDirect()">×</div>
+    </div>
+    <div class="modal-body">
+      <div class="detail-row"><strong>Case ID</strong><span id="detail-case-id">—</span></div>
+      <div class="detail-row"><strong>Submitted by</strong><span id="detail-submitter">—</span></div>
+      <div class="detail-row"><strong>Date</strong><span id="detail-date">—</span></div>
+      <div class="detail-row"><strong>Ruling</strong><span id="detail-ruling">—</span></div>
+      <div class="detail-row"><strong>Outcome</strong><span id="detail-outcome">—</span></div>
+      <div class="detail-row"><strong>AI risk score</strong><span id="detail-score">—</span></div>
+      <div style="margin-top:14px; padding:14px; border-radius:var(--radius-md); background:var(--surface2);">
+        <div style="font-size:12px; color:var(--muted); margin-bottom:8px;">Investigation notes</div>
+        <div id="detail-notes" style="font-size:13px; line-height:1.5; color:var(--text);">—</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Submit Ruling Modal -->
+<div id="submit-modal" class="modal-overlay" onclick="closeSubmitModal(event)">
+  <div class="modal">
+    <div class="modal-head">
+      <div>
+        <div class="modal-name">Confirm Ruling Submission</div>
+        <div class="modal-sub">Review and submit your investigation ruling</div>
+      </div>
+      <div class="modal-close" onclick="closeSubmitModalDirect()">×</div>
+    </div>
+    <div class="modal-body">
+      <div style="margin-bottom: 20px;">
+        <label style="display: block; margin-bottom: 8px; font-weight: 600;">Selected Ruling</label>
+        <select id="final-ruling" onchange="updateSubmitModal()" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--surf1); color: var(--text);">
+          <option value="sar">⚑ File SAR</option>
+          <option value="escalate">↑ Escalate</option>
+          <option value="clear">✓ Clear</option>
+        </select>
+      </div>
+      
+      <div style="margin-bottom: 20px; padding: 16px; background: var(--surf2); border-radius: var(--radius-md);">
+        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+          <span style="font-size: 18px;">🤖</span>
+          <span style="font-weight: 600;">System Assessment</span>
+        </div>
+        <div id="confirm-belief" style="font-size: 16px; font-weight: 600; margin-bottom: 4px;">Fraudulent</div>
+        <div id="confirm-belief-desc" style="color: var(--muted); font-size: 14px;">The AI system believes this transaction is fraudulent with 84% confidence.</div>
+      </div>
+      
+      <div style="margin-bottom: 20px;">
+        <label style="display: block; margin-bottom: 8px; font-weight: 600;">Additional Notes</label>
+        <textarea id="confirm-notes" placeholder="Add any additional context or justification for this ruling..." style="width: 100%; min-height: 80px; padding: 8px; border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--surf1); color: var(--text); resize: vertical;"></textarea>
+      </div>
+      
+      <div id="notes-section" style="margin-bottom: 20px; padding: 12px; background: var(--accent-light); border-radius: var(--radius-md); display: none;">
+        <label style="display: flex; align-items: center; gap: 8px; font-weight: 600; cursor: pointer;">
+          <input type="checkbox" id="override-checkbox" style="margin: 0;">
+          Override system assessment
+        </label>
+        <div style="margin-top: 8px; font-size: 12px; color: var(--muted);">Check this box if you are intentionally overriding the AI recommendation. Additional justification may be required.</div>
+      </div>
+      
+      <div style="display: flex; gap: 12px; justify-content: flex-end;">
+        <button class="btn" onclick="closeSubmitModalDirect()">Cancel</button>
+        <button class="btn btn-primary" onclick="confirmRuling()">Confirm & Submit</button>
+      </div>
+      
+      <div id="email-sent" style="margin-top: 16px; padding: 12px; background: var(--success-bg); color: var(--success); border-radius: var(--radius-md); display: none;">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span>📧</span>
+          <span>Notification sent to relevant teams</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Notification Modal -->
+<div id="notification-modal" class="modal-overlay">
+  <div class="modal" style="max-width: 400px;">
+    <div class="modal-body" style="text-align: center; padding: 32px 24px;">
+      <div style="display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 16px;">
+        <span style="font-size: 24px;">📧</span>
+        <span style="font-size: 18px; font-weight: 600; color: var(--success);">Notification sent to relevant teams</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // CASES is populated from the FastAPI backend on page load (/api/queue).
+  // Falls back to an empty array so the UI renders without crashing if offline.
+  let CASES = [{"id":"ALT_18768","customer":"CUST_1162","rule":"Large Cash","date":"2024-12-26","risk":"high","status":"cleared","progress":39,"analyst":"Sofia L.","time":17,"customer_type":"corporate","nationality":"DK","score":91},{"id":"ALT_18769","customer":"CUST_1162","rule":"Geographic Risk","date":"2024-12-25","risk":"high","status":"escalated","progress":86,"analyst":"Marcus T.","time":38,"customer_type":"corporate","nationality":"DK","score":87},{"id":"ALT_19468","customer":"CUST_1199","rule":"Rapid Movement","date":"2024-12-19","risk":"low","status":"cleared","progress":91,"analyst":"Priya N.","time":40,"customer_type":"personal","nationality":"DK","score":22},{"id":"ALT_18767","customer":"CUST_1162","rule":"Threshold","date":"2024-12-19","risk":"high","status":"escalated","progress":80,"analyst":"James B.","time":35,"customer_type":"corporate","nationality":"DK","score":84},{"id":"ALT_18770","customer":"CUST_1162","rule":"Rapid Movement","date":"2024-12-18","risk":"high","status":"cleared","progress":34,"analyst":"Anika R.","time":15,"customer_type":"corporate","nationality":"DK","score":79},{"id":"ALT_18766","customer":"CUST_1162","rule":"Large Cash","date":"2024-11-22","risk":"high","status":"escalated","progress":73,"analyst":"Tom H.","time":32,"customer_type":"corporate","nationality":"DK","score":83},{"id":"ALT_19466","customer":"CUST_1199","rule":"Rapid Movement","date":"2024-11-22","risk":"low","status":"cleared","progress":95,"analyst":"Sofia L.","time":42,"customer_type":"personal","nationality":"DK","score":18},{"id":"ALT_19465","customer":"CUST_1199","rule":"Threshold","date":"2024-11-22","risk":"low","status":"cleared","progress":84,"analyst":"Marcus T.","time":37,"customer_type":"personal","nationality":"DK","score":29},{"id":"ALT_18765","customer":"CUST_1162","rule":"Rapid Movement","date":"2024-11-20","risk":"high","status":"cleared","progress":52,"analyst":"Priya N.","time":23,"customer_type":"corporate","nationality":"DK","score":88},{"id":"ALT_19467","customer":"CUST_1199","rule":"Large Cash","date":"2024-11-20","risk":"low","status":"SAR_filed","progress":93,"analyst":"James B.","time":41,"customer_type":"personal","nationality":"DK","score":35},{"id":"ALT_18764","customer":"CUST_1162","rule":"Structuring","date":"2024-11-17","risk":"high","status":"SAR_filed","progress":100,"analyst":"Anika R.","time":44,"customer_type":"corporate","nationality":"DK","score":96},{"id":"ALT_19464","customer":"CUST_1199","rule":"Geographic Risk","date":"2024-11-17","risk":"low","status":"SAR_filed","progress":73,"analyst":"Tom H.","time":32,"customer_type":"personal","nationality":"DK","score":41},{"id":"ALT_18763","customer":"CUST_1162","rule":"Geographic Risk","date":"2024-10-27","risk":"high","status":"escalated","progress":80,"analyst":"Sofia L.","time":35,"customer_type":"corporate","nationality":"DK","score":81},{"id":"ALT_19463","customer":"CUST_1199","rule":"Threshold","date":"2024-10-27","risk":"low","status":"cleared","progress":68,"analyst":"Marcus T.","time":30,"customer_type":"personal","nationality":"DK","score":27},{"id":"ALT_18762","customer":"CUST_1162","rule":"Threshold","date":"2024-10-16","risk":"high","status":"SAR_filed","progress":100,"analyst":"Priya N.","time":44,"customer_type":"corporate","nationality":"DK","score":93},{"id":"ALT_19461","customer":"CUST_1199","rule":"Rapid Movement","date":"2024-10-12","risk":"low","status":"cleared","progress":52,"analyst":"James B.","time":23,"customer_type":"personal","nationality":"DK","score":19},{"id":"ALT_18761","customer":"CUST_1162","rule":"Rapid Movement","date":"2024-09-28","risk":"high","status":"cleared","progress":61,"analyst":"Anika R.","time":27,"customer_type":"corporate","nationality":"DK","score":77},{"id":"ALT_19459","customer":"CUST_1199","rule":"Large Cash","date":"2024-09-17","risk":"low","status":"escalated","progress":57,"analyst":"Tom H.","time":25,"customer_type":"personal","nationality":"DK","score":38},{"id":"ALT_16842","customer":"CUST_0936","rule":"Threshold","date":"2024-12-30","risk":"moderate","status":"cleared","progress":77,"analyst":"Sofia L.","time":34,"customer_type":"sole_trader","nationality":"DK","score":61},{"id":"ALT_16843","customer":"CUST_0936","rule":"Rapid Movement","date":"2024-12-28","risk":"moderate","status":"escalated","progress":66,"analyst":"Marcus T.","time":29,"customer_type":"sole_trader","nationality":"DK","score":57},{"id":"ALT_16844","customer":"CUST_0936","rule":"Geographic Risk","date":"2024-12-22","risk":"moderate","status":"SAR_filed","progress":100,"analyst":"Priya N.","time":44,"customer_type":"sole_trader","nationality":"DK","score":72},{"id":"ALT_16845","customer":"CUST_0937","rule":"Structuring","date":"2024-12-20","risk":"moderate","status":"escalated","progress":75,"analyst":"James B.","time":33,"customer_type":"SME","nationality":"SE","score":65},{"id":"ALT_16846","customer":"CUST_0937","rule":"Dormant Activation","date":"2024-12-15","risk":"moderate","status":"cleared","progress":59,"analyst":"Anika R.","time":26,"customer_type":"SME","nationality":"SE","score":53},{"id":"ALT_16847","customer":"CUST_0938","rule":"Large Cash","date":"2024-12-10","risk":"moderate","status":"SAR_filed","progress":100,"analyst":"Tom H.","time":44,"customer_type":"corporate","nationality":"NO","score":69},{"id":"ALT_16848","customer":"CUST_0939","rule":"Threshold","date":"2024-12-05","risk":"moderate","status":"cleared","progress":70,"analyst":"Sofia L.","time":31,"customer_type":"personal","nationality":"DK","score":58},{"id":"ALT_16849","customer":"CUST_0940","rule":"Rapid Movement","date":"2024-11-30","risk":"moderate","status":"escalated","progress":82,"analyst":"Marcus T.","time":36,"customer_type":"sole_trader","nationality":"FI","score":63},{"id":"ALT_19460","customer":"CUST_1199","rule":"Structuring","date":"2024-12-01","risk":"low","status":"cleared","progress":45,"analyst":"Priya N.","time":20,"customer_type":"personal","nationality":"DK","score":24},{"id":"ALT_19462","customer":"CUST_1199","rule":"Dormant Activation","date":"2024-10-20","risk":"low","status":"cleared","progress":55,"analyst":"James B.","time":24,"customer_type":"personal","nationality":"DK","score":31},{"id":"ALT_16850","customer":"CUST_0941","rule":"Geographic Risk","date":"2024-11-25","risk":"moderate","status":"cleared","progress":64,"analyst":"Anika R.","time":28,"customer_type":"SME","nationality":"DE","score":60},{"id":"ALT_16851","customer":"CUST_0942","rule":"Large Cash","date":"2024-11-18","risk":"moderate","status":"SAR_filed","progress":100,"analyst":"Tom H.","time":44,"customer_type":"corporate","nationality":"DK","score":71}];
+  const riskPriority = { high: 0, moderate: 1, low: 2 };
+  let activeRisk = 'all';
+  let selectedRuling = 'sar';
+  let investigationIndex = 0;
+  const RULINGS_TIMELINE = [
+    { key: '2024-05', label: 'May 2024', cleared: 6, escalated: 3, sar: 2 },
+    { key: '2024-04', label: 'Apr 2024', cleared: 5, escalated: 4, sar: 3 },
+    { key: '2024-03', label: 'Mar 2024', cleared: 4, escalated: 3, sar: 2 },
+    { key: '2024-02', label: 'Feb 2024', cleared: 3, escalated: 4, sar: 3 },
+    { key: '2024-01', label: 'Jan 2024', cleared: 4, escalated: 3, sar: 3 },
+    { key: '2023-12', label: 'Dec 2023', cleared: 5, escalated: 2, sar: 3 }
+  ];
+  let selectedRulingsMonth = 'all';
+
+  function sortCases(data) {
+    return data.slice().sort((a,b)=> {
+      if (b.score !== a.score) return b.score - a.score;
+      if (a.date !== b.date) return b.date.localeCompare(a.date);
+      return b.progress - a.progress;
+    });
+  }
+
+  function updateRiskSummaryCards() {
+    const low = CASES.filter(c => c.risk === 'low').length;
+    const mod = CASES.filter(c => c.risk === 'moderate').length;
+    const high = CASES.filter(c => c.risk === 'high').length;
+    const total = CASES.length;
+    const lowEl = document.getElementById('cnt-low');
+    const modEl = document.getElementById('cnt-mod');
+    const highEl = document.getElementById('cnt-high');
+    const lowPct = document.querySelector('.card-low .card-foot-val');
+    const modPct = document.querySelector('.card-mod .card-foot-val');
+    const highPct = document.querySelector('.card-high .card-foot-val');
+    if (lowEl) lowEl.textContent = low;
+    if (modEl) modEl.textContent = mod;
+    if (highEl) highEl.textContent = high;
+    if (lowPct) lowPct.textContent = total ? (low / total * 100).toFixed(1) + '%' : '0%';
+    if (modPct) modPct.textContent = total ? (mod / total * 100).toFixed(1) + '%' : '0%';
+    if (highPct) highPct.textContent = total ? (high / total * 100).toFixed(1) + '%' : '0%';
+  }
+
+  function setTheme(theme) {
+    document.documentElement.setAttribute('data-theme', theme);
+  }
+
+  function toggleTheme() {
+    const current = document.documentElement.getAttribute('data-theme');
+    setTheme(current === 'dark' ? 'light' : 'dark');
+  }
+
+  function renderTable() {
+    const tbody = document.getElementById('cases-tbody');
+    let data = sortCases(CASES);
+    if (activeRisk !== 'all') data = data.filter(c => c.risk === activeRisk);
+    document.getElementById('showing-label').textContent = `Showing ${data.length} case${data.length !== 1 ? 's' : ''}`;
+    if (!data.length) {
+      tbody.innerHTML = `<tr class="empty-row"><td colspan="5">No cases match the current filters</td></tr>`;
+      return;
+    }
+    tbody.innerHTML = data.map((c,i)=>{
+      const rCls = {high:'pill-high',moderate:'pill-mod',low:'pill-low'}[c.risk];
+      const rLbl = {high:'High Risk',moderate:'Moderate',low:'Low Risk'}[c.risk];
+      const score = c.score;
+      return `<tr style="animation-delay:${i * .03}s; cursor:pointer;" onclick="selectInvestigationCase('${c.id}')">
+        <td><div class="case-id">${c.id}</div><div class="case-cust">${c.customer} · ${c.customer_type} · ${c.nationality}</div></td>
+        <td><span class="rule-chip">${c.rule}</span></td>
+        <td><span class="risk-pill ${rCls}"><span class="risk-dot"></span>${rLbl}</span></td>
+        <td><div style="font-weight:600;color:var(--text);">${score}/100</div></td>
+        <td class="date-cell">${c.date}</td>
+      </tr>`;
+    }).join('');
+  }
+
+  function setFilter(risk, btn) {
+    activeRisk = risk;
+    document.querySelectorAll('#alert-queue-view .toolbar .filter-btn').forEach(b => b.classList.remove('active','active-low','active-mod','active-high'));
+    btn.classList.add({all:'active',low:'active-low',moderate:'active-mod',high:'active-high'}[risk]);
+    renderTable();
+  }
+
+  function openAnalyst(name) {
+    alert(`Analyst profile: ${name}`);
+  }
+
+  function selectInvestigationCase(caseId) {
+    const queue = sortCases(CASES);
+    investigationIndex = queue.findIndex(c => c.id === caseId);
+    if (investigationIndex === -1) investigationIndex = 0;
+    console.log('selectInvestigationCase', caseId, 'index=', investigationIndex, 'resolves to', queue[investigationIndex]?.id);
+    showInvestigation();
+  }
+
+  function showAlertQueue() {
+    document.getElementById('alert-queue-view').style.display = 'block';
+    document.getElementById('investigation-view').style.display = 'none';
+    document.getElementById('rulings-view').style.display = 'none';
+    document.getElementById('nav-alert-queue').classList.add('active');
+    document.getElementById('nav-investigation').classList.remove('active');
+    document.getElementById('nav-rulings').classList.remove('active');
+    document.title = 'NordikBank AML — Alert Queue';
+    updateRiskSummaryCards();
+    renderTable();
+  }
+
+  function showInvestigation(resetToFirst) {
+    if (resetToFirst) investigationIndex = 0;
+    document.getElementById('alert-queue-view').style.display = 'none';
+    document.getElementById('investigation-view').style.display = 'block';
+    document.getElementById('rulings-view').style.display = 'none';
+    document.getElementById('nav-alert-queue').classList.remove('active');
+    document.getElementById('nav-investigation').classList.add('active');
+    document.getElementById('nav-rulings').classList.remove('active');
+    document.title = 'NordikBank AML — Investigation · ' + getCurrentCase().id;
+    loadInvestigationCase();
+  }
+
+  function showSubmittedRulings() {
+    document.getElementById('alert-queue-view').style.display = 'none';
+    document.getElementById('investigation-view').style.display = 'none';
+    document.getElementById('rulings-view').style.display = 'block';
+    document.getElementById('nav-alert-queue').classList.remove('active');
+    document.getElementById('nav-investigation').classList.remove('active');
+    document.getElementById('nav-rulings').classList.add('active');
+    document.title = 'NordikBank AML — Submitted Rulings';
+    renderRulingsTimeline();
+    applyRulingsFilters();
+    updateRulingsAccuracy();
+  }
+
+  function selectRulingsMonth(monthKey) {
+    selectedRulingsMonth = monthKey;
+    const monthSelect = document.getElementById('month-filter');
+    if (monthSelect) monthSelect.value = monthKey;
+    renderRulingsTimeline();
+    applyRulingsFilters();
+  }
+
+  function renderRulingsTimeline() {
+    const target = document.getElementById('rulings-months');
+    if (!target) return;
+    target.innerHTML = RULINGS_TIMELINE.map(month => {
+      const total = month.cleared + month.escalated + month.sar;
+      const clearedPct = total ? (month.cleared / total) * 100 : 0;
+      const escalatedPct = total ? (month.escalated / total) * 100 : 0;
+      const sarPct = total ? 100 - clearedPct - escalatedPct : 0;
+      return `
+        <div class="timeline-month ${selectedRulingsMonth === month.key ? 'active' : ''}" onclick="selectRulingsMonth('${month.key}')">
+          <span>${month.label}</span>
+          <div class="timeline-bar-stack">
+            <span class="timeline-bar-cleared" style="left:0; width:${clearedPct}%;"></span>
+            <span class="timeline-bar-escalated" style="left:${clearedPct}%; width:${escalatedPct}%;"></span>
+            <span class="timeline-bar-sar" style="left:${clearedPct + escalatedPct}%; width:${sarPct}%;"></span>
+          </div>
+          <span class="timeline-month-total">${total}</span>
+        </div>`;
+    }).join('');
+    updateRulingsAccuracy();
+  }
+
+  function showRulingDetails(row) {
+    const modal = document.getElementById('ruling-detail-modal');
+    if (!modal) return;
+    const caseId = row.dataset.caseId || row.querySelector('.ruling-case-id')?.textContent || '';
+    const submitter = row.dataset.submitter || row.querySelector('.ruling-submitter')?.textContent || '';
+    const date = row.dataset.date || row.querySelector('.ruling-date')?.textContent || '';
+    const ruling = row.dataset.ruling || row.querySelector('.ruling-badge')?.textContent || '';
+    const outcome = row.dataset.outcome || '';
+    const score = row.dataset.score || '';
+    const notes = row.dataset.notes || row.querySelector('.ruling-notes-tooltip')?.textContent || '';
+
+    const detailTitle = document.getElementById('detail-case-title');
+    const detailSub = document.getElementById('detail-case-sub');
+    const detailCaseId = document.getElementById('detail-case-id');
+    const detailSubmitter = document.getElementById('detail-submitter');
+    const detailDate = document.getElementById('detail-date');
+    const detailRuling = document.getElementById('detail-ruling');
+    const detailOutcome = document.getElementById('detail-outcome');
+    const detailScore = document.getElementById('detail-score');
+    const detailNotes = document.getElementById('detail-notes');
+
+    if (detailTitle) detailTitle.textContent = `Case details: ${caseId}`;
+    if (detailSub) detailSub.textContent = `${submitter} · ${date}`;
+    if (detailCaseId) detailCaseId.textContent = caseId;
+    if (detailSubmitter) detailSubmitter.textContent = submitter;
+    if (detailDate) detailDate.textContent = date;
+    if (detailRuling) detailRuling.textContent = ruling;
+    if (detailOutcome) detailOutcome.textContent = outcome === 'sar' ? 'SAR Filed' : outcome === 'clear' ? 'Cleared' : 'Escalated';
+    if (detailScore) detailScore.textContent = score ? `${score}/100` : 'N/A';
+    if (detailNotes) detailNotes.textContent = notes;
+    modal.classList.add('open');
+  }
+
+  function closeRulingDetailModal(event) {
+    if (event.target === event.currentTarget) {
+      closeRulingDetailModalDirect();
+    }
+  }
+
+  function closeRulingDetailModalDirect() {
+    document.getElementById('ruling-detail-modal')?.classList.remove('open');
+  }
+
+  function updateRulingsAccuracy() {
+    const rows = Array.from(document.querySelectorAll('#rulings-view .rulings-row'));
+    const sarRows = rows.filter(row => row.dataset.outcome === 'sar');
+    const confirmedCount = sarRows.filter(row => row.querySelector('.ruling-outcome.confirmed')).length;
+    const percent = sarRows.length ? Math.round((confirmedCount / sarRows.length) * 100) : 0;
+    const ring = document.getElementById('accuracy-ring');
+    const value = document.getElementById('accuracy-value');
+    const subline = document.getElementById('accuracy-subline');
+    if (ring) ring.style.setProperty('--accuracy-pct', `${percent}%`);
+    if (value) value.textContent = `${percent}%`;
+    if (subline) subline.textContent = `${confirmedCount} of ${sarRows.length} SAR cases confirmed fraud`;
+  }
+
+  function applyRulingsFilters() {
+    const outcome = document.getElementById('outcome-filter')?.value || 'all';
+    const score = document.getElementById('score-filter')?.value || 'all';
+    const rows = document.querySelectorAll('#rulings-view .rulings-row');
+    rows.forEach(row => {
+      let visible = true;
+      const rowMonth = row.dataset.month || 'all';
+      const rowOutcome = row.dataset.outcome || 'all';
+      const rowScore = parseInt(row.dataset.score || '0', 10);
+
+      if (selectedRulingsMonth !== 'all' && rowMonth !== selectedRulingsMonth) visible = false;
+      if (outcome !== 'all' && rowOutcome !== outcome) visible = false;
+      if (score !== 'all') {
+        if (score === 'high' && rowScore < 80) visible = false;
+        if (score === 'medium' && (rowScore < 60 || rowScore >= 80)) visible = false;
+        if (score === 'low' && rowScore >= 60) visible = false;
+      }
+      row.style.display = visible ? 'grid' : 'none';
+    });
+  }
+
+  function getFilteredQueue() {
+    let data = sortCases(CASES);
+    if (activeRisk !== 'all') data = data.filter(c => c.risk === activeRisk);
+    return data;
+  }
+
+  function getCurrentCase() {
+    const queue = sortCases(CASES);
+    return queue[investigationIndex] || queue[0];
+  }
+
+  function changeInvestigation(direction) {
+    const queue = sortCases(CASES);
+    investigationIndex = (investigationIndex + direction + queue.length) % queue.length;
+    loadInvestigationCase();
+  }
+
+  function seededRand(seed) {
+    let s = seed;
+    return function() {
+      s = (s * 1664525 + 1013904223) & 0xffffffff;
+      return (s >>> 0) / 0xffffffff;
+    };
+  }
+
+  function loadInvestigationCase() {
+    const c = getCurrentCase();
+    console.log('loadInvestigationCase: investigationIndex=', investigationIndex, 'case=', c?.id);
+    const rand = seededRand(parseInt(c.id.replace(/\D/g,''), 10) || 1);
+
+    // ── Topbar ──────────────────────────────────────────────────────────────
+    const riskLabel = {high:'High risk', moderate:'Moderate risk', low:'Low risk'}[c.risk];
+    const badgeType = {high:'high', moderate:'med', low:'low'}[c.risk];
+    const score = c.score;
+    document.getElementById('investigation-case-id').textContent = c.id;
+    document.getElementById('case-breadcrumb-link').setAttribute('onclick', 'showAlertQueue()');
+    const badge = document.getElementById('investigation-risk-badge');
+    badge.className = `badge badge-${badgeType}`;
+    badge.innerHTML = `<svg width="7" height="7" viewBox="0 0 8 8"><circle cx="4" cy="4" r="4" fill="${c.risk==='high'?'#E24B4A':c.risk==='moderate'?'#BA7517':'#3B6D11'}"/></svg>${riskLabel}`;
+    const daysOpen = Math.max(1, Math.round(rand() * 5 + 1));
+    const slaLeft = Math.max(0, Math.round(rand() * 3));
+    document.getElementById('investigation-opened').textContent = `Opened ${daysOpen} day${daysOpen!==1?'s':''} ago`;
+    document.getElementById('investigation-sla').textContent = `SLA: ${slaLeft} day${slaLeft!==1?'s':''} remaining`;
+
+    // ── Customer profile ─────────────────────────────────────────────────────
+    const custNum = c.customer.split('_')[1] || '00';
+    document.getElementById('investigation-avatar').textContent = custNum.slice(0,2);
+    document.getElementById('investigation-customer-name').textContent = c.customer;
+    document.getElementById('investigation-customer-meta').textContent = `${c.customer_type.replace(/_/g,' ')} · ${c.nationality}`;
+    document.getElementById('investigation-customer-id').textContent = c.customer;
+    document.getElementById('investigation-customer-segment').textContent = c.customer_type.replace(/_/g,' ');
+    document.getElementById('investigation-customer-occupation').textContent = c.rule;
+    document.getElementById('investigation-income').textContent = `DKK ${42 + c.progress}k / yr`;
+    const countryNames = {DK:'Denmark',SE:'Sweden',NO:'Norway',FI:'Finland',DE:'Germany'};
+    document.getElementById('investigation-residence').textContent = countryNames[c.nationality] || c.nationality;
+    const pepEl = document.getElementById('investigation-pep');
+    pepEl.textContent = c.risk === 'high' ? 'Review required' : 'Clear';
+    pepEl.className = `kv-val ${c.risk === 'high' ? 'kv-warn' : 'kv-ok'}`;
+    document.getElementById('investigation-kyc').textContent = c.risk === 'high' ? '6 months ago ⚠' : '3 months ago';
+    document.getElementById('investigation-account').textContent = c.customer_type === 'personal' ? 'Current + Savings' : c.customer_type === 'corporate' ? 'Business Current' : 'Business Current + FX';
+    document.getElementById('investigation-prior-sar').textContent = c.status === 'SAR_filed' ? '1' : '0';
+
+    // ── Risk score ───────────────────────────────────────────────────────────
+    const scoreEl = document.getElementById('investigation-score-num');
+    scoreEl.textContent = score;
+    scoreEl.style.color = `var(--risk-${c.risk === 'moderate' ? 'mod' : c.risk})`;
+    document.getElementById('investigation-score-thumb').style.left = `${Math.min(94, Math.max(6, score - 5))}%`;
+    const scorePercentile = score >= 90 ? 'top 5%' : score >= 80 ? 'top 10%' : score >= 60 ? 'top 30%' : score >= 40 ? 'mid range' : 'bottom 40%';
+    document.getElementById('investigation-score-context').innerHTML = `<strong>Risk rank</strong> ${scorePercentile} of alerts`;
+    const secondDriver = c.status === 'SAR_filed' ? 'prior SAR filed' : c.status === 'escalated' ? 'previously escalated' : 'high transaction count';
+    document.getElementById('investigation-score-drivers').innerHTML = `Top drivers: <strong style="color:var(--accent);">${c.rule}</strong>, <strong style="color:var(--accent);">${secondDriver}</strong>, <strong style="color:var(--accent);">${c.time} min avg review</strong>`;
+
+    // ── Risk signals ─────────────────────────────────────────────────────────
+    const allSignals = {
+      'Large Cash':       [{sev:'high',text:`${Math.round(rand()*8+5)} large cash deposits near DKK 50,000 threshold in 60 days`,tag:'Structuring'},{sev:'high',text:`Cash-in volume up ${Math.round(rand()*300+200)}% vs prior quarter`,tag:'Velocity spike'},{sev:'med',text:'Round-sum cash withdrawals repeated across multiple branches',tag:'Round amounts'},{sev:'low',text:'Activity inconsistent with declared income level',tag:'Profile mismatch'}],
+      'Geographic Risk':  [{sev:'high',text:`Outbound transfers to ${Math.round(rand()*3+2)} high-risk jurisdictions in 90 days`,tag:'Geo risk'},{sev:'high',text:'New counterparty registered in offshore jurisdiction 3 months ago',tag:'New counterparty'},{sev:'med',text:`IP logins from ${Math.round(rand()*4+2)} different countries this quarter`,tag:'Login geo spread'},{sev:'low',text:'Customer nationality differs from registered address country',tag:'Residency mismatch'}],
+      'Rapid Movement':   [{sev:'high',text:`Funds in and out within ${Math.round(rand()*12+4)} hours — pass-through pattern`,tag:'Pass-through'},{sev:'high',text:`${Math.round(rand()*30+20)} rapid transfers totalling DKK ${Math.round(rand()*500+200)}k`,tag:'Velocity spike'},{sev:'med',text:'Multiple beneficiaries receiving equal split amounts',tag:'Round amounts'},{sev:'low',text:'Activity spike does not match business cycle',tag:'Profile mismatch'}],
+      'Threshold':        [{sev:'high',text:`${Math.round(rand()*10+5)} transactions just below reporting threshold in 45 days`,tag:'Structuring'},{sev:'high',text:'Consistent gap of DKK 200–500 below threshold per transaction',tag:'Structuring'},{sev:'med',text:'Multiple accounts used across same threshold-avoidance pattern',tag:'Layering'},{sev:'low',text:'Transaction timing clustered on same weekday each week',tag:'Pattern timing'}],
+      'Structuring':      [{sev:'high',text:`${Math.round(rand()*12+6)} deposits structured to stay below DKK 50,000`,tag:'Structuring'},{sev:'high',text:'Identical deposit amounts repeated across 3 different branch offices',tag:'Structuring'},{sev:'med',text:'Funds aggregated and forwarded to single account within 48h',tag:'Layering'},{sev:'med',text:'Customer refused to provide source of funds explanation',tag:'Non-cooperative'},{sev:'low',text:'Declared occupation does not explain cash volume',tag:'Profile mismatch'}],
+      'Dormant Activation':[{sev:'high',text:'Account dormant for 18+ months, suddenly activated with large inflow',tag:'Dormant reuse'},{sev:'high',text:`DKK ${Math.round(rand()*200+100)}k deposited within first week of reactivation`,tag:'Velocity spike'},{sev:'med',text:'Contact details changed immediately before reactivation',tag:'Identity change'},{sev:'low',text:'No customer interaction with bank during dormant period',tag:'Unusual pattern'}],
+    };
+    const signals = allSignals[c.rule] || [{sev:'high',text:`Suspicious activity related to ${c.rule}`,tag:c.rule},{sev:'med',text:'Transaction pattern inconsistent with customer profile',tag:'Profile mismatch'},{sev:'low',text:'Requires further investigation',tag:'Review'}];
+    document.getElementById('investigation-signals-list').innerHTML = signals.map(s =>
+      `<div class="signal-row"><div class="signal-dot sig-${s.sev}"></div><div class="signal-text">${s.text}</div><div class="signal-tag tag-${s.sev}">${s.tag}</div></div>`
+    ).join('');
+
+    // ── Volume chart ─────────────────────────────────────────────────────────
+    const baseVal = Math.round(rand()*20+35);
+    const alertDate = new Date(c.date);
+    const months = [];
+    for (let i = 7; i >= 0; i--) {
+      const d = new Date(alertDate);
+      d.setMonth(d.getMonth() - i);
+      months.push(`${d.toLocaleString('en',{month:'short'})} '${String(d.getFullYear()).slice(2)}`);
+    }
+    const spikeStart = c.risk === 'high' ? 3 : c.risk === 'moderate' ? 4 : 5;
+    const spikeMultiplier = c.risk === 'high' ? (rand()*4+4) : c.risk === 'moderate' ? (rand()*2+2) : (rand()*1+1.2);
+    const vals = months.map((_, i) => {
+      if (i < spikeStart) return Math.round(baseVal + rand()*10 - 5);
+      const factor = 1 + ((i - spikeStart + 1) / (8 - spikeStart)) * (spikeMultiplier - 1);
+      return Math.round(baseVal * factor);
+    });
+    const maxVal = Math.max(...vals);
+    const pctChange = Math.round(((vals[7] - vals[0]) / vals[0]) * 100);
+    document.getElementById('investigation-volume-label').textContent = `Transaction volume — monthly (DKK 000s) · baseline avg ~${baseVal}k`;
+    document.getElementById('investigation-bar-chart').innerHTML = months.map((m, i) => {
+      const isAnomaly = i >= spikeStart;
+      const w = Math.round((vals[i] / maxVal) * 100);
+      const cls = isAnomaly ? 'bar-fill bar-high' : 'bar-fill bar-normal';
+      const valStyle = isAnomaly ? 'color:var(--risk-high)' : '';
+      return `<div class="bar-row"><div class="bar-key">${m}</div><div class="bar-track"><div class="${cls}" style="width:${w}%"></div></div><div class="bar-val" style="${valStyle}">${vals[i]}k</div></div>`;
+    }).join('');
+    document.getElementById('investigation-volume-legend').innerHTML = `
+      <span style="display:flex;align-items:center;gap:4px;"><span style="width:12px;height:10px;background:var(--accent);opacity:0.7;border-radius:2px;display:inline-block;"></span>Baseline period</span>
+      <span style="display:flex;align-items:center;gap:4px;"><span style="width:12px;height:10px;background:var(--risk-high);border-radius:2px;display:inline-block;"></span>Anomalous period</span>
+      <span style="color:var(--risk-high);font-weight:600;margin-left:auto;">+${pctChange}% vs prior year same period</span>`;
+
+    // ── Geo footprint ─────────────────────────────────────────────────────────
+    const geoByRisk = {
+      high: [{flag:'🇩🇰',name:'Denmark',label:'Home',cls:''},{flag:'🇸🇪',name:'Sweden',label:'',cls:''},{flag:'🇦🇪',name:'UAE',label:'High risk jurisdiction',cls:'suspicious'},{flag:'🇨🇾',name:'Cyprus',label:'Shell co. registered',cls:'suspicious'},{flag:'🇭🇰',name:'Hong Kong',label:'New this quarter',cls:'new-flag'}],
+      moderate: [{flag:'🇩🇰',name:'Denmark',label:'Home',cls:''},{flag:'🇸🇪',name:'Sweden',label:'',cls:''},{flag:'🇩🇪',name:'Germany',label:'',cls:''},{flag:'🇲🇹',name:'Malta',label:'Shell co. linked',cls:'suspicious'}],
+      low: [{flag:'🇩🇰',name:'Denmark',label:'Home',cls:''},{flag:'🇸🇪',name:'Sweden',label:'',cls:''}],
+    };
+    const geoList = geoByRisk[c.risk] || geoByRisk.low;
+    document.getElementById('investigation-geo-chips').innerHTML = geoList.map(g => {
+      if (g.label === 'Home') {
+        return `<div class="geo-chip${g.cls?' '+g.cls:''}">${g.flag} ${g.name} <span class="badge badge-info" style="margin-left:4px;">Home</span></div>`;
+      }
+      return `<div class="geo-chip${g.cls?' '+g.cls:''}">${g.flag} ${g.name}${g.label?' — '+g.label:''}</div>`;
+    }).join('');
+
+    // ── Top counterparties ────────────────────────────────────────────────────
+    const cpByRisk = {
+      high: [
+        {init:'JT',name:'J. Thornton (private)',freq:Math.round(rand()*15+15),country:'DK',risk:'low'},
+        {init:'LN',name:'L. Nielsen (private)',freq:Math.round(rand()*10+10),country:'DK',risk:'low'},
+        {init:'GS',name:'GoldStream Ltd',freq:Math.round(rand()*6+5),country:'CY',risk:'high',note:'Shell'},
+        {init:'AC',name:'AlphaConnect FZE',freq:Math.round(rand()*4+3),country:'AE',risk:'high',note:'High risk'},
+        {init:'??',name:'Unknown entity',freq:Math.round(rand()*3+2),country:'HK',risk:'med',note:'Unverified'},
+      ],
+      moderate: [
+        {init:'MH',name:'M. Hansen (private)',freq:Math.round(rand()*12+10),country:'DK',risk:'low'},
+        {init:'BP',name:'Baltic Partners OÜ',freq:Math.round(rand()*8+4),country:'EE',risk:'med',note:'Unverified'},
+        {init:'KA',name:'K. Andersen (private)',freq:Math.round(rand()*6+4),country:'DK',risk:'low'},
+        {init:'MT',name:'MediaTrade Ltd',freq:Math.round(rand()*5+3),country:'MT',risk:'med',note:'Shell linked'},
+      ],
+      low: [
+        {init:'PL',name:'P. Larsen (private)',freq:Math.round(rand()*20+12),country:'DK',risk:'low'},
+        {init:'AB',name:'A. Berg (private)',freq:Math.round(rand()*10+8),country:'SE',risk:'low'},
+        {init:'NK',name:'NordicKøb ApS',freq:Math.round(rand()*8+4),country:'DK',risk:'low'},
+      ],
+    };
+    const cpList = cpByRisk[c.risk] || cpByRisk.low;
+    document.getElementById('investigation-cp-list').innerHTML = cpList.map(cp => {
+      const bg = cp.risk==='high'?'var(--risk-high-bg)':cp.risk==='med'?'var(--risk-med-bg)':'var(--risk-low-bg)';
+      const fg = cp.risk==='high'?'var(--risk-high)':cp.risk==='med'?'var(--risk-med)':'var(--risk-low)';
+      const flagTxt = cp.note ? `${cp.country} ⚑ ${cp.note}` : `${cp.country} ✓`;
+      return `<div class="cp-row">
+        <div class="cp-avatar" style="background:${bg};color:${fg};">${cp.init}</div>
+        <div class="cp-name">${cp.name}</div>
+        <div class="cp-freq">${cp.freq} txns</div>
+        <div class="cp-flag" style="background:${bg};color:${fg};">${flagTxt}</div>
+      </div>`;
+    }).join('');
+
+    // ── Velocity metrics ──────────────────────────────────────────────────────
+    const inflow = Math.round(baseVal * (spikeMultiplier + 1) * (rand()*0.4+0.8) * 10);
+    const cashDeps = c.rule === 'Large Cash' || c.rule === 'Structuring' ? Math.round(rand()*30+20) : Math.round(rand()*10+5);
+    const subThresh = c.rule === 'Structuring' || c.rule === 'Threshold' || c.rule === 'Large Cash' ? Math.round(rand()*8+3) : 0;
+    const avgTxSize = Math.round(inflow / (cashDeps + Math.round(rand()*20+10)));
+    const jurisdictions = c.risk === 'high' ? Math.round(rand()*3+3) : c.risk === 'moderate' ? Math.round(rand()*2+2) : 2;
+    const inflowColor = c.risk === 'high' ? 'color:var(--risk-high);' : c.risk === 'moderate' ? 'color:var(--risk-med);' : '';
+    document.getElementById('investigation-velocity-grid').innerHTML = `
+      <div class="vel-card"><div class="vel-val" style="${inflowColor}">DKK ${inflow}k</div><div class="vel-label">Total inflow</div><div class="vel-delta delta-up">+${pctChange}% vs prior 90d</div></div>
+      <div class="vel-card"><div class="vel-val" style="${inflowColor}">${cashDeps}</div><div class="vel-label">Cash deposits</div><div class="vel-delta delta-up">${subThresh>0?subThresh+' sub-threshold':'within norms'}</div></div>
+      <div class="vel-card"><div class="vel-val">DKK ${avgTxSize}k</div><div class="vel-label">Avg. transaction size</div><div class="vel-delta delta-up">+${Math.round(pctChange*0.8)}% vs prior</div></div>
+      <div class="vel-card"><div class="vel-val" style="${jurisdictions>=4?'color:var(--risk-high);':''}">${jurisdictions}</div><div class="vel-label">Active jurisdictions</div><div class="vel-delta delta-up">Was ${Math.max(1,jurisdictions-2)} prior 90d</div></div>`;
+
+    const alertTitles = {
+      'Structuring':'Structuring pattern detected','Threshold':'Threshold avoidance pattern',
+      'Large Cash':'Large cash deposit activity','Geographic Risk':'High-risk jurisdiction exposure',
+      'Rapid Movement':'Rapid movement / pass-through','Dormant Activation':'Dormant account reactivation',
+    };
+    const alertBodies = {
+      'Structuring':`${subThresh} deposits structured just below DKK 50,000 over 60 days. Consistent with intentional threshold avoidance (Hvidvaskloven §7).`,
+      'Threshold':`${subThresh} transactions clustered DKK 200–500 below reporting threshold. Pattern suggests deliberate structuring.`,
+      'Large Cash':`${cashDeps} cash deposits recorded, ${subThresh} below threshold. Volume inconsistent with declared income.`,
+      'Geographic Risk':`Transfers to ${jurisdictions - 1} high-risk jurisdictions detected. Counterparty due diligence required under §8.`,
+      'Rapid Movement':`Pass-through pattern: funds received and forwarded within 24h on ${Math.round(rand()*8+5)} occasions.`,
+      'Dormant Activation':`Account inactive 18+ months. DKK ${inflow}k deposited within first week — immediate review warranted.`,
+    };
+    const aTitle = alertTitles[c.rule] || `${c.rule} alert`;
+    const aBody = alertBodies[c.rule] || `Suspicious activity consistent with ${c.rule} pattern. Review required.`;
+    document.getElementById('investigation-alert-box').innerHTML = `<div class="alert-box"><div class="alert-box-title">${aTitle}</div><div class="alert-box-body">${aBody}</div></div>`;
+
+    // ── Activity timeline ─────────────────────────────────────────────────────
+    const tlMonths = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    const alertMonth = new Date(c.date).getMonth();
+    const tlEvents = [];
+    for (let i = 7; i >= 0; i--) {
+      const mIdx = ((alertMonth - i) + 12) % 12;
+      const mName = tlMonths[mIdx];
+      if (i > 5) { tlEvents.push({dot:'norm',month:mName,label:'Normal'}); }
+      else if (i === 5) { tlEvents.push({dot:'norm',month:mName,label:'Normal activity'}); }
+      else if (i === 4) { tlEvents.push({dot: c.risk==='low'?'norm':'med', month:mName, label: c.risk==='low'?'Normal':'Early anomaly detected'}); }
+      else if (i === 3) { tlEvents.push({dot: c.risk==='low'?'norm':'med', month:mName, label: c.risk==='low'?'Minor spike':'Volume spike begins'}); }
+      else if (i === 2) { tlEvents.push({dot: c.risk==='high'?'high':'med', month:mName, label: `${c.rule} pattern starts`}); }
+      else if (i === 1) { tlEvents.push({dot:'high',month:mName,label:`${cashDeps} transactions flagged`}); }
+      else { tlEvents.push({dot:'high',month:mName,label:'Alert triggered'}); }
+    }
+    const tlTrack = document.getElementById('investigation-timeline-track');
+    tlTrack.innerHTML = '<div class="timeline-line"></div>' + tlEvents.map(e =>
+      `<div class="tl-event"><div class="tl-dot tl-dot-${e.dot}"></div><div class="tl-month">${e.month}</div><div class="tl-label">${e.label}</div></div>`
+    ).join('');
+
+    // ── Previous cases ────────────────────────────────────────────────────────
+    const priorCount = c.status === 'SAR_filed' ? 2 : c.risk === 'high' ? Math.round(rand()*2+1) : Math.round(rand()*1);
+    if (priorCount === 0) {
+      document.getElementById('investigation-prev-cases').innerHTML = '<div style="font-size:12px;color:var(--muted);padding:4px 0;">No prior cases on record.</div>';
+      document.getElementById('investigation-prev-note').textContent = '';
+    } else {
+      const yr = new Date(c.date).getFullYear();
+      const priorCases = Array.from({length:priorCount},(_,i)=>{
+        const pastYr = yr - (i+1);
+        const pastMon = ['Jan','Mar','May','Aug','Oct','Nov'][Math.round(rand()*5)];
+        const caseNum = Math.round(rand()*2000+1000);
+        const outcome = i===0 && c.status==='SAR_filed' ? 'SAR filed' : 'Cleared — false positive';
+        const badge = outcome==='SAR filed' ? 'badge-high' : 'badge-info';
+        return `<div class="prev-case"><span class="case-id">CASE-${pastYr}-${caseNum}</span><span class="case-date">${pastMon} ${pastYr}</span><span class="badge ${badge}">${outcome}</span></div>`;
+      });
+      document.getElementById('investigation-prev-cases').innerHTML = priorCases.join('');
+      document.getElementById('investigation-prev-note').textContent = 'Prior cases reviewed under previous TMS ruleset. Current AI model captures cross-account patterns not visible before.';
+    }
+
+    document.getElementById('final-ruling').value = selectedRuling;
+    updateSubmitModal();
+  }
+
+  function selectRuling(type) {
+    selectedRuling = type;
+    ['sar','escalate','clear'].forEach(t => {
+      const btn = document.getElementById('r-'+t);
+      if (btn) btn.classList.remove('selected-sar','selected-clear','selected-escalate');
+    });
+    const activeBtn = document.getElementById('r-'+type);
+    if (activeBtn) activeBtn.classList.add(`selected-${type}`);
+  }
+
+  function clearForm() {
+    selectedRuling = 'sar';
+    ['sar','escalate','clear'].forEach(t => {
+      const btn = document.getElementById('r-'+t);
+      if (btn) btn.classList.remove('selected-sar','selected-clear','selected-escalate');
+    });
+    const notes = document.getElementById('notes');
+    if (notes) notes.value = '';
+    const confirmNotes = document.getElementById('confirm-notes');
+    if (confirmNotes) confirmNotes.value = '';
+  }
+
+  function openSubmitModal() {
+    const modal = document.getElementById('submit-modal');
+    const finalSelect = document.getElementById('final-ruling');
+    finalSelect.value = selectedRuling || 'sar';
+    document.getElementById('confirm-notes').value = document.getElementById('notes').value || '';
+    document.getElementById('override-checkbox').checked = false;
+    document.getElementById('email-sent').style.display = 'none';
+    modal.classList.add('open');
+    document.body.style.overflow = 'hidden';
+    updateSubmitModal();
+  }
+
+  function closeSubmitModal(event) {
+    if (event.target !== document.getElementById('submit-modal')) return;
+    closeSubmitModalDirect();
+  }
+
+  function closeSubmitModalDirect() {
+    document.getElementById('submit-modal').classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  function updateSubmitModal() {
+    const caseData = getCurrentCase();
+    const finalRuling = document.getElementById('final-ruling').value;
+    const score = caseData.score;
+    const aiBelievesFraud = ['high','moderate'].includes(caseData.risk);
+    const aiRecommendation = aiBelievesFraud ? 'sar' : 'clear';
+    const isOverruling = finalRuling !== aiRecommendation;
+    document.getElementById('confirm-belief').textContent = aiBelievesFraud ? 'Fraudulent' : 'Not Fraudulent';
+    document.getElementById('confirm-belief-desc').textContent = `The AI system believes this transaction is ${aiBelievesFraud ? 'fraudulent' : 'legitimate'} with ${score}% confidence.`;
+    const notesSection = document.getElementById('notes-section');
+    if (isOverruling) {
+      notesSection.style.display = 'block';
+    } else {
+      notesSection.style.display = 'none';
+      document.getElementById('override-checkbox').checked = false;
+    }
+  }
+
+  function confirmRuling() {
+    const finalRuling = document.getElementById('final-ruling').value;
+    selectedRuling = finalRuling;
+    const notes = document.getElementById('confirm-notes').value;
+    const notesField = document.getElementById('notes');
+    if (notesField) notesField.value = notes;
+    
+    // Close the submit modal
+    closeSubmitModalDirect();
+    
+    // Show notification modal for SAR or escalate rulings
+    if (finalRuling === 'sar' || finalRuling === 'escalate') {
+      const notificationModal = document.getElementById('notification-modal');
+      notificationModal.classList.add('open');
+      
+      // Auto-close notification modal after 1 second, then advance investigation
+      setTimeout(() => {
+        notificationModal.classList.remove('open');
+        advanceInvestigation();
+      }, 1000);
+    } else {
+      // For clear rulings, advance investigation immediately
+      advanceInvestigation();
+    }
+  }
+
+  function advanceInvestigation() {
+    changeInvestigation(1);
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    setTheme('light');
+    document.getElementById('today-date').textContent = new Date().toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'long',year:'numeric'});
+    const effArc = document.getElementById('eff-arc');
+    const effPctText = document.getElementById('eff-pct').textContent;
+    const effPct = parseFloat(effPctText) / 100;
+    const circumference = 251.2;
+    requestAnimationFrame(() => { effArc.style.strokeDashoffset = circumference * (1 - effPct); });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeSubmitModalDirect(); });
+
+    // Load live data from FastAPI backend; fall back to hardcoded CASES if offline
+    fetch('/api/queue?limit=50')
+      .then(r => r.ok ? r.json() : Promise.reject(r.status))
+      .then(data => {
+        if (data.cases && data.cases.length) {
+          CASES = data.cases;
+        }
+      })
+      .catch(() => { /* backend not running — keep hardcoded fallback CASES */ })
+      .finally(() => {
+        updateRiskSummaryCards();
+        showAlertQueue();
+      });
+  });
+</script>
+
+</body>
+</html>

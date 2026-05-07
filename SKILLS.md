@@ -138,20 +138,52 @@ The presentation follows the **Minto Pyramid Principle** as taught in the Accent
 2. The gradient boosting model ranks customers with AUC-ROC 0.85 vs. 0.71 baseline
 3. The analyst workbench makes risk scores actionable and auditable
 
-### Slide-Building Rules (from Accenture Storytelling module)
+### Slide Layout (Accenture Style)
 
-- **One main message per slide** — the tagline states the conclusion, not the topic.
-  Bad: "Model Performance" | Good: "Engineered features deliver a 21% AUC lift over pre-computed baselines"
-- **MECE groupings** — supporting arguments must be mutually exclusive and collectively exhaustive;
-  no overlapping points, no gaps.
-- **"So what?" filter** — include a slide only if it advances the recommendation. Technical detail
-  (hyperparameter grids, full confusion matrices) goes to the appendix.
-- **Inductive structure preferred** — lead with the conclusion, then support it. Avoids burying
-  the punchline.
-- **Steal with pride** — reuse clear visuals (SHAP waterfall, alert queue screenshot) rather than
-  building new diagrams from scratch.
-- **Align everything** — use alignment tools; a messy layout undermines credibility with compliance
-  stakeholders.
+The deck uses the same design system as the NordikBank Case Brief HTML. Replicate it exactly.
+
+**Colour palette**
+- `#460073` — dark purple (headers, h2, h3, card titles, table headers) — used as `--pdk`
+- `#7500C0` — medium purple (section labels, code text) — used as `--pd`
+- `#A100FF` — accent purple (rule underlines, highlight bar, numbered circles) — used as `--pc`
+- `#E6DCFF` — light purple tint (card backgrounds, highlight fill, pill backgrounds) — used as `--plk`
+- `#fff` — slide background
+- `#1a1a1a` — body text
+
+**Cover slide** (dark background, centred text block)
+- Background: `#460073` (dark purple)
+- Logo top-left; title 48px semibold white; subtitle 24px light purple below; metadata block bottom-left
+- Full-width 4px `#A100FF` bar at the very bottom
+
+**Content slides** (all other slides share this structure top-to-bottom)
+1. **Header strip** — logo right-aligned + section label left-aligned (10px uppercase, spaced, `#7500C0`);
+   separated from body by a 3px solid `#A100FF` bottom border
+2. **h2 action title** — 28px semibold `#460073`; this is the slide tagline (conclusion, not topic)
+3. **Body** — flex column filling remaining height; uses one of three layout patterns:
+   - **Single column** — prose / bullet list / table
+   - **Two-column grid** — `grid-template-columns: 1fr 1fr; gap: 28px` for two equal panels
+   - **Three-column grid** — `grid-template-columns: 1fr 1fr 1fr; gap: 22px` for three cards
+4. **Cards** — light purple tint (`#f9f7fc`) background, 1px `#E6DCFF` border, 3px radius;
+   numbered circle badges use `#A100FF` fill, white text (26×26px, circular)
+5. **Highlight callout** — `#E6DCFF` background, 4px left border in `#A100FF`; for key takeaways
+6. **Footer note** — 10px grey text, 1px top border, absolute-positioned 20px from bottom
+
+**Typography**
+- Font: Graphik → Inter → Helvetica Neue → Arial (system fallback)
+- h2: 28px / 600 weight / `#460073`
+- h3: 17px / 600 weight / `#460073`
+- h4: 15px / 600 weight / `#333` (card sub-headers)
+- Body / bullets: 15px / 1.6 line-height
+- Tables: 14px; header row `#460073` background, white text, uppercase, 0.5px letter-spacing;
+  alternating row tint `#faf8fd`; cell border `#e8e3f0`
+- Code: Consolas/monospace, 13px, `#f0ecf5` background, `#7500C0` text
+
+**Layout rules from the Storytelling module**
+- One main message per slide — the h2 action title states the conclusion, not the topic
+- Never reuse the same layout pattern for different concepts (graphical memory is strong)
+- Align everything — use grid/flex alignment tools, never eyeball spacing
+- Simple boxes over complex visuals — communicate with structure, not decoration
+- Spell-check before any submission
 
 ### 10-Minute Slide Budget (~1 min per slide)
 
