@@ -25,14 +25,8 @@
     line-height: 1.6;
   }
 
-  /* ── Deck shell ── */
-  #deck {
-    width: var(--slide-w);
-    margin: 0 auto;
-    position: relative;
-  }
+  #deck { width: var(--slide-w); margin: 0 auto; }
 
-  /* ── Slides ── */
   .slide {
     display: none;
     min-height: 640px;
@@ -42,617 +36,384 @@
     overflow: hidden;
     position: relative;
     box-shadow: 0 8px 40px rgba(0,0,0,0.45);
+    flex-direction: column;
   }
-  .slide.active { display: flex; flex-direction: column; }
+  .slide.active { display: flex; }
 
-  /* ── Slide header bar ── */
+  /* slide header */
   .slide-header {
     background: var(--pdk);
-    padding: 28px 48px 22px;
+    padding: 26px 48px 20px;
     flex-shrink: 0;
+    position: relative;
   }
-  .slide-header .eyebrow {
-    font-size: 10px; font-weight: 700; text-transform: uppercase;
-    letter-spacing: 1.8px; color: var(--pl); margin-bottom: 6px;
-  }
-  .slide-header h1 {
-    font-size: 28px; font-weight: 700; color: #fff; line-height: 1.2;
-  }
+  .eyebrow { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.8px; color: var(--pl); margin-bottom: 5px; }
+  .slide-header h1 { font-size: 26px; font-weight: 700; color: #fff; line-height: 1.2; }
   .slide-header h1 span { color: var(--pl); }
-  .slide-header .sub {
-    font-size: 13px; color: rgba(255,255,255,0.6); margin-top: 6px;
-  }
+  .slide-header .sub { font-size: 13px; color: rgba(255,255,255,0.6); margin-top: 5px; }
+  .slide-num { position: absolute; top: 18px; right: 28px; font-size: 11px; color: rgba(255,255,255,0.35); font-weight: 600; }
 
-  /* ── Slide body ── */
-  .slide-body {
-    padding: 32px 48px 36px;
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-  }
+  /* slide body */
+  .slide-body { padding: 28px 48px 32px; flex: 1; display: flex; flex-direction: column; gap: 16px; }
 
-  /* ── Cover slide ── */
-  .slide-cover {
+  /* cover */
+  .cover-body {
     background: linear-gradient(135deg, var(--pdk) 0%, #6e00b8 55%, #9b00f0 100%);
-    min-height: 640px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: flex-start;
-    padding: 72px 80px;
+    min-height: 640px; display: flex; flex-direction: column;
+    justify-content: center; padding: 72px 80px;
   }
-  .slide-cover .brand { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; color: var(--pl); margin-bottom: 24px; }
-  .slide-cover h1 { font-size: 48px; font-weight: 800; color: #fff; line-height: 1.1; margin-bottom: 16px; }
-  .slide-cover h1 span { color: var(--pl); }
-  .slide-cover .tagline { font-size: 17px; color: rgba(255,255,255,0.75); max-width: 580px; margin-bottom: 40px; line-height: 1.55; }
-  .slide-cover .meta-row { display: flex; gap: 32px; }
-  .slide-cover .meta-pill {
-    background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.2);
-    border-radius: 20px; padding: 7px 18px;
-    font-size: 13px; font-weight: 600; color: #fff;
-  }
-  .slide-cover .meta-pill span { color: var(--pl); }
+  .cover-body .brand { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; color: var(--pl); margin-bottom: 20px; }
+  .cover-body h1 { font-size: 46px; font-weight: 800; color: #fff; line-height: 1.1; margin-bottom: 14px; }
+  .cover-body h1 span { color: var(--pl); }
+  .cover-body .tagline { font-size: 17px; color: rgba(255,255,255,0.72); max-width: 600px; margin-bottom: 36px; line-height: 1.55; }
+  .pills { display: flex; gap: 12px; flex-wrap: wrap; }
+  .pill { background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.2); border-radius: 20px; padding: 7px 18px; font-size: 13px; font-weight: 600; color: #fff; }
+  .pill span { color: var(--pl); }
 
-  /* ── Two-column layout ── */
-  .cols { display: grid; gap: 24px; }
-  .cols-2 { grid-template-columns: 1fr 1fr; }
-  .cols-3 { grid-template-columns: 1fr 1fr 1fr; }
-  .cols-60-40 { grid-template-columns: 60fr 40fr; }
-  .cols-40-60 { grid-template-columns: 40fr 60fr; }
+  /* layout helpers */
+  .cols-2   { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .cols-3   { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+  .cols-6040 { display: grid; grid-template-columns: 60fr 40fr; gap: 18px; }
+  .cols-4060 { display: grid; grid-template-columns: 40fr 60fr; gap: 18px; }
 
-  /* ── Cards ── */
-  .card {
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: 8px; padding: 18px 20px;
-  }
-  .card-title {
-    font-size: 11px; font-weight: 700; text-transform: uppercase;
-    letter-spacing: 1px; color: var(--pc); margin-bottom: 10px;
-  }
-  .card p { font-size: 14px; color: var(--muted); margin-bottom: 8px; }
-  .card p:last-child { margin-bottom: 0; }
-  .card ul { margin-left: 16px; }
+  /* cards */
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px 18px; }
+  .card-title { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--pc); margin-bottom: 8px; }
+  .card ul { margin-left: 15px; }
   .card li { font-size: 13px; color: var(--muted); margin-bottom: 5px; line-height: 1.5; }
+  .card p  { font-size: 13px; color: var(--muted); margin-bottom: 6px; }
+  .card p:last-child { margin-bottom: 0; }
 
-  /* ── Metric cards ── */
-  .metrics-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
-  .metric-card {
-    background: var(--white); border: 1px solid var(--border);
-    border-radius: 8px; padding: 16px 12px; text-align: center;
-  }
-  .metric-val { font-size: 32px; font-weight: 800; color: var(--pdk); line-height: 1; margin-bottom: 5px; }
-  .metric-val.good { color: var(--risk-low); }
-  .metric-val.warn { color: var(--risk-med); }
-  .metric-val.bad  { color: var(--risk-high); }
-  .metric-label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.6px; font-weight: 600; }
-  .metric-sub { font-size: 11px; color: var(--muted); margin-top: 4px; }
+  /* metric cards */
+  .metrics-row { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; }
+  .mc { background: var(--white); border: 1px solid var(--border); border-radius: 8px; padding: 14px 10px; text-align: center; }
+  .mc-val { font-size: 30px; font-weight: 800; color: var(--pdk); line-height: 1; margin-bottom: 4px; }
+  .mc-val.good { color: var(--risk-low); }
+  .mc-val.warn { color: var(--risk-med); }
+  .mc-label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; }
+  .mc-sub { font-size: 11px; color: var(--muted); margin-top: 3px; }
 
-  /* ── Tables ── */
+  /* tables */
   table { width: 100%; border-collapse: collapse; font-size: 13px; }
-  th {
-    background: var(--pdk); color: #fff; text-align: left;
-    padding: 8px 12px; font-size: 11px; font-weight: 700;
-    text-transform: uppercase; letter-spacing: 0.5px;
-  }
-  td { padding: 8px 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  th { background: var(--pdk); color: #fff; text-align: left; padding: 8px 11px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.4px; }
+  td { padding: 7px 11px; border-bottom: 1px solid var(--border); vertical-align: top; }
   tr:nth-child(even) td { background: var(--surface); }
-  .td-good { color: var(--risk-low); font-weight: 700; }
-  .td-warn { color: var(--risk-med); font-weight: 700; }
-  .td-bad  { color: var(--risk-high); font-weight: 700; }
-  .td-bold { font-weight: 700; }
-  .badge-selected {
-    display: inline-block; background: var(--pc); color: #fff;
-    font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 10px;
-    text-transform: uppercase; letter-spacing: 0.5px; margin-left: 6px; vertical-align: middle;
-  }
+  .good { color: var(--risk-low); font-weight: 700; }
+  .warn { color: var(--risk-med); font-weight: 700; }
+  .bad  { color: var(--risk-high); font-weight: 700; }
+  .bold { font-weight: 700; }
+  .badge { display:inline-block; background:var(--pc); color:#fff; font-size:10px; font-weight:700; padding:2px 7px; border-radius:10px; text-transform:uppercase; letter-spacing:0.4px; margin-left:5px; vertical-align:middle; }
 
-  /* ── Highlight box ── */
-  .highlight {
-    background: var(--plk); border-left: 4px solid var(--pc);
-    padding: 14px 18px; border-radius: 2px;
-    font-size: 14px;
-  }
-  .highlight strong { color: var(--pdk); }
-  .callout-danger {
-    background: #fff0f0; border-left: 4px solid var(--risk-high);
-    padding: 14px 18px; border-radius: 2px; font-size: 14px;
-  }
+  /* highlight */
+  .hl { background: var(--plk); border-left: 4px solid var(--pc); padding: 12px 16px; border-radius: 2px; font-size: 13px; }
+  .hl strong { color: var(--pdk); }
+  .danger { background: #fff0f0; border-left: 4px solid var(--risk-high); padding: 12px 16px; border-radius: 2px; font-size: 13px; }
 
-  /* ── Complication cards ── */
-  .complication-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; }
-  .comp-card {
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: 8px; padding: 14px 14px;
-  }
-  .comp-card .comp-label {
-    font-size: 10px; font-weight: 700; text-transform: uppercase;
-    letter-spacing: 0.8px; color: var(--pc); margin-bottom: 6px;
-  }
-  .comp-card p { font-size: 12px; color: var(--muted); line-height: 1.5; }
+  /* complication row */
+  .comp-row { display: grid; grid-template-columns: repeat(5,1fr); gap: 8px; }
+  .comp { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 12px 13px; }
+  .comp .clabel { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; color: var(--pc); margin-bottom: 5px; }
+  .comp p { font-size: 12px; color: var(--muted); line-height: 1.5; }
 
-  /* ── Arrow box ── */
-  .arrow-box {
-    background: var(--pdk); border-radius: 8px; padding: 16px 20px;
-    display: flex; align-items: center; gap: 14px;
-  }
-  .arrow-box .arrow { font-size: 20px; color: var(--pl); flex-shrink: 0; }
-  .arrow-box p { font-size: 14px; color: #fff; line-height: 1.5; }
-  .arrow-box p strong { color: var(--pl); }
+  /* arrow callout */
+  .arrow-box { background: var(--pdk); border-radius: 8px; padding: 14px 18px; display: flex; align-items: flex-start; gap: 12px; }
+  .arrow-box .arrow { font-size: 18px; color: var(--pl); flex-shrink: 0; margin-top: 1px; }
+  .arrow-box p { font-size: 13px; color: #fff; line-height: 1.5; }
+  .arrow-box strong { color: var(--pl); }
 
-  /* ── Feature bar chart ── */
-  .bar-chart { display: flex; flex-direction: column; gap: 7px; }
+  /* bar chart */
+  .bar-chart { display: flex; flex-direction: column; gap: 6px; }
   .bar-row { display: flex; align-items: center; gap: 8px; }
-  .bar-label { font-size: 11px; color: var(--muted); width: 200px; flex-shrink: 0; text-align: right; font-family: 'Consolas', monospace; }
-  .bar-track { flex: 1; height: 18px; background: #ede9f6; border-radius: 3px; overflow: hidden; }
+  .bar-label { font-size: 11px; color: var(--muted); width: 195px; flex-shrink: 0; text-align: right; font-family: 'Consolas', monospace; }
+  .bar-track { flex: 1; height: 16px; background: #ede9f6; border-radius: 3px; overflow: hidden; }
   .bar-fill { height: 100%; background: var(--pc); border-radius: 3px; }
   .bar-fill.sec { background: var(--pl); }
-  .bar-val { font-size: 11px; font-weight: 700; color: var(--pdk); width: 42px; }
+  .bar-val { font-size: 11px; font-weight: 700; color: var(--pdk); width: 38px; }
 
-  /* ── Feature group tags ── */
-  .tag {
-    display: inline-block; font-size: 11px; font-weight: 600;
-    padding: 2px 9px; border-radius: 12px; margin: 2px 3px 2px 0;
-    background: var(--plk); color: var(--pdk);
+  /* tag */
+  .tag { display:inline-block; font-size:11px; font-weight:600; padding:2px 8px; border-radius:12px; margin:2px 2px 2px 0; }
+  .tag.txn  { background:#e8f4fd; color:#0066aa; }
+  .tag.acc  { background:#fef3e2; color:#8a5500; }
+  .tag.cust { background:#edf7ee; color:#2d6a30; }
+  .tag.base { background:#f3e8fd; color:#6200aa; }
+
+  /* risk pill */
+  .rp { display:inline-block; font-size:11px; font-weight:700; padding:2px 7px; border-radius:10px; }
+  .rp.h { background:#fde8e8; color:var(--risk-high); }
+  .rp.m { background:#fef3e2; color:var(--risk-med); }
+  .rp.l { background:#edf7ee; color:var(--risk-low); }
+  .rp.pri { background:var(--pdk); color:#fff; }
+
+  /* before/after */
+  .ba-grid { display:grid; grid-template-columns:1fr 20px 1fr; gap:0; }
+  .ba-vs { display:flex; align-items:center; justify-content:center; color:var(--muted); font-weight:700; font-size:12px; }
+  .ba-head { padding:9px 14px; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.7px; }
+  .ba-head.before { background:#f7e8e8; color:var(--risk-high); border-radius:8px 8px 0 0; }
+  .ba-head.after  { background:#edf7ee; color:var(--risk-low);  border-radius:8px 8px 0 0; }
+  .ba-row { display:flex; justify-content:space-between; align-items:center; padding:7px 14px; border-bottom:1px solid var(--border); font-size:13px; }
+  .ba-row:last-child { border-bottom:none; }
+  .ba-lbl { color:var(--muted); font-size:12px; }
+  .ba-val { font-weight:700; }
+
+  /* demo slide */
+  .demo-body {
+    background: linear-gradient(135deg, #1a0030 0%, var(--pdk) 100%);
+    flex: 1; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 28px; padding: 48px;
+    text-align: center;
   }
-  .tag.txn  { background: #e8f4fd; color: #0066aa; }
-  .tag.acc  { background: #fef3e2; color: #8a5500; }
-  .tag.cust { background: #edf7ee; color: #2d6a30; }
-  .tag.base { background: #f3e8fd; color: #6200aa; }
+  .demo-body .demo-icon { font-size: 56px; }
+  .demo-body h2 { font-size: 32px; font-weight: 800; color: #fff; }
+  .demo-body h2 span { color: var(--pl); }
+  .demo-body p { font-size: 15px; color: rgba(255,255,255,0.65); max-width: 520px; line-height: 1.6; }
+  .demo-steps { display: flex; gap: 16px; }
+  .demo-step { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.18); border-radius: 10px; padding: 14px 20px; color: #fff; font-size: 13px; font-weight: 600; text-align: center; min-width: 160px; }
+  .demo-step .ds-num { font-size: 22px; font-weight: 800; color: var(--pl); margin-bottom: 4px; }
 
-  /* ── Risk table rows ── */
-  .risk-high-row td { background: #fff5f5 !important; }
-  .risk-pill {
-    display: inline-block; font-size: 11px; font-weight: 700;
-    padding: 2px 8px; border-radius: 10px;
-  }
-  .risk-pill.h { background: #fde8e8; color: var(--risk-high); }
-  .risk-pill.m { background: #fef3e2; color: var(--risk-med); }
-  .risk-pill.l { background: #edf7ee; color: var(--risk-low); }
+  /* footer */
+  .slide-footer { padding: 9px 48px; border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; font-size: 11px; color: var(--muted); flex-shrink: 0; }
+  .footer-brand { font-weight: 700; color: var(--pdk); }
 
-  /* ── Impact comparison ── */
-  .before-after { display: grid; grid-template-columns: 1fr 16px 1fr; gap: 0; align-items: start; }
-  .before-after .vs { display: flex; align-items: center; justify-content: center; padding-top: 180px; color: var(--muted); font-weight: 700; font-size: 13px; }
-  .ba-col { border-radius: 8px; overflow: hidden; }
-  .ba-head { padding: 10px 16px; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; }
-  .ba-head.before { background: #f7e8e8; color: var(--risk-high); }
-  .ba-head.after  { background: #edf7ee; color: var(--risk-low); }
-  .ba-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 16px; border-bottom: 1px solid var(--border); font-size: 13px; }
-  .ba-row:last-child { border-bottom: none; }
-  .ba-row .ba-label { color: var(--muted); font-size: 12px; }
-  .ba-row .ba-val { font-weight: 700; }
-  .ba-row .ba-val.bad  { color: var(--risk-high); }
-  .ba-row .ba-val.good { color: var(--risk-low); }
+  /* speaker note */
+  .spk { background: #fffbea; border-left: 3px solid #f0c040; padding: 7px 12px; font-size: 12px; color: #6b5500; border-radius: 2px; }
+  .spk strong { color: #4a3800; }
 
-  /* ── Navigation ── */
+  /* nav */
   #nav {
-    position: fixed; bottom: 28px; left: 50%;
-    transform: translateX(-50%);
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
     display: flex; align-items: center; gap: 12px;
-    background: rgba(10,5,20,0.88);
-    border: 1px solid rgba(255,255,255,0.12);
-    padding: 10px 20px; border-radius: 40px;
-    backdrop-filter: blur(8px);
-    z-index: 999;
+    background: rgba(10,5,20,0.9); border: 1px solid rgba(255,255,255,0.12);
+    padding: 10px 20px; border-radius: 40px; backdrop-filter: blur(8px); z-index: 999;
   }
-  #nav button {
-    background: none; border: none; cursor: pointer;
-    color: rgba(255,255,255,0.7); font-size: 14px; font-weight: 600;
-    padding: 4px 12px; border-radius: 20px; transition: all 0.15s;
-    font-family: inherit;
-  }
-  #nav button:hover { background: rgba(255,255,255,0.1); color: #fff; }
-  #nav button:disabled { opacity: 0.3; cursor: default; }
-  #slide-counter { font-size: 12px; color: rgba(255,255,255,0.5); min-width: 52px; text-align: center; }
-  .dot-row { display: flex; gap: 5px; }
-  .dot { width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,0.25); transition: background 0.15s; cursor: pointer; }
-  .dot.active { background: var(--pc); }
+  #nav button { background:none; border:none; cursor:pointer; color:rgba(255,255,255,0.7); font-size:13px; font-weight:600; padding:4px 12px; border-radius:20px; transition:all 0.15s; font-family:inherit; }
+  #nav button:hover { background:rgba(255,255,255,0.1); color:#fff; }
+  #nav button:disabled { opacity:0.3; cursor:default; }
+  #slide-counter { font-size:12px; color:rgba(255,255,255,0.45); min-width:42px; text-align:center; }
+  .dot-row { display:flex; gap:5px; }
+  .dot { width:6px; height:6px; border-radius:50%; background:rgba(255,255,255,0.22); transition:background 0.15s; cursor:pointer; }
+  .dot.active { background:var(--pc); }
 
-  /* ── Slide number badge ── */
-  .slide-num {
-    position: absolute; top: 20px; right: 28px;
-    font-size: 11px; color: rgba(255,255,255,0.4); font-weight: 600;
-  }
+  code { font-family:'Consolas','Courier New',monospace; font-size:12px; background:#f0ecf5; color:var(--pd); padding:1px 5px; border-radius:3px; }
 
-  /* ── Section divider ── */
-  .section-label {
-    font-size: 10px; font-weight: 700; text-transform: uppercase;
-    letter-spacing: 1.8px; color: var(--pc); margin-bottom: 4px;
-  }
-
-  code {
-    font-family: 'Consolas', 'Courier New', monospace; font-size: 12px;
-    background: #f0ecf5; color: var(--pd); padding: 1px 5px; border-radius: 3px;
-  }
-
-  h2 { font-size: 20px; font-weight: 700; color: var(--pdk); margin-bottom: 12px; }
-  h3 { font-size: 16px; font-weight: 700; color: var(--pdk); margin-bottom: 8px; }
-  h4 { font-size: 13px; font-weight: 700; color: var(--pd); margin-bottom: 6px; }
-
-  /* ── Footer ── */
-  .slide-footer {
-    padding: 10px 48px;
-    border-top: 1px solid var(--border);
-    display: flex; justify-content: space-between; align-items: center;
-    font-size: 11px; color: var(--muted);
-    flex-shrink: 0;
-  }
-  .slide-footer .footer-brand { font-weight: 700; color: var(--pdk); }
+  .time-badge { display:inline-block; background:rgba(255,255,255,0.15); border-radius:12px; padding:2px 10px; font-size:11px; color:rgba(255,255,255,0.6); font-weight:600; margin-left:10px; vertical-align:middle; }
 </style>
 </head>
 <body>
-
 <div id="deck">
 
-  <!-- ══════════════════════════════════════════ SLIDE 1 — COVER -->
-  <div class="slide active" id="slide-1">
-    <div class="slide-cover">
-      <div class="brand">Accenture AI Program · Case Study · May 2026</div>
-      <h1>NordikBank <span>AML</span><br>Risk Scoring System</h1>
-      <div class="tagline">From 15,000 noise alerts to 50 high-confidence investigations — a machine learning system that ranks, explains, and supports every decision made by NordikBank's compliance team.</div>
-      <div class="meta-row">
-        <div class="meta-pill">XGBoost · Val AUC-ROC <span>0.889</span></div>
-        <div class="meta-pill"><span>64</span> engineered features</div>
-        <div class="meta-pill"><span>4×</span> improvement over random</div>
-      </div>
+<!-- ══ SLIDE 1 — COVER ══════════════════════════════════════════════ -->
+<div class="slide active" id="s1">
+  <div class="cover-body">
+    <div class="brand">Accenture AI Program · Case Study · May 2026</div>
+    <h1>NordikBank <span>AML</span><br>Risk Scoring System</h1>
+    <div class="tagline">From 15,000 noise alerts to 50 high-confidence investigations — a machine learning system that ranks, explains, and supports every compliance decision.</div>
+    <div class="pills">
+      <div class="pill">XGBoost · Val AUC-ROC <span>0.889</span></div>
+      <div class="pill"><span>64</span> engineered features</div>
+      <div class="pill"><span>4×</span> improvement vs. random triage</div>
+      <div class="pill">10 min including live demo</div>
     </div>
   </div>
+</div>
 
-  <!-- ══════════════════════════════════════════ SLIDE 2 — THE PROBLEM -->
-  <div class="slide" id="slide-2">
-    <div class="slide-header">
-      <div class="eyebrow">1 · Problem Framing</div>
-      <h1>Five complications. <span>One central challenge.</span></h1>
-      <div class="sub">How might NordikBank turn 15,000 noise alerts into 50 high-confidence investigations?</div>
-      <div class="slide-num">2 / 9</div>
-    </div>
-    <div class="slide-body">
-      <div class="complication-grid">
-        <div class="comp-card">
-          <div class="comp-label">Capacity</div>
-          <p>15,000 alerts/month. 45 analysts. Capacity for ~50 deep investigations. The math doesn't work.</p>
-        </div>
-        <div class="comp-card">
-          <div class="comp-label">Signal quality</div>
-          <p>97% false positive rate. Static rules can't tell a cash business from a structuring scheme.</p>
-        </div>
-        <div class="comp-card">
-          <div class="comp-label">Regulatory pressure</div>
-          <p>FSA review Q3 2025. Post-Danske Bank, explainable risk-based monitoring is mandatory.</p>
-        </div>
-        <div class="comp-card">
-          <div class="comp-label">Blind spots</div>
-          <p>Rules evaluate transactions in isolation — no behavioural history, no patterns over time.</p>
-        </div>
-        <div class="comp-card">
-          <div class="comp-label">Cost of misses</div>
-          <p>Under 6AMLD, the bank is liable for missed SAR filings — not just the individual analyst.</p>
-        </div>
-      </div>
-      <div class="arrow-box">
-        <div class="arrow">⟹</div>
-        <p><strong>Core question:</strong> A customer triggers 14 alerts — so does their neighbour. Only one is genuinely suspicious. The current system cannot tell them apart because it has no behavioural memory, no baseline, and no way to synthesise signals across time.</p>
-      </div>
-      <div class="highlight">
-        <strong>Why rules fail:</strong> Each rule evaluates transactions independently. A cash-heavy small business and a structuring scheme look identical to a threshold trigger. The model sees the customer's full 12-month history — velocity, counterparty diversity, deviation from their own baseline — and ranks rather than flags.
-      </div>
-    </div>
-    <div class="slide-footer"><span class="footer-brand">NordikBank AML</span><span>Accenture AI Program · May 2026</span></div>
+<!-- ══ SLIDE 2 — PROBLEM + ANSWER ══════════════════════════════════ -->
+<div class="slide" id="s2">
+  <div class="slide-header">
+    <div class="eyebrow">1 · Problem &amp; Answer <span class="time-badge">~2 min</span></div>
+    <h1>The system flags everyone. <span>We can only investigate 50.</span></h1>
+    <div class="sub">How might NordikBank turn 15,000 noise alerts into 50 high-confidence investigations?</div>
+    <div class="slide-num">2 / 6</div>
   </div>
-
-  <!-- ══════════════════════════════════════════ SLIDE 3 — OUR ANSWER -->
-  <div class="slide" id="slide-3">
-    <div class="slide-header">
-      <div class="eyebrow">2 · Our Answer</div>
-      <h1>A system that works for <span>both the model and the analyst</span></h1>
-      <div class="slide-num">3 / 9</div>
+  <div class="slide-body">
+    <div class="comp-row">
+      <div class="comp"><div class="clabel">Capacity</div><p>15,000 alerts/month. 45 analysts. ~50 deep investigations. The math doesn't work.</p></div>
+      <div class="comp"><div class="clabel">Signal quality</div><p>97% false positive rate. Static rules can't tell a cash business from a structuring scheme.</p></div>
+      <div class="comp"><div class="clabel">Regulatory pressure</div><p>FSA review Q3 2025. Post-Danske Bank, explainable risk-based monitoring is mandatory.</p></div>
+      <div class="comp"><div class="clabel">Blind spots</div><p>Rules evaluate transactions in isolation — no behavioural history, no cross-signal synthesis.</p></div>
+      <div class="comp"><div class="clabel">Cost of misses</div><p>Under 6AMLD, the bank is liable for missed SAR filings.</p></div>
     </div>
-    <div class="slide-body">
-      <div class="cols cols-2">
+    <div class="cols-2">
+      <div class="card">
+        <div class="card-title">⬡ Better model — rank risk, don't flag everything</div>
+        <ul>
+          <li>64 behavioural features from raw transactions — velocity, structuring, counterparty, geography</li>
+          <li>XGBoost customer-level score: <strong>AUC-ROC 0.889</strong> vs. 0.73 rule-based baseline (+22%)</li>
+          <li>Per-customer feature contributions — every score has a receipt</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="card-title">⬡ Better analysts — prevent overwork, enable focus</div>
+        <ul>
+          <li>Prioritised alert queue — highest-risk customers first, no random triage</li>
+          <li>Customer 360 view — full behavioural profile, top risk drivers, transaction history</li>
+          <li>Capacity-aligned threshold — queue always within the team's reach</li>
+        </ul>
+      </div>
+    </div>
+    <div class="hl">Our edge is not the model alone — it is the balance between <strong>technical performance</strong> and <strong>analyst wellbeing</strong>. Explainability is the bridge between ML and compliance.</div>
+  </div>
+  <div class="slide-footer"><span class="footer-brand">NordikBank AML</span><span>Accenture AI Program · May 2026</span></div>
+</div>
+
+<!-- ══ SLIDE 3 — FEATURES + MODEL ══════════════════════════════════ -->
+<div class="slide" id="s3">
+  <div class="slide-header">
+    <div class="eyebrow">2 · Features &amp; Model <span class="time-badge">~2 min</span></div>
+    <h1>64 features. Four models tested. <span>XGBoost selected.</span></h1>
+    <div class="sub">Feature engineering on raw transactions adds +22% AUC-ROC over pre-computed baselines alone.</div>
+    <div class="slide-num">3 / 6</div>
+  </div>
+  <div class="slide-body">
+    <div class="cols-6040" style="align-items:start;">
+      <div style="display:flex;flex-direction:column;gap:14px;">
+        <div style="font-size:12px;color:var(--muted);">Top drivers by alert frequency across all 1,200 customers</div>
+        <div class="bar-chart">
+          <div class="bar-row"><div class="bar-label">txn_type_international_wire</div><div class="bar-track"><div class="bar-fill" style="width:100%"></div></div><div class="bar-val">1,134</div></div>
+          <div class="bar-row"><div class="bar-label">monthly_vol_cv</div><div class="bar-track"><div class="bar-fill" style="width:85%"></div></div><div class="bar-val">962</div></div>
+          <div class="bar-row"><div class="bar-label">declined_ratio</div><div class="bar-track"><div class="bar-fill" style="width:80%"></div></div><div class="bar-val">902</div></div>
+          <div class="bar-row"><div class="bar-label">inflow_outflow_ratio</div><div class="bar-track"><div class="bar-fill sec" style="width:11%"></div></div><div class="bar-val">126</div></div>
+          <div class="bar-row"><div class="bar-label">max_cp_concentration</div><div class="bar-track"><div class="bar-fill sec" style="width:10%"></div></div><div class="bar-val">114</div></div>
+          <div class="bar-row"><div class="bar-label">unique_counterparties</div><div class="bar-track"><div class="bar-fill sec" style="width:6%"></div></div><div class="bar-val">69</div></div>
+        </div>
+        <div style="line-height:2.0; font-size:13px;">
+          <span class="tag cust">Identity &amp; KYC</span><span class="tag cust">Income consistency</span><span class="tag txn">Velocity</span><span class="tag txn">Structuring</span><span class="tag txn">Cash intensity</span><span class="tag txn">Counterparty</span><span class="tag txn">Geographic risk</span><span class="tag acc">Accounts</span><span class="tag txn">Temporal</span><span class="tag base">Baselines</span><span class="tag base">Deviation</span><span class="tag txn">Type mix</span>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <table>
+          <tr><th>Model</th><th>AUC-ROC</th><th>PR-AUC</th><th>Gap</th></tr>
+          <tr style="background:#fff5ff;">
+            <td class="bold">XGBoost <span class="badge">✓</span></td>
+            <td class="good">0.889</td><td class="good">0.556</td><td>+0.11</td>
+          </tr>
+          <tr><td>Random Forest</td><td>0.849</td><td>0.407</td><td>+0.15</td></tr>
+          <tr><td>Logistic Reg.</td><td>0.846</td><td>0.508</td><td>+0.15</td></tr>
+          <tr><td>Gradient Boost</td><td>0.845</td><td>0.373</td><td>+0.16</td></tr>
+        </table>
+        <div style="font-size:11px;color:var(--muted);">Baseline (18 features): best AUC 0.73</div>
         <div class="card">
-          <div class="card-title">⬡ Better model — rank risk, don't just flag it</div>
+          <div class="card-title">Why XGBoost</div>
           <ul>
-            <li>64 behavioural features built from raw transactions — velocity, structuring, counterparty networks, geographic spread</li>
-            <li>XGBoost customer-level scoring: <strong>AUC-ROC 0.889</strong> vs. 0.73 rule-based baseline</li>
-            <li>Prevalence-calibrated threshold: flags only the top ~4% of customers, matching analyst capacity</li>
-            <li>Per-customer feature contributions — every score has a receipt, not just a number</li>
+            <li>Best on <em>both</em> AUC-ROC and PR-AUC</li>
+            <li>Smallest train–val gap (+0.11) — most generalisable on 500 rows</li>
+            <li>Native <code>scale_pos_weight</code> handles 5% imbalance cleanly</li>
+            <li>Per-customer contributions satisfy FSA auditability</li>
           </ul>
         </div>
-        <div class="card">
-          <div class="card-title">⬡ Better analysts — prevent overwork, enable focus</div>
-          <ul>
-            <li>Prioritised alert queue: analysts see the highest-risk customers first — no more random triage</li>
-            <li>Customer investigation view: full behavioural profile, top drivers, and transaction history in one screen</li>
-            <li>SHAP-equivalent explanations satisfy FSA auditability — every flag is defensible in writing</li>
-            <li>Capacity-aligned threshold ensures the queue is always within the team's reach</li>
-          </ul>
-        </div>
-      </div>
-      <div class="highlight">
-        Our unique edge is not the model alone — it is the balance between <strong>technical performance</strong> and <strong>analyst wellbeing and stakeholder communication</strong>. Explainability is not a feature; it is the bridge between ML and compliance.
+        <div class="danger" style="font-size:12px;"><strong>Leakage guard:</strong> <code>alert_history</code> analyst decisions are downstream of the label — used only in the demo UI, never as features.</div>
       </div>
     </div>
-    <div class="slide-footer"><span class="footer-brand">NordikBank AML</span><span>Accenture AI Program · May 2026</span></div>
   </div>
+  <div class="slide-footer"><span class="footer-brand">NordikBank AML</span><span>Accenture AI Program · May 2026</span></div>
+</div>
 
-  <!-- ══════════════════════════════════════════ SLIDE 4 — DATA -->
-  <div class="slide" id="slide-4">
-    <div class="slide-header">
-      <div class="eyebrow">3 · Data Overview</div>
-      <h1>Six datasets, one prediction unit: <span>the customer</span></h1>
-      <div class="slide-num">4 / 9</div>
-    </div>
-    <div class="slide-body">
-      <div class="cols cols-60-40" style="gap:20px;">
-        <div>
-          <table>
-            <tr><th>Dataset</th><th>Rows</th><th>Key gotcha</th></tr>
-            <tr><td><code>customers.csv</code></td><td>1,200</td><td>Label + split column. Age/income null for corporates by design.</td></tr>
-            <tr><td><code>transactions.csv</code></td><td>77,384</td><td>Declined txns (~2%) show attempted amounts; no funds moved — treat separately.</td></tr>
-            <tr><td><code>accounts.csv</code></td><td>2,702</td><td>6-month avg balances per account.</td></tr>
-            <tr><td><code>baselines.csv</code></td><td>1,200</td><td>Pre-computed 6-month aggregates — deviation reference only.</td></tr>
-            <tr><td><code>alert_history.csv</code></td><td>19,469</td><td style="color:var(--risk-high);font-weight:600;">Analyst decisions are downstream of the label — using them as features causes leakage.</td></tr>
-            <tr><td><code>country_risk.csv</code></td><td>48</td><td>CPI, FATF, EU high-risk list. Only ~3% of transactions have a country code.</td></tr>
-          </table>
-        </div>
-        <div style="display:flex;flex-direction:column;gap:12px;">
-          <div class="metrics-row" style="grid-template-columns:1fr 1fr;">
-            <div class="metric-card"><div class="metric-val">700</div><div class="metric-label">Labelled</div><div class="metric-sub">train + val</div></div>
-            <div class="metric-card"><div class="metric-val warn">30</div><div class="metric-label">Suspicious</div><div class="metric-sub">4.3% rate</div></div>
-            <div class="metric-card"><div class="metric-val">500</div><div class="metric-label">Train</div><div class="metric-sub">21 positive</div></div>
-            <div class="metric-card"><div class="metric-val">200</div><div class="metric-label">Val</div><div class="metric-sub">9 positive</div></div>
-          </div>
-          <div class="callout-danger" style="font-size:13px;">
-            <strong>Unit of prediction is the customer.</strong> All transactions must aggregate up — never split transactions across train/val or leakage is unavoidable.
-          </div>
-          <div class="card" style="font-size:13px;">
-            <div class="card-title">Leakage avoided</div>
-            <p><code>alert_history</code> analyst decisions used only in the frontend investigation view — never as model inputs. Income declarations may be stale — ratio treated as noisy.</p>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="slide-footer"><span class="footer-brand">NordikBank AML</span><span>Accenture AI Program · May 2026</span></div>
+<!-- ══ SLIDE 4 — DEMO TRANSITION ════════════════════════════════════ -->
+<div class="slide" id="s4">
+  <div class="slide-header" style="background:#1a0030;">
+    <div class="eyebrow" style="color:var(--pl);">3 · Live Demo <span class="time-badge">~3 min</span></div>
+    <h1 style="color:#fff;">Let's open the <span>analyst workbench</span></h1>
+    <div class="sub" style="color:rgba(255,255,255,0.55);">Switching to app/index.html — walk through a real flagged customer.</div>
+    <div class="slide-num" style="color:rgba(255,255,255,0.3);">4 / 6</div>
   </div>
+  <div class="demo-body">
+    <div class="demo-icon">🔍</div>
+    <h2>NordikBank <span>Analyst Workbench</span></h2>
+    <p>A live demo of the system in action — walking through a flagged customer is worth more than ten slides of methodology.</p>
+    <div class="demo-steps">
+      <div class="demo-step"><div class="ds-num">1</div>Alert queue<br><span style="font-size:11px;opacity:0.7;">sorted by AI risk score</span></div>
+      <div class="demo-step"><div class="ds-num">2</div>Customer 360<br><span style="font-size:11px;opacity:0.7;">profile + top drivers</span></div>
+      <div class="demo-step"><div class="ds-num">3</div>File a ruling<br><span style="font-size:11px;opacity:0.7;">SAR / escalate / clear</span></div>
+    </div>
+    <p style="font-size:12px;color:rgba(255,255,255,0.4);">Return here after the demo for results &amp; next steps →</p>
+  </div>
+</div>
 
-  <!-- ══════════════════════════════════════════ SLIDE 5 — FEATURES -->
-  <div class="slide" id="slide-5">
-    <div class="slide-header">
-      <div class="eyebrow">4 · Feature Engineering</div>
-      <h1>64 behavioural features across <span>12 groups</span></h1>
-      <div class="sub">Every feature is grounded in a known AML typology — structuring, layering, smurfing, dormancy reuse.</div>
-      <div class="slide-num">5 / 9</div>
+<!-- ══ SLIDE 5 — RESULTS + IMPACT ════════════════════════════════════ -->
+<div class="slide" id="s5">
+  <div class="slide-header">
+    <div class="eyebrow">4 · Results &amp; Business Impact <span class="time-badge">~2 min</span></div>
+    <h1>Same 50 investigations. <span>4× more suspicious customers found.</span></h1>
+    <div class="slide-num">5 / 6</div>
+  </div>
+  <div class="slide-body">
+    <div class="metrics-row">
+      <div class="mc"><div class="mc-val good">0.889</div><div class="mc-label">Val AUC-ROC</div><div class="mc-sub">vs 0.73 baseline</div></div>
+      <div class="mc"><div class="mc-val good">0.556</div><div class="mc-label">PR-AUC</div><div class="mc-sub">random = 0.043</div></div>
+      <div class="mc"><div class="mc-val">16%</div><div class="mc-label">Top-50 flag rate</div><div class="mc-sub">vs ~4% at random</div></div>
+      <div class="mc"><div class="mc-val good">0.988</div><div class="mc-label">Max risk score</div><div class="mc-sub">CUST_0117</div></div>
     </div>
-    <div class="slide-body">
-      <div class="cols cols-2" style="gap:16px;">
-        <div style="display:flex;flex-direction:column;gap:8px;">
-          <div style="font-size:12px;color:var(--muted);margin-bottom:2px;">Top features by alert frequency (XGBoost contributions, all 1,200 customers)</div>
-          <div class="bar-chart">
-            <div class="bar-row"><div class="bar-label">txn_type_international_wire</div><div class="bar-track"><div class="bar-fill" style="width:100%"></div></div><div class="bar-val">1,134</div></div>
-            <div class="bar-row"><div class="bar-label">monthly_vol_cv</div><div class="bar-track"><div class="bar-fill" style="width:85%"></div></div><div class="bar-val">962</div></div>
-            <div class="bar-row"><div class="bar-label">declined_ratio</div><div class="bar-track"><div class="bar-fill" style="width:80%"></div></div><div class="bar-val">902</div></div>
-            <div class="bar-row"><div class="bar-label">txn_type_direct_debit</div><div class="bar-track"><div class="bar-fill sec" style="width:14%"></div></div><div class="bar-val">155</div></div>
-            <div class="bar-row"><div class="bar-label">inflow_outflow_ratio</div><div class="bar-track"><div class="bar-fill sec" style="width:11%"></div></div><div class="bar-val">126</div></div>
-            <div class="bar-row"><div class="bar-label">max_cp_concentration</div><div class="bar-track"><div class="bar-fill sec" style="width:10%"></div></div><div class="bar-val">114</div></div>
-            <div class="bar-row"><div class="bar-label">unique_counterparties</div><div class="bar-track"><div class="bar-fill sec" style="width:6%"></div></div><div class="bar-val">69</div></div>
-          </div>
-          <div class="highlight" style="margin-top:4px;font-size:13px;">
-            International wire share, volume volatility, and declined transaction ratio drive <strong>94% of alerts</strong>. Each is invisible to the rule-based TMS.
-          </div>
-        </div>
-        <div style="display:flex;flex-direction:column;gap:6px;">
-          <div style="font-size:12px;color:var(--muted);margin-bottom:2px;">All 12 feature groups</div>
-          <div style="line-height:2;">
-            <span class="tag cust">Identity &amp; KYC</span>
-            <span class="tag cust">Income consistency</span>
-            <span class="tag txn">Velocity &amp; volume</span>
-            <span class="tag txn">Structuring (13–15k DKK)</span>
-            <span class="tag txn">Cash intensity</span>
-            <span class="tag txn">Counterparty network</span>
-            <span class="tag txn">Geographic &amp; country risk</span>
-            <span class="tag acc">Account structure</span>
-            <span class="tag txn">Temporal patterns</span>
-            <span class="tag base">Baseline pass-through</span>
-            <span class="tag base">Deviation from baseline</span>
-            <span class="tag txn">Transaction type mix</span>
-          </div>
-          <div class="card" style="margin-top:4px;font-size:13px;">
-            <div class="card-title">Three critical design decisions</div>
-            <ul>
-              <li><strong>Declined txns separated</strong> — distort volume if included; tracked as <code>declined_ratio</code> (probing behaviour)</li>
-              <li><strong>CPI imputed at median</strong> — imputing zero would falsely flag customers with no international activity as extreme risk</li>
-              <li><strong>Income ratio uses turnover for corporates</strong> — <code>declared_annual_income</code> is null by design for business customers</li>
-            </ul>
-          </div>
-        </div>
+    <div class="ba-grid">
+      <div>
+        <div class="ba-head before">Current TMS — rule-based</div>
+        <div class="ba-row"><div class="ba-lbl">Monthly alerts</div><div class="ba-val bad">~15,000</div></div>
+        <div class="ba-row"><div class="ba-lbl">False positive rate</div><div class="ba-val bad">~97%</div></div>
+        <div class="ba-row"><div class="ba-lbl">Risk stratification</div><div class="ba-val bad">None — uniform noise</div></div>
+        <div class="ba-row"><div class="ba-lbl">Suspicious in top-50</div><div class="ba-val bad">~4% (random)</div></div>
+        <div class="ba-row"><div class="ba-lbl">FSA explainability</div><div class="ba-val bad">Rule name only</div></div>
+      </div>
+      <div class="ba-vs">→</div>
+      <div>
+        <div class="ba-head after">Our ML system</div>
+        <div class="ba-row"><div class="ba-lbl">Monthly alerts</div><div class="ba-val good">Top-50 prioritised queue</div></div>
+        <div class="ba-row"><div class="ba-lbl">False positive rate</div><div class="ba-val good">Substantially reduced</div></div>
+        <div class="ba-row"><div class="ba-lbl">Risk stratification</div><div class="ba-val good">Full 0–1 probability rank</div></div>
+        <div class="ba-row"><div class="ba-lbl">Suspicious in top-50</div><div class="ba-val good">~16% (4× improvement)</div></div>
+        <div class="ba-row"><div class="ba-lbl">FSA explainability</div><div class="ba-val good">Per-customer feature drivers</div></div>
       </div>
     </div>
-    <div class="slide-footer"><span class="footer-brand">NordikBank AML</span><span>Accenture AI Program · May 2026</span></div>
+    <div class="hl" style="font-size:13px;">Score distribution: <strong>53 customers above 0.60</strong> (high risk, immediate investigation) · <strong>20 between 0.30–0.60</strong> (enhanced due diligence) · <strong>1,127 below 0.30</strong> (routine monitoring).</div>
   </div>
+  <div class="slide-footer"><span class="footer-brand">NordikBank AML</span><span>Accenture AI Program · May 2026</span></div>
+</div>
 
-  <!-- ══════════════════════════════════════════ SLIDE 6 — MODELLING -->
-  <div class="slide" id="slide-6">
-    <div class="slide-header">
-      <div class="eyebrow">5 · Model Selection</div>
-      <h1>XGBoost wins on both <span>AUC-ROC and generalisation</span></h1>
-      <div class="sub">Four models evaluated on identical feature matrices. Held-out validation: 200 customers, 9 suspicious.</div>
-      <div class="slide-num">6 / 9</div>
-    </div>
-    <div class="slide-body">
-      <div class="cols cols-60-40" style="gap:20px;align-items:start;">
-        <div style="display:flex;flex-direction:column;gap:14px;">
-          <table>
-            <tr><th>Model</th><th>AUC-ROC</th><th>PR-AUC</th><th>Train gap</th><th>Notes</th></tr>
-            <tr class="risk-high-row">
-              <td class="td-bold">XGBoost <span class="badge-selected">selected</span></td>
-              <td class="td-good">0.889</td><td class="td-good">0.556</td><td>+0.11</td>
-              <td>Best on both metrics. Smallest train–val gap. Native feature contributions for FSA.</td>
-            </tr>
-            <tr>
-              <td>Random Forest</td>
-              <td>0.849</td><td>0.407</td><td>+0.15</td>
-              <td>Similar AUC, weaker PR-AUC — ranks positives less precisely.</td>
-            </tr>
-            <tr>
-              <td>Logistic Regression</td>
-              <td>0.846</td><td>0.508</td><td>+0.15</td>
-              <td>Fully interpretable but misses feature interactions. Retained as benchmark.</td>
-            </tr>
-            <tr>
-              <td>Gradient Boosting</td>
-              <td>0.845</td><td>0.373</td><td>+0.16</td>
-              <td>Lowest PR-AUC — poor precision on suspicious customers despite similar AUC.</td>
-            </tr>
-          </table>
-          <div style="font-size:12px;color:var(--muted);">Baseline (18 pre-computed features only): XGB 0.73 · RF 0.73 · GB 0.71 · LR 0.68 — feature engineering adds +24% AUC-ROC.</div>
-        </div>
-        <div style="display:flex;flex-direction:column;gap:12px;">
-          <div class="card">
-            <div class="card-title">Why XGBoost beats GB on PR-AUC</div>
-            <p style="font-size:13px;">PR-AUC captures precision at low recall thresholds — critical when there are only 9 positives in 200 val customers. XGBoost's <code>scale_pos_weight=22</code> natively handles the imbalance; GB relies on sample weighting which is less stable at small counts.</p>
-          </div>
-          <div class="card">
-            <div class="card-title">Overfitting controls</div>
-            <ul>
-              <li>5-fold stratified CV on training split</li>
-              <li>Early stopping on val AUC (XGBoost)</li>
-              <li>Max depth 3 across all tree models</li>
-              <li>Train–val AUC gap reported for all</li>
-            </ul>
-          </div>
-          <div class="card">
-            <div class="card-title">Final model training</div>
-            <p style="font-size:13px;">Retrained on <strong>train + val combined</strong> (700 customers, 30 suspicious) after hyperparameters fixed. The 0.889 AUC-ROC is honest — computed before the final model saw val data.</p>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="slide-footer"><span class="footer-brand">NordikBank AML</span><span>Accenture AI Program · May 2026</span></div>
+<!-- ══ SLIDE 6 — NEXT STEPS + CLOSE ═════════════════════════════════ -->
+<div class="slide" id="s6">
+  <div class="slide-header">
+    <div class="eyebrow">5 · Next Steps &amp; Close <span class="time-badge">~1 min</span></div>
+    <h1>What it takes to go from <span>proof-of-concept to production</span></h1>
+    <div class="slide-num">6 / 6</div>
   </div>
-
-  <!-- ══════════════════════════════════════════ SLIDE 7 — RESULTS -->
-  <div class="slide" id="slide-7">
-    <div class="slide-header">
-      <div class="eyebrow">6 · Results</div>
-      <h1>Top-10 highest-risk customers — <span>live scoring across all 1,200</span></h1>
-      <div class="sub">Each score has three named drivers. Per-customer XGBoost feature contributions — not global weights.</div>
-      <div class="slide-num">7 / 9</div>
+  <div class="slide-body">
+    <table>
+      <tr><th>Priority</th><th>Action</th><th>Why</th><th>Effort</th></tr>
+      <tr>
+        <td><span class="rp h">High</span></td>
+        <td class="bold">Integrate SHAP into workbench</td>
+        <td>FSA compliance — global importances are not enough; every flag needs a per-customer audit trail</td>
+        <td>~1 day</td>
+      </tr>
+      <tr>
+        <td><span class="rp h">High</span></td>
+        <td class="bold">Calibrate classification threshold</td>
+        <td>Raw probabilities are uncalibrated — Platt scaling gives true probabilities for SAR prioritisation</td>
+        <td>~2 hours</td>
+      </tr>
+      <tr>
+        <td><span class="rp m">Medium</span></td>
+        <td>Network graph features</td>
+        <td>Smurfing rings — shared counterparties between customers — are invisible to the current model</td>
+        <td>~3 days</td>
+      </tr>
+      <tr>
+        <td><span class="rp m">Medium</span></td>
+        <td>Temporally gate alert_history</td>
+        <td>Pre-investigation decisions are clean signals once timestamp-gated</td>
+        <td>~1 day</td>
+      </tr>
+      <tr>
+        <td><span class="rp l">Low</span></td>
+        <td>Real-time scoring endpoint</td>
+        <td>Current system is batch — real-time requires a feature store and online inference</td>
+        <td>Months</td>
+      </tr>
+    </table>
+    <div class="hl" style="font-size:14px;">
+      AUC-ROC from <strong>0.73 → 0.889</strong> (+22%) shows behavioural feature engineering on raw transactions substantially outperforms pre-computed aggregates. The system surfaces suspicious customers <strong>4× more effectively</strong> within the same analyst capacity. The immediate unlock for full regulatory deployment is <strong>SHAP integration</strong>.
     </div>
-    <div class="slide-body">
-      <div class="metrics-row" style="margin-bottom:4px;">
-        <div class="metric-card"><div class="metric-val good">0.889</div><div class="metric-label">Val AUC-ROC</div><div class="metric-sub">vs 0.73 baseline</div></div>
-        <div class="metric-card"><div class="metric-val good">0.556</div><div class="metric-label">PR-AUC</div><div class="metric-sub">random = 0.043</div></div>
-        <div class="metric-card"><div class="metric-val">16%</div><div class="metric-label">Top-50 flag rate</div><div class="metric-sub">vs ~4% random</div></div>
-        <div class="metric-card"><div class="metric-val good">0.988</div><div class="metric-label">Max score</div><div class="metric-sub">CUST_0117</div></div>
-      </div>
-      <table>
-        <tr><th>#</th><th>Customer</th><th>Score</th><th>Primary driver</th><th>Secondary driver</th><th>Tertiary driver</th></tr>
-        <tr class="risk-high-row"><td>1</td><td class="td-bold">CUST_0117</td><td class="td-bad">0.988</td><td><span class="risk-pill h">Intl wire</span></td><td><span class="risk-pill h">Vol CV</span></td><td><span class="risk-pill m">Declined</span></td></tr>
-        <tr class="risk-high-row"><td>2</td><td class="td-bold">CUST_0511</td><td class="td-bad">0.988</td><td><span class="risk-pill h">Intl wire</span></td><td><span class="risk-pill h">Vol CV</span></td><td><span class="risk-pill m">In/out ratio</span></td></tr>
-        <tr class="risk-high-row"><td>3</td><td class="td-bold">CUST_0756</td><td class="td-bad">0.982</td><td><span class="risk-pill h">Declined</span></td><td><span class="risk-pill h">Vol CV</span></td><td><span class="risk-pill m">In/out ratio</span></td></tr>
-        <tr><td>4</td><td class="td-bold">CUST_0553</td><td class="td-bad">0.981</td><td><span class="risk-pill h">Intl wire</span></td><td><span class="risk-pill h">Vol CV</span></td><td><span class="risk-pill m">Declined</span></td></tr>
-        <tr><td>5</td><td class="td-bold">CUST_0776</td><td class="td-bad">0.978</td><td><span class="risk-pill h">Intl wire</span></td><td><span class="risk-pill h">Vol CV</span></td><td><span class="risk-pill m">Declined</span></td></tr>
-        <tr><td>6</td><td class="td-bold">CUST_0983</td><td class="td-bad">0.978</td><td><span class="risk-pill h">Intl wire</span></td><td><span class="risk-pill h">Vol CV</span></td><td><span class="risk-pill m">Declined</span></td></tr>
-        <tr><td>7</td><td class="td-bold">CUST_0644</td><td class="td-bad">0.976</td><td><span class="risk-pill h">Intl wire</span></td><td><span class="risk-pill h">Vol CV</span></td><td><span class="risk-pill m">Declined</span></td></tr>
-        <tr><td>8</td><td class="td-bold">CUST_1161</td><td class="td-bad">0.976</td><td><span class="risk-pill h">Declined</span></td><td><span class="risk-pill h">Vol CV</span></td><td><span class="risk-pill m">Intl wire</span></td></tr>
-        <tr><td>9</td><td class="td-bold">CUST_0778</td><td class="td-bad">0.972</td><td><span class="risk-pill h">Intl wire</span></td><td><span class="risk-pill h">Vol CV</span></td><td><span class="risk-pill m">Counterparties</span></td></tr>
-        <tr><td>10</td><td class="td-bold">CUST_0748</td><td class="td-bad">0.970</td><td><span class="risk-pill h">Intl wire</span></td><td><span class="risk-pill m">Counterparties</span></td><td><span class="risk-pill m">Declined</span></td></tr>
-      </table>
-    </div>
-    <div class="slide-footer"><span class="footer-brand">NordikBank AML</span><span>Accenture AI Program · May 2026</span></div>
+    <div class="spk"><strong>Q&A prompt:</strong> What signals would you most want to explain to the FSA? · If headcount doubled, how would you recalibrate the threshold? · What would a network graph feature look like for a known smurfing case?</div>
   </div>
-
-  <!-- ══════════════════════════════════════════ SLIDE 8 — BUSINESS IMPACT -->
-  <div class="slide" id="slide-8">
-    <div class="slide-header">
-      <div class="eyebrow">7 · Business Impact</div>
-      <h1>The same 50 investigations. <span>4× more suspicious customers found.</span></h1>
-      <div class="slide-num">8 / 9</div>
-    </div>
-    <div class="slide-body">
-      <div class="before-after">
-        <div class="ba-col">
-          <div class="ba-head before">Current TMS (rule-based)</div>
-          <div class="ba-row"><div class="ba-label">Monthly alerts</div><div class="ba-val bad">~15,000</div></div>
-          <div class="ba-row"><div class="ba-label">False positive rate</div><div class="ba-val bad">~97%</div></div>
-          <div class="ba-row"><div class="ba-label">Risk stratification</div><div class="ba-val bad">None — uniform noise</div></div>
-          <div class="ba-row"><div class="ba-label">Suspicious in top-50</div><div class="ba-val bad">~4% (random)</div></div>
-          <div class="ba-row"><div class="ba-label">Per-alert explanation</div><div class="ba-val bad">Rule name only</div></div>
-          <div class="ba-row"><div class="ba-label">FSA auditability</div><div class="ba-val bad">Rule description</div></div>
-          <div class="ba-row"><div class="ba-label">Analyst experience</div><div class="ba-val bad">Alert fatigue</div></div>
-        </div>
-        <div class="vs">→</div>
-        <div class="ba-col">
-          <div class="ba-head after">Our ML system</div>
-          <div class="ba-row"><div class="ba-label">Monthly alerts</div><div class="ba-val good">Top-50 prioritised queue</div></div>
-          <div class="ba-row"><div class="ba-label">False positive rate</div><div class="ba-val good">Substantially reduced</div></div>
-          <div class="ba-row"><div class="ba-label">Risk stratification</div><div class="ba-val good">Full 0–1 probability rank</div></div>
-          <div class="ba-row"><div class="ba-label">Suspicious in top-50</div><div class="ba-val good">~16% (4× improvement)</div></div>
-          <div class="ba-row"><div class="ba-label">Per-alert explanation</div><div class="ba-val good">Top-3 feature drivers</div></div>
-          <div class="ba-row"><div class="ba-label">FSA auditability</div><div class="ba-val good">Feature contributions per customer</div></div>
-          <div class="ba-row"><div class="ba-label">Analyst experience</div><div class="ba-val good">Focused, defensible queue</div></div>
-        </div>
-      </div>
-      <div class="highlight" style="font-size:13px;">
-        <strong>Regulatory framing:</strong> Three EBA Guidelines addressed — risk-based approach (ranked probabilities, not binary flags), explainability (feature contributions satisfy FSA audit), and behavioural monitoring (12-month aggregation, not isolated transactions).
-      </div>
-    </div>
-    <div class="slide-footer"><span class="footer-brand">NordikBank AML</span><span>Accenture AI Program · May 2026</span></div>
-  </div>
-
-  <!-- ══════════════════════════════════════════ SLIDE 9 — NEXT STEPS -->
-  <div class="slide" id="slide-9">
-    <div class="slide-header">
-      <div class="eyebrow">8 · Next Steps</div>
-      <h1>What unlocks <span>full regulatory deployment</span></h1>
-      <div class="slide-num">9 / 9</div>
-    </div>
-    <div class="slide-body">
-      <table>
-        <tr><th>Priority</th><th>Action</th><th>Why it matters</th><th>Effort</th></tr>
-        <tr>
-          <td><span class="risk-pill h">High</span></td>
-          <td><strong>Integrate SHAP into analyst workbench</strong></td>
-          <td>FSA compliance — global importances are not sufficient; every flag needs a per-customer audit trail</td>
-          <td>~1 day · <code>shap.TreeExplainer</code> on existing model</td>
-        </tr>
-        <tr>
-          <td><span class="risk-pill h">High</span></td>
-          <td><strong>Calibrate classification threshold</strong></td>
-          <td>Current probabilities are uncalibrated — Platt scaling brings them to true probabilities, required for SAR prioritisation</td>
-          <td>~2 hours · <code>CalibratedClassifierCV</code></td>
-        </tr>
-        <tr>
-          <td><span class="risk-pill m">Medium</span></td>
-          <td><strong>Temporally gate alert_history features</strong></td>
-          <td>Analyst decisions pre-dating the scoring window are clean signals — currently excluded to avoid leakage</td>
-          <td>~1 day · timestamp filtering</td>
-        </tr>
-        <tr>
-          <td><span class="risk-pill m">Medium</span></td>
-          <td><strong>Network graph features</strong></td>
-          <td>Shared counterparties between customers (smurfing rings) are invisible to the current model</td>
-          <td>~3 days · NetworkX + community detection</td>
-        </tr>
-        <tr>
-          <td><span class="risk-pill m">Medium</span></td>
-          <td><strong>Model drift monitoring</strong></td>
-          <td>Customer behaviour shifts over time; PSI on score distribution signals when retraining is needed</td>
-          <td>~1 day · population stability index</td>
-        </tr>
-        <tr>
-          <td><span class="risk-pill l">Low</span></td>
-          <td><strong>Real-time scoring endpoint</strong></td>
-          <td>Current system is batch. Real-time requires a feature store and online inference architecture.</td>
-          <td>Months · full MLOps change</td>
-        </tr>
-      </table>
-      <div class="highlight" style="font-size:14px;">
-        The AUC-ROC improvement from 0.73 (baseline) to <strong>0.889</strong> (engineered features) — a 22% relative gain — shows that behavioural feature engineering on raw transactions substantially outperforms pre-computed aggregates. The system surfaces suspicious customers <strong>4× more effectively</strong> than random within the same analyst capacity constraint. The immediate unlock for full regulatory deployment is <strong>SHAP integration</strong>.
-      </div>
-    </div>
-    <div class="slide-footer"><span class="footer-brand">NordikBank AML</span><span>Accenture AI Program · May 2026</span></div>
-  </div>
+  <div class="slide-footer"><span class="footer-brand">NordikBank AML</span><span>Accenture AI Program · May 2026</span></div>
+</div>
 
 </div><!-- /deck -->
 
@@ -660,7 +421,7 @@
 <div id="nav">
   <button id="btn-prev" onclick="go(-1)" disabled>← Prev</button>
   <div class="dot-row" id="dots"></div>
-  <span id="slide-counter">1 / 9</span>
+  <span id="slide-counter">1 / 6</span>
   <button id="btn-next" onclick="go(1)">Next →</button>
 </div>
 
@@ -674,7 +435,6 @@
   const btnPrev   = document.getElementById('btn-prev');
   const btnNext   = document.getElementById('btn-next');
 
-  // Build dots
   slides.forEach((_, i) => {
     const d = document.createElement('div');
     d.className = 'dot' + (i === 0 ? ' active' : '');
@@ -685,7 +445,7 @@
   function goTo(n) {
     slides[cur].classList.remove('active');
     dotsEl.children[cur].classList.remove('active');
-    cur = n;
+    cur = Math.max(0, Math.min(n, total - 1));
     slides[cur].classList.add('active');
     dotsEl.children[cur].classList.add('active');
     counterEl.textContent = `${cur + 1} / ${total}`;
@@ -696,10 +456,9 @@
 
   function go(dir) { goTo(cur + dir); }
 
-  // Keyboard navigation
   document.addEventListener('keydown', e => {
-    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { if (cur < total - 1) go(1); }
-    if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')   { if (cur > 0)         go(-1); }
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') go(1);
+    if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')   go(-1);
   });
 </script>
 </body>
