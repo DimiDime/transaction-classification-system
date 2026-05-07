@@ -6,25 +6,25 @@
 <title>NordikBank AML — Presentation</title>
 <style>
   /*
-    Accenture palette:
+    Accenture palette — light theme:
       --ac:        #A100FF   primary purple
-      --ac-dim:    rgba(161,0,255,0.18)  muted purple fill
-      --ac-border: rgba(161,0,255,0.35)  purple border
-      --ac-light:  #C966FF   lighter purple tone
-      --bg:        #0d0d0d   near-black
-      --surface:   #161616   card surface
-      --line:      rgba(255,255,255,0.08)
-      --txt:       #ffffff
-      --txt-mid:   rgba(255,255,255,0.60)
-      --txt-dim:   rgba(255,255,255,0.35)
+      --ac-dim:    rgba(161,0,255,0.08)  muted purple fill
+      --ac-border: rgba(161,0,255,0.30)  purple border
+      --ac-light:  #7700CC   deeper purple tone (readable on white)
+      --bg:        #f5f5f5   near-white
+      --surface:   #ffffff   card surface
+      --line:      rgba(0,0,0,0.07)
+      --txt:       #0d0d0d
+      --txt-mid:   rgba(0,0,0,0.55)
+      --txt-dim:   rgba(0,0,0,0.35)
   */
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
 
   body {
     font-family: 'Segoe UI', system-ui, sans-serif;
-    background: #0d0d0d;
-    color: #ffffff;
+    background: #f5f5f5;
+    color: #0d0d0d;
     height: 100vh;
     overflow: hidden;
   }
@@ -60,19 +60,19 @@
     z-index: 100;
   }
   .nav button {
-    background: rgba(161,0,255,0.15);
-    border: 1px solid rgba(161,0,255,0.4);
-    color: #ffffff;
+    background: rgba(161,0,255,0.10);
+    border: 1px solid rgba(161,0,255,0.35);
+    color: #A100FF;
     padding: 7px 18px;
     border-radius: 4px;
     cursor: pointer;
     font-size: 12px;
     transition: background 0.2s;
   }
-  .nav button:hover { background: rgba(161,0,255,0.30); }
+  .nav button:hover { background: rgba(161,0,255,0.20); }
   .slide-counter {
     font-size: 11px;
-    color: rgba(255,255,255,0.30);
+    color: rgba(0,0,0,0.30);
     min-width: 36px;
     text-align: center;
   }
@@ -90,25 +90,26 @@
     font-size: 26px;
     font-weight: 700;
     line-height: 1.25;
-    color: #ffffff;
+    color: #0d0d0d;
     max-width: 800px;
     margin-bottom: 32px;
   }
-  .tagline em { color: #C966FF; font-style: normal; }
+  .tagline em { color: #A100FF; font-style: normal; }
 
   /* ── PANELS ── */
   .panel {
-    background: #161616;
-    border: 1px solid rgba(255,255,255,0.07);
+    background: #ffffff;
+    border: 1px solid rgba(0,0,0,0.08);
     border-radius: 6px;
     padding: 22px 26px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
   }
   .panel-title {
     font-size: 10px;
     font-weight: 700;
     letter-spacing: 0.10em;
     text-transform: uppercase;
-    color: rgba(255,255,255,0.30);
+    color: rgba(0,0,0,0.35);
     margin-bottom: 16px;
   }
 
@@ -124,16 +125,16 @@
   .model-card {
     border-radius: 4px;
     padding: 12px 14px;
-    border-left: 3px solid rgba(255,255,255,0.12);
-    background: rgba(255,255,255,0.03);
+    border-left: 3px solid rgba(0,0,0,0.10);
+    background: rgba(0,0,0,0.02);
   }
   .model-card.winner {
     border-left-color: #A100FF;
-    background: rgba(161,0,255,0.10);
+    background: rgba(161,0,255,0.06);
   }
   .model-card.dropped {
-    border-left-color: rgba(255,255,255,0.15);
-    opacity: 0.75;
+    border-left-color: rgba(0,0,0,0.10);
+    opacity: 0.70;
   }
 
   .model-name {
@@ -143,7 +144,7 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    color: #ffffff;
+    color: #0d0d0d;
   }
   .badge {
     font-size: 9px;
@@ -157,7 +158,7 @@
   }
   .model-why {
     font-size: 11px;
-    color: rgba(255,255,255,0.50);
+    color: rgba(0,0,0,0.50);
     line-height: 1.5;
   }
 
@@ -170,22 +171,22 @@
     font-weight: 700;
     letter-spacing: 0.08em;
     text-transform: uppercase;
-    color: rgba(255,255,255,0.28);
+    color: rgba(0,0,0,0.35);
     text-align: left;
     padding: 0 12px 10px 0;
-    border-bottom: 1px solid rgba(255,255,255,0.07);
+    border-bottom: 1px solid rgba(0,0,0,0.08);
   }
   .results-table td {
     padding: 9px 12px 9px 0;
     font-size: 13px;
-    border-bottom: 1px solid rgba(255,255,255,0.04);
-    color: rgba(255,255,255,0.65);
+    border-bottom: 1px solid rgba(0,0,0,0.04);
+    color: rgba(0,0,0,0.60);
   }
-  .results-table tr.winner td { color: #ffffff; font-weight: 600; }
-  .results-table tr.baseline-row td { color: rgba(255,255,255,0.28); font-size: 11px; }
+  .results-table tr.winner td { color: #0d0d0d; font-weight: 600; }
+  .results-table tr.baseline-row td { color: rgba(0,0,0,0.30); font-size: 11px; }
 
   .auc-bar-bg {
-    flex: 1; height: 5px; background: rgba(255,255,255,0.07); border-radius: 2px; overflow: hidden;
+    flex: 1; height: 5px; background: rgba(0,0,0,0.07); border-radius: 2px; overflow: hidden;
   }
   .auc-bar { height: 100%; border-radius: 2px; }
   .auc-val { font-size: 13px; font-weight: 700; min-width: 42px; }
@@ -193,22 +194,23 @@
   .overfit-row { display: flex; gap: 16px; }
   .check-item {
     flex: 1;
-    background: #161616;
-    border: 1px solid rgba(255,255,255,0.06);
-    border-top: 2px solid rgba(161,0,255,0.5);
+    background: #ffffff;
+    border: 1px solid rgba(0,0,0,0.07);
+    border-top: 2px solid rgba(161,0,255,0.55);
     border-radius: 4px;
     padding: 14px 16px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
   }
   .check-title {
     font-size: 10px;
     font-weight: 700;
-    color: #C966FF;
+    color: #A100FF;
     text-transform: uppercase;
     letter-spacing: 0.10em;
     margin-bottom: 8px;
   }
-  .check-body { font-size: 11.5px; color: rgba(255,255,255,0.60); line-height: 1.5; }
-  .check-body strong { color: #ffffff; }
+  .check-body { font-size: 11.5px; color: rgba(0,0,0,0.55); line-height: 1.5; }
+  .check-body strong { color: #0d0d0d; }
   .check-body ul, .model-why ul { padding-left: 13px; margin: 0; display: flex; flex-direction: column; gap: 3px; }
   .check-body li, .model-why li { list-style: disc; }
 
@@ -228,11 +230,12 @@
   }
 
   .q-bubble {
-    background: #161616;
-    border: 1px solid rgba(255,255,255,0.06);
-    border-left: 3px solid rgba(161,0,255,0.45);
+    background: #ffffff;
+    border: 1px solid rgba(0,0,0,0.07);
+    border-left: 3px solid rgba(161,0,255,0.50);
     border-radius: 6px;
     padding: 12px 16px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
   }
 
   .q-bubble-tag {
@@ -246,7 +249,7 @@
 
   .q-bubble-text {
     font-size: 11.5px;
-    color: rgba(255,255,255,0.55);
+    color: rgba(0,0,0,0.55);
     line-height: 1.5;
   }
 
@@ -257,12 +260,13 @@
   }
 
   .q-hmw {
-    background: rgba(161,0,255,0.10);
-    border: 2px solid rgba(161,0,255,0.50);
+    background: rgba(161,0,255,0.06);
+    border: 2px solid rgba(161,0,255,0.40);
     border-radius: 10px;
     padding: 40px 44px;
     max-width: 500px;
     text-align: center;
+    box-shadow: 0 2px 12px rgba(161,0,255,0.10);
   }
 
   .q-hmw-label {
@@ -270,7 +274,7 @@
     font-weight: 700;
     letter-spacing: 0.15em;
     text-transform: uppercase;
-    color: rgba(201,102,255,0.65);
+    color: rgba(161,0,255,0.60);
     margin-bottom: 20px;
   }
 
@@ -278,13 +282,13 @@
     font-size: 24px;
     font-weight: 700;
     line-height: 1.3;
-    color: #ffffff;
+    color: #0d0d0d;
     margin-bottom: 20px;
   }
 
   .q-hmw-sub {
     font-size: 13px;
-    color: rgba(255,255,255,0.45);
+    color: rgba(0,0,0,0.45);
     line-height: 1.6;
   }
 
@@ -300,12 +304,12 @@
   .q-connector-line {
     flex: 1;
     width: 1px;
-    background: linear-gradient(to bottom, transparent, rgba(161,0,255,0.4), transparent);
+    background: linear-gradient(to bottom, transparent, rgba(161,0,255,0.35), transparent);
   }
 
   .q-connector-arrow {
     font-size: 22px;
-    color: rgba(161,0,255,0.70);
+    color: rgba(161,0,255,0.60);
     line-height: 1;
     writing-mode: vertical-rl;
     transform: rotate(180deg);
@@ -322,13 +326,14 @@
   }
 
   .ans-side {
-    background: #161616;
-    border: 1px solid rgba(255,255,255,0.07);
+    background: #ffffff;
+    border: 1px solid rgba(0,0,0,0.07);
     border-radius: 8px;
     padding: 36px 40px;
     display: flex;
     flex-direction: column;
     gap: 14px;
+    box-shadow: 0 1px 6px rgba(0,0,0,0.06);
   }
 
   .ans-side--left  { border-top: 3px solid #A100FF; }
@@ -355,7 +360,7 @@
   .ans-side-title {
     font-size: 20px;
     font-weight: 700;
-    color: #ffffff;
+    color: #0d0d0d;
     line-height: 1.2;
   }
 
@@ -370,12 +375,12 @@
 
   .ans-list li {
     font-size: 12.5px;
-    color: rgba(255,255,255,0.58);
+    color: rgba(0,0,0,0.55);
     line-height: 1.55;
     list-style: disc;
   }
 
-  .ans-list li strong { color: #ffffff; }
+  .ans-list li strong { color: #0d0d0d; }
 
   .ans-divider {
     display: flex;
@@ -388,28 +393,28 @@
   .ans-divider-line {
     flex: 1;
     width: 1px;
-    background: rgba(255,255,255,0.08);
+    background: rgba(0,0,0,0.08);
   }
 
   .ans-divider-label {
     font-size: 18px;
     font-weight: 700;
-    color: rgba(161,0,255,0.60);
+    color: rgba(161,0,255,0.55);
   }
 
   .ans-footer {
     margin-top: 18px;
     padding: 14px 20px;
-    background: rgba(161,0,255,0.07);
-    border: 1px solid rgba(161,0,255,0.25);
+    background: rgba(161,0,255,0.05);
+    border: 1px solid rgba(161,0,255,0.20);
     border-radius: 6px;
     font-size: 12px;
-    color: rgba(255,255,255,0.50);
+    color: rgba(0,0,0,0.50);
     line-height: 1.6;
     text-align: center;
   }
 
-  .ans-footer strong { color: #C966FF; }
+  .ans-footer strong { color: #A100FF; }
 
   /* ── SLIDE 4 — FEATURES ── */
   .feat-grid {
@@ -422,25 +427,25 @@
   .feat-bar-list { display: flex; flex-direction: column; gap: 11px; margin-top: 4px; }
   .feat-bar-row { display: flex; flex-direction: column; gap: 5px; }
   .feat-label-row { display: flex; justify-content: space-between; align-items: baseline; }
-  .feat-name { font-size: 12px; color: rgba(255,255,255,0.85); }
-  .feat-count { font-size: 11px; color: rgba(255,255,255,0.30); }
-  .feat-bg { height: 4px; background: rgba(255,255,255,0.07); border-radius: 2px; overflow: hidden; }
+  .feat-name { font-size: 12px; color: rgba(0,0,0,0.80); }
+  .feat-count { font-size: 11px; color: rgba(0,0,0,0.30); }
+  .feat-bg { height: 4px; background: rgba(0,0,0,0.07); border-radius: 2px; overflow: hidden; }
   .feat-fill { height: 100%; border-radius: 2px; background: linear-gradient(90deg, #A100FF, #C966FF); }
 
   .top10-table { width: 100%; border-collapse: collapse; }
   .top10-table th {
     font-size: 10px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
-    color: rgba(255,255,255,0.28); text-align: left; padding: 0 8px 10px 0;
-    border-bottom: 1px solid rgba(255,255,255,0.07);
+    color: rgba(0,0,0,0.35); text-align: left; padding: 0 8px 10px 0;
+    border-bottom: 1px solid rgba(0,0,0,0.08);
   }
   .top10-table td {
     padding: 7px 8px 7px 0;
     font-size: 11.5px;
-    border-bottom: 1px solid rgba(255,255,255,0.04);
+    border-bottom: 1px solid rgba(0,0,0,0.04);
     vertical-align: middle;
   }
-  .top10-table td:first-child { color: rgba(255,255,255,0.30); font-size: 10px; }
-  .cust-id { font-weight: 600; color: #ffffff; font-size: 12px; }
+  .top10-table td:first-child { color: rgba(0,0,0,0.30); font-size: 10px; }
+  .cust-id { font-weight: 600; color: #0d0d0d; font-size: 12px; }
 
   .prob-chip {
     display: inline-block;
@@ -448,8 +453,8 @@
     border-radius: 3px;
     font-size: 11px;
     font-weight: 700;
-    background: rgba(161,0,255,0.20);
-    color: #C966FF;
+    background: rgba(161,0,255,0.12);
+    color: #7700CC;
   }
 
   .feat-tag {
@@ -460,21 +465,21 @@
     margin-right: 3px;
     white-space: nowrap;
   }
-  .feat-tag          { background: rgba(161,0,255,0.20); color: #C966FF; }
-  .feat-tag.secondary{ background: rgba(161,0,255,0.10); color: rgba(201,102,255,0.75); }
-  .feat-tag.tertiary { background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.45); }
+  .feat-tag          { background: rgba(161,0,255,0.12); color: #7700CC; }
+  .feat-tag.secondary{ background: rgba(161,0,255,0.07); color: rgba(119,0,204,0.75); }
+  .feat-tag.tertiary { background: rgba(0,0,0,0.05); color: rgba(0,0,0,0.45); }
 
   /* source badge on feature bars */
   .src-badge {
     font-size: 9px; font-weight: 700; letter-spacing: 0.06em;
     text-transform: uppercase; padding: 1px 5px; border-radius: 3px;
-    background: rgba(161,0,255,0.15); color: rgba(201,102,255,0.8);
+    background: rgba(161,0,255,0.10); color: rgba(119,0,204,0.80);
     margin-left: 6px; vertical-align: middle;
   }
 
   /* hoverable feature row */
   .has-tip { cursor: default; border-radius: 4px; padding: 3px 4px; margin: -3px -4px; transition: background 0.15s; }
-  .has-tip:hover { background: rgba(161,0,255,0.08); }
+  .has-tip:hover { background: rgba(161,0,255,0.06); }
 
   /* full feature overview */
   .feat-overview {
@@ -485,16 +490,446 @@
   .fov-group {
     display: flex; align-items: baseline; gap: 8px;
     font-size: 11px; line-height: 1.45;
-    padding: 4px 0; border-bottom: 1px solid rgba(255,255,255,0.04);
+    padding: 4px 0; border-bottom: 1px solid rgba(0,0,0,0.05);
   }
   .fov-label {
-    min-width: 130px; font-weight: 700; color: rgba(255,255,255,0.70); flex-shrink: 0;
+    min-width: 130px; font-weight: 700; color: rgba(0,0,0,0.65); flex-shrink: 0;
   }
   .fov-src {
     min-width: 90px; font-size: 9px; font-weight: 700; letter-spacing: 0.06em;
-    text-transform: uppercase; color: rgba(161,0,255,0.75); flex-shrink: 0;
+    text-transform: uppercase; color: rgba(161,0,255,0.70); flex-shrink: 0;
   }
-  .fov-items { color: rgba(255,255,255,0.38); font-size: 10.5px; }
+  .fov-items { color: rgba(0,0,0,0.38); font-size: 10.5px; }
+
+  /* ── SLIDE 3 — DEMO TRANSITION ── */
+  .demo-outer {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    text-align: center;
+  }
+
+  .demo-eyebrow {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: #A100FF;
+  }
+
+  .demo-time-badge {
+    display: inline-block;
+    background: rgba(161,0,255,0.10);
+    border-radius: 12px;
+    padding: 2px 10px;
+    font-size: 10px;
+    color: rgba(161,0,255,0.70);
+    font-weight: 600;
+    margin-left: 8px;
+    vertical-align: middle;
+  }
+
+  .demo-title {
+    font-size: 30px;
+    font-weight: 700;
+    color: #0d0d0d;
+    line-height: 1.2;
+  }
+
+  .demo-title em { color: #A100FF; font-style: normal; }
+
+  .demo-sub {
+    font-size: 13px;
+    color: rgba(0,0,0,0.45);
+    max-width: 480px;
+  }
+
+  .demo-icon-wrap {
+    font-size: 52px;
+    line-height: 1;
+  }
+
+  .demo-h2 {
+    font-size: 26px;
+    font-weight: 800;
+    color: #0d0d0d;
+  }
+
+  .demo-h2 em { color: #A100FF; font-style: normal; }
+
+  .demo-p {
+    font-size: 14px;
+    color: rgba(0,0,0,0.55);
+    max-width: 500px;
+    line-height: 1.6;
+  }
+
+  .demo-steps {
+    display: flex;
+    gap: 14px;
+  }
+
+  .demo-step {
+    background: #ffffff;
+    border: 1px solid rgba(161,0,255,0.20);
+    border-radius: 10px;
+    padding: 14px 24px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #0d0d0d;
+    text-align: center;
+    min-width: 155px;
+    box-shadow: 0 1px 6px rgba(0,0,0,0.06);
+  }
+
+  .demo-step span { font-size: 11px; color: rgba(0,0,0,0.40); font-weight: 400; }
+
+  .demo-step-num {
+    font-size: 22px;
+    font-weight: 800;
+    color: #A100FF;
+    margin-bottom: 4px;
+  }
+
+  .demo-return {
+    font-size: 12px;
+    color: rgba(0,0,0,0.30);
+  }
+
+  /* ── READY & NEXT STEPS SLIDE ── */
+  .ns-layout {
+    display: grid;
+    grid-template-columns: 1fr 1px 1.3fr;
+    gap: 0 28px;
+    flex: 1;
+    align-items: start;
+  }
+
+  .ns-section-label {
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: rgba(161,0,255,0.65);
+    margin-bottom: 14px;
+  }
+
+  .ns-ready { display: flex; flex-direction: column; gap: 16px; }
+
+  .ns-ready-card {
+    background: #ffffff;
+    border: 1px solid rgba(0,0,0,0.07);
+    border-top: 3px solid #A100FF;
+    border-radius: 8px;
+    padding: 20px 22px;
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+    box-shadow: 0 1px 6px rgba(0,0,0,0.06);
+  }
+
+  .ns-ready-icon { font-size: 28px; line-height: 1; flex-shrink: 0; }
+
+  .ns-ready-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: #0d0d0d;
+    margin-bottom: 8px;
+  }
+
+  .ns-ready-text {
+    font-size: 12px;
+    color: rgba(0,0,0,0.55);
+    line-height: 1.55;
+  }
+
+  .ns-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .ns-chip {
+    background: rgba(161,0,255,0.08);
+    border: 1px solid rgba(161,0,255,0.20);
+    border-radius: 20px;
+    padding: 5px 12px;
+    font-size: 11px;
+    font-weight: 600;
+    color: #7700CC;
+  }
+
+  .ns-div {
+    display: flex;
+    align-items: stretch;
+  }
+
+  .ns-div-line {
+    width: 1px;
+    background: rgba(0,0,0,0.07);
+    flex: 1;
+  }
+
+  .ns-steps { display: flex; flex-direction: column; gap: 12px; }
+
+  .ns-step {
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+  }
+
+  .ns-step-num {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: rgba(161,0,255,0.10);
+    border: 1px solid rgba(161,0,255,0.25);
+    color: #A100FF;
+    font-size: 11px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  .ns-step-title {
+    font-size: 12.5px;
+    font-weight: 700;
+    color: #0d0d0d;
+    margin-bottom: 3px;
+  }
+
+  .ns-step-text {
+    font-size: 11.5px;
+    color: rgba(0,0,0,0.50);
+    line-height: 1.5;
+  }
+
+  /* ── TITLE SLIDE ── */
+  .title-slide {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 72px 96px;
+    height: 100vh;
+    position: relative;
+  }
+
+  .title-kicker {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: rgba(161,0,255,0.65);
+    margin-bottom: 22px;
+  }
+
+  .title-main {
+    font-size: 48px;
+    font-weight: 800;
+    line-height: 1.15;
+    color: #0d0d0d;
+    max-width: 700px;
+    margin-bottom: 24px;
+  }
+
+  .title-main em { color: #A100FF; font-style: normal; }
+
+  .title-sub {
+    font-size: 16px;
+    color: rgba(0,0,0,0.45);
+    line-height: 1.6;
+    max-width: 520px;
+    margin-bottom: 48px;
+  }
+
+  .title-meta {
+    display: flex;
+    gap: 32px;
+  }
+
+  .title-meta-item {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+
+  .title-meta-label {
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: rgba(0,0,0,0.30);
+  }
+
+  .title-meta-value {
+    font-size: 13px;
+    font-weight: 600;
+    color: #0d0d0d;
+  }
+
+  .title-wordmark {
+    position: absolute;
+    bottom: 40px;
+    right: 72px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.10em;
+    text-transform: uppercase;
+    color: rgba(0,0,0,0.20);
+  }
+
+  .title-wordmark em { color: #A100FF; font-style: normal; }
+
+  /* ── SITUATION SLIDE ── */
+  .sit-stats-row {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    background: #ffffff;
+    border: 1px solid rgba(0,0,0,0.07);
+    border-radius: 8px;
+    padding: 24px 32px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    margin-bottom: 18px;
+  }
+
+  .sit-stat {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    text-align: center;
+  }
+
+  .sit-number {
+    font-size: 40px;
+    font-weight: 800;
+    color: #A100FF;
+    line-height: 1;
+  }
+
+  .sit-number-sub {
+    font-size: 11px;
+    color: rgba(0,0,0,0.40);
+    line-height: 1.4;
+  }
+
+  .sit-stat-div {
+    width: 1px;
+    height: 52px;
+    background: rgba(0,0,0,0.08);
+    flex-shrink: 0;
+  }
+
+  .sit-facts-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+    flex: 1;
+  }
+
+  .sit-fact {
+    background: #ffffff;
+    border: 1px solid rgba(0,0,0,0.07);
+    border-left: 3px solid rgba(161,0,255,0.40);
+    border-radius: 6px;
+    padding: 16px 18px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  }
+
+  .sit-fact-label {
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: rgba(161,0,255,0.70);
+    margin-bottom: 6px;
+  }
+
+  .sit-fact-text {
+    font-size: 12.5px;
+    color: rgba(0,0,0,0.58);
+    line-height: 1.5;
+  }
+
+  /* ── COMPLICATION SLIDE ── */
+  .comp-figures {
+    display: flex;
+    align-items: center;
+    background: #ffffff;
+    border: 1px solid rgba(0,0,0,0.07);
+    border-radius: 8px;
+    padding: 18px 32px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    margin-bottom: 16px;
+  }
+
+  .comp-fig {
+    flex: 1;
+    text-align: center;
+  }
+
+  .comp-fig-num {
+    font-size: 32px;
+    font-weight: 800;
+    color: #A100FF;
+    line-height: 1;
+    margin-bottom: 5px;
+  }
+
+  .comp-fig-desc {
+    font-size: 11px;
+    color: rgba(0,0,0,0.45);
+    line-height: 1.35;
+  }
+
+  .comp-fig-div {
+    width: 1px;
+    height: 44px;
+    background: rgba(0,0,0,0.08);
+    flex-shrink: 0;
+  }
+
+  .comp-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 12px;
+    align-content: start;
+  }
+
+  .comp-card {
+    background: #ffffff;
+    border: 1px solid rgba(0,0,0,0.07);
+    border-top: 3px solid rgba(161,0,255,0.45);
+    border-radius: 6px;
+    padding: 16px 18px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+  }
+
+  .comp-tag {
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #A100FF;
+  }
+
+  .comp-text {
+    font-size: 11.5px;
+    color: rgba(0,0,0,0.55);
+    line-height: 1.5;
+  }
 </style>
 </head>
 <body>
@@ -502,9 +937,144 @@
 <div class="deck">
 
   <!-- ═══════════════════════════════════════════════
-       SLIDE 1 — QUESTION
+       SLIDE 1 — TITLE
   ════════════════════════════════════════════════ -->
   <div class="slide active" id="slide-1">
+    <div class="title-slide">
+      <div class="title-kicker">NordikBank · AML Transformation</div>
+      <div class="title-main">Less noise.<br>More focus.<br><em>Every decision explained.</em></div>
+      <div class="title-sub">An ML system that cuts analyst noise, ranks customers by true behavioural risk, and makes every flag explainable to the FSA.</div>
+      <div class="title-meta">
+        <div class="title-meta-item">
+          <div class="title-meta-label">Team</div>
+          <div class="title-meta-value">Hugin</div>
+        </div>
+        <div class="title-meta-item">
+          <div class="title-meta-label">Date</div>
+          <div class="title-meta-value">May 2025</div>
+        </div>
+        <div class="title-meta-item">
+          <div class="title-meta-label">Metric</div>
+          <div class="title-meta-value">AUC-ROC 0.89</div>
+        </div>
+      </div>
+      <div class="title-wordmark">Accenture · <em>AI Program</em></div>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════════
+       SLIDE 2 — SITUATION
+  ════════════════════════════════════════════════ -->
+  <div class="slide" id="slide-2">
+    <div class="label">Situation</div>
+    <div class="tagline">NordikBank is a healthy, growing bank — <em>with a monitoring problem</em></div>
+
+    <div class="sit-stats-row">
+      <div class="sit-stat">
+        <div class="sit-number">1.2M</div>
+        <div class="sit-number-sub">customers<br>DK &amp; SE</div>
+      </div>
+      <div class="sit-stat-div"></div>
+      <div class="sit-stat">
+        <div class="sit-number">5M</div>
+        <div class="sit-number-sub">transactions<br>per month</div>
+      </div>
+      <div class="sit-stat-div"></div>
+      <div class="sit-stat">
+        <div class="sit-number">45</div>
+        <div class="sit-number-sub">compliance<br>analysts</div>
+      </div>
+      <div class="sit-stat-div"></div>
+      <div class="sit-stat">
+        <div class="sit-number">120</div>
+        <div class="sit-number-sub">TMS rules<br>(was 40 in 2019)</div>
+      </div>
+    </div>
+
+    <div class="sit-facts-row">
+      <div class="sit-fact">
+        <div class="sit-fact-label">The system</div>
+        <div class="sit-fact-text">Rule-based TMS introduced in 2019 after Nordic AML scandals. Static thresholds — cash limits, geographic flags, structuring patterns — applied transaction by transaction.</div>
+      </div>
+      <div class="sit-fact">
+        <div class="sit-fact-label">The analysts</div>
+        <div class="sit-fact-text">Each investigation takes 20–45 min. With current capacity, analysts can conduct ~50 deep-dive investigations per month before hitting their limit.</div>
+      </div>
+      <div class="sit-fact">
+        <div class="sit-fact-label">The regulator</div>
+        <div class="sit-fact-text">Finanstilsynet (FSA) review in Q3 2025. Following Danske Bank and Swedbank, risk-based and explainable monitoring is the new bar — not a nice-to-have.</div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════════
+       SLIDE 3 — COMPLICATION
+  ════════════════════════════════════════════════ -->
+  <div class="slide" id="slide-3">
+    <div class="label">Complication</div>
+    <div class="tagline">The rule-based TMS is <em>creating more problems than it solves</em></div>
+
+    <!-- key figures bar -->
+    <div class="comp-figures">
+      <div class="comp-fig">
+        <div class="comp-fig-num">97%</div>
+        <div class="comp-fig-desc">of alerts are false positives</div>
+      </div>
+      <div class="comp-fig-div"></div>
+      <div class="comp-fig">
+        <div class="comp-fig-num">50</div>
+        <div class="comp-fig-desc">deep investigations / month</div>
+      </div>
+      <div class="comp-fig-div"></div>
+      <div class="comp-fig">
+        <div class="comp-fig-num">120</div>
+        <div class="comp-fig-desc">rules in current TMS</div>
+      </div>
+      <div class="comp-fig-div"></div>
+      <div class="comp-fig">
+        <div class="comp-fig-num">Q3 '25</div>
+        <div class="comp-fig-desc">next FSA regulatory review</div>
+      </div>
+    </div>
+
+    <!-- complication cards — no repeated stats -->
+    <div class="comp-grid">
+
+      <div class="comp-card">
+        <div class="comp-tag">Signal quality</div>
+        <div class="comp-text">Static rules cannot tell a cash-heavy business from a structuring scheme — both trip the same alert. 97% of analyst time is spent clearing noise.</div>
+      </div>
+
+      <div class="comp-card">
+        <div class="comp-tag">Capacity gap</div>
+        <div class="comp-text">15,000 alerts generated monthly. With capacity for only 50 deep investigations, over 99% of the queue goes uninvestigated each month.</div>
+      </div>
+
+      <div class="comp-card">
+        <div class="comp-tag">Regulatory pressure</div>
+        <div class="comp-text">Post-Danske Bank and Swedbank, the FSA expects risk-based, explainable monitoring. Static rule sets will not pass the Q3 '25 review.</div>
+      </div>
+
+      <div class="comp-card">
+        <div class="comp-tag">Blind spots</div>
+        <div class="comp-text">Each rule sees one transaction at a time. Behavioural history, cross-account patterns, and change over time are invisible — layering goes undetected.</div>
+      </div>
+
+      <div class="comp-card">
+        <div class="comp-tag">Cost of misses</div>
+        <div class="comp-text">Under 6AMLD, the bank — not the analyst — is liable for missed SAR filings. A false negative is not just a miss; it is a legal exposure.</div>
+      </div>
+
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════════
+       SLIDE 4 — QUESTION
+  ════════════════════════════════════════════════ -->
+  <div class="slide" id="slide-4">
     <div class="label">The Question</div>
     <div class="tagline">Five complications converge on <em>one central challenge</em></div>
 
@@ -555,9 +1125,9 @@
 
 
   <!-- ═══════════════════════════════════════════════
-       SLIDE 2 — ANSWER
+       SLIDE 5 — ANSWER
   ════════════════════════════════════════════════ -->
-  <div class="slide" id="slide-2">
+  <div class="slide" id="slide-5">
     <div class="label">Our Answer</div>
     <div class="tagline">Our edge: a system that works for <em>both the model and the analyst</em></div>
 
@@ -602,9 +1172,110 @@
 
 
   <!-- ═══════════════════════════════════════════════
-       SLIDE 3 — MODELS
+       SLIDE 6 — DEMO TRANSITION
   ════════════════════════════════════════════════ -->
-  <div class="slide" id="slide-3">
+  <div class="slide" id="slide-6">
+    <div class="demo-outer">
+      <div class="demo-eyebrow">3 · Live Demo <span class="demo-time-badge">~3 min</span></div>
+      <div class="demo-icon-wrap">🔍</div>
+      <h2 class="demo-h2"><em>Hugin</em></h2>
+      <p class="demo-p">A live demo of the system in action — walking through a flagged customer is worth more than ten slides of methodology.</p>
+      <div class="demo-steps">
+        <div class="demo-step"><div class="demo-step-num">1</div>Alert queue<br><span>sorted by AI risk score</span></div>
+        <div class="demo-step"><div class="demo-step-num">2</div>Customer 360<br><span>profile + top drivers</span></div>
+        <div class="demo-step"><div class="demo-step-num">3</div>File a ruling<br><span>SAR / escalate / clear</span></div>
+      </div>
+      <p class="demo-return">Return here after the demo for results &amp; next steps →</p>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════════
+       SLIDE 7 — READY & NEXT STEPS
+  ════════════════════════════════════════════════ -->
+  <div class="slide" id="slide-7">
+    <div class="label">Deployment &amp; Roadmap</div>
+    <div class="tagline">The system is <em>production-ready today</em> — here is where we go next</div>
+
+    <div class="ns-layout">
+
+      <!-- LEFT: ready to use -->
+      <div class="ns-ready">
+        <div class="ns-section-label">Ready to use</div>
+        <div class="ns-ready-card">
+          <div class="ns-ready-icon">⚡</div>
+          <div class="ns-ready-body">
+            <div class="ns-ready-title">One click. Live data. Instant results.</div>
+            <div class="ns-ready-text">The full pipeline runs end-to-end with a single command. The backend ingests new transaction data automatically on refresh — no manual steps, no re-training required for a new scoring run.</div>
+          </div>
+        </div>
+        <div class="ns-chips">
+          <div class="ns-chip">✓ FastAPI backend</div>
+          <div class="ns-chip">✓ Auto database ingestion</div>
+          <div class="ns-chip">✓ One-click re-score</div>
+          <div class="ns-chip">✓ Analyst workbench UI</div>
+        </div>
+      </div>
+
+      <!-- DIVIDER -->
+      <div class="ns-div">
+        <div class="ns-div-line"></div>
+      </div>
+
+      <!-- RIGHT: next steps -->
+      <div class="ns-steps">
+        <div class="ns-section-label">Next steps</div>
+
+        <div class="ns-step">
+          <div class="ns-step-num">1</div>
+          <div class="ns-step-body">
+            <div class="ns-step-title">Connect to live transaction feed</div>
+            <div class="ns-step-text">Replace the CSV snapshot with a real-time DB connection — nightly batch scoring or streaming via Kafka.</div>
+          </div>
+        </div>
+
+        <div class="ns-step">
+          <div class="ns-step-num">2</div>
+          <div class="ns-step-body">
+            <div class="ns-step-title">Analyst feedback loop</div>
+            <div class="ns-step-text">Capture SAR / clear decisions in the workbench and use them to retrain the model quarterly — the system learns from investigator judgement.</div>
+          </div>
+        </div>
+
+        <div class="ns-step">
+          <div class="ns-step-num">3</div>
+          <div class="ns-step-body">
+            <div class="ns-step-title">Drift monitoring &amp; model governance</div>
+            <div class="ns-step-text">Track score distribution and feature drift over time. Alert the team when the model needs revalidation — required for FSA model risk management.</div>
+          </div>
+        </div>
+
+        <div class="ns-step">
+          <div class="ns-step-num">4</div>
+          <div class="ns-step-body">
+            <div class="ns-step-title">Expand to corporate customers</div>
+            <div class="ns-step-text">Current model is tuned for retail. Corporate AML patterns differ — higher volumes, more complex ownership structures — warranting a separate model.</div>
+          </div>
+        </div>
+
+        <div class="ns-step">
+          <div class="ns-step-num">5</div>
+          <div class="ns-step-body">
+            <div class="ns-step-title">Network graph for counterparty risk</div>
+            <div class="ns-step-text">Extend features to map counterparty networks across customers — detecting shell company clusters and multi-hop layering invisible to per-customer scoring.</div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════════
+       SLIDE 8 — MODELS
+  ════════════════════════════════════════════════ -->
+  <div class="slide" id="slide-8">
     <div class="label">Modelling</div>
     <div class="tagline">XGBoost with engineered features delivers an <em>AUC-ROC of 0.89</em> — 22% above the rule-based baseline</div>
 
@@ -623,21 +1294,21 @@
             </ul></div>
           </div>
           <div class="model-card dropped rf">
-            <div class="model-name">Random Forest <span style="color:rgba(255,255,255,0.28);font-weight:400;font-size:10px;letter-spacing:0.05em;">— dropped</span></div>
+            <div class="model-name">Random Forest <span style="color:rgba(0,0,0,0.35);font-weight:400;font-size:10px;letter-spacing:0.05em;">— dropped</span></div>
             <div class="model-why"><ul>
               <li>Similar AUC to LR/GB, no meaningful gain over XGBoost</li>
               <li>Weaker PR-AUC — ranks the 9 val positives less precisely</li>
             </ul></div>
           </div>
           <div class="model-card dropped lr">
-            <div class="model-name">Logistic Regression <span style="color:rgba(255,255,255,0.28);font-weight:400;font-size:10px;letter-spacing:0.05em;">— dropped</span></div>
+            <div class="model-name">Logistic Regression <span style="color:rgba(0,0,0,0.35);font-weight:400;font-size:10px;letter-spacing:0.05em;">— dropped</span></div>
             <div class="model-why"><ul>
               <li>Lowest AUC-ROC — linear model misses feature interactions</li>
               <li>Retained as interpretability benchmark only</li>
             </ul></div>
           </div>
           <div class="model-card dropped gb">
-            <div class="model-name">Gradient Boosting <span style="color:rgba(255,255,255,0.28);font-weight:400;font-size:10px;letter-spacing:0.05em;">— dropped</span></div>
+            <div class="model-name">Gradient Boosting <span style="color:rgba(0,0,0,0.35);font-weight:400;font-size:10px;letter-spacing:0.05em;">— dropped</span></div>
             <div class="model-why"><ul>
               <li>Lowest PR-AUC (0.37) — poor precision on suspicious customers</li>
               <li>No native imbalance parameter; sample weighting less effective</li>
@@ -664,37 +1335,37 @@
             <tbody>
               <tr class="winner">
                 <td>XGBoost ★</td>
-                <td><span class="auc-val" style="color:#C966FF">0.889</span></td>
+                <td><span class="auc-val" style="color:#A100FF">0.889</span></td>
                 <td><div class="auc-bar-bg"><div class="auc-bar" style="width:88.9%;background:#A100FF"></div></div></td>
-                <td style="color:#C966FF">0.556</td>
-                <td style="color:rgba(255,255,255,0.35)">+0.11</td>
+                <td style="color:#A100FF">0.556</td>
+                <td style="color:rgba(0,0,0,0.35)">+0.11</td>
               </tr>
               <tr>
                 <td>Random Forest</td>
-                <td><span class="auc-val" style="color:rgba(255,255,255,0.65)">0.849</span></td>
+                <td><span class="auc-val" style="color:rgba(0,0,0,0.60)">0.849</span></td>
                 <td><div class="auc-bar-bg"><div class="auc-bar" style="width:84.9%;background:rgba(161,0,255,0.45)"></div></div></td>
-                <td style="color:rgba(255,255,255,0.45)">0.407</td>
-                <td style="color:rgba(255,255,255,0.35)">+0.15</td>
+                <td style="color:rgba(0,0,0,0.45)">0.407</td>
+                <td style="color:rgba(0,0,0,0.35)">+0.15</td>
               </tr>
               <tr>
                 <td>Logistic Regression</td>
-                <td><span class="auc-val" style="color:rgba(255,255,255,0.65)">0.846</span></td>
+                <td><span class="auc-val" style="color:rgba(0,0,0,0.60)">0.846</span></td>
                 <td><div class="auc-bar-bg"><div class="auc-bar" style="width:84.6%;background:rgba(161,0,255,0.35)"></div></div></td>
-                <td style="color:rgba(255,255,255,0.45)">0.508</td>
-                <td style="color:rgba(255,255,255,0.35)">+0.15</td>
+                <td style="color:rgba(0,0,0,0.45)">0.508</td>
+                <td style="color:rgba(0,0,0,0.35)">+0.15</td>
               </tr>
               <tr>
                 <td>Gradient Boosting</td>
-                <td><span class="auc-val" style="color:rgba(255,255,255,0.65)">0.845</span></td>
+                <td><span class="auc-val" style="color:rgba(0,0,0,0.60)">0.845</span></td>
                 <td><div class="auc-bar-bg"><div class="auc-bar" style="width:84.5%;background:rgba(161,0,255,0.25)"></div></div></td>
-                <td style="color:rgba(255,255,255,0.45)">0.373</td>
-                <td style="color:rgba(255,255,255,0.35)">+0.16</td>
+                <td style="color:rgba(0,0,0,0.45)">0.373</td>
+                <td style="color:rgba(0,0,0,0.35)">+0.16</td>
               </tr>
               <tr class="baseline-row">
                 <td>── Baseline (18 features)</td>
-                <td colspan="2" style="color:rgba(255,255,255,0.25); font-size:11px;">XGB 0.73 &nbsp;·&nbsp; RF 0.73 &nbsp;·&nbsp; GB 0.71 &nbsp;·&nbsp; LR 0.68</td>
-                <td style="color:rgba(255,255,255,0.25)">—</td>
-                <td style="color:rgba(255,255,255,0.25)">—</td>
+                <td colspan="2" style="color:rgba(0,0,0,0.28); font-size:11px;">XGB 0.73 &nbsp;·&nbsp; RF 0.73 &nbsp;·&nbsp; GB 0.71 &nbsp;·&nbsp; LR 0.68</td>
+                <td style="color:rgba(0,0,0,0.28)">—</td>
+                <td style="color:rgba(0,0,0,0.28)">—</td>
               </tr>
             </tbody>
           </table>
@@ -736,9 +1407,9 @@
 
 
   <!-- ═══════════════════════════════════════════════
-       SLIDE 4 — FEATURES & TOP 10
+       SLIDE 9 — FEATURES & TOP 10
   ════════════════════════════════════════════════ -->
-  <div class="slide" id="slide-4">
+  <div class="slide" id="slide-9">
     <div class="label">Feature Intelligence</div>
     <div class="tagline">Three behavioural signals drive <em>94% of alerts</em> — international wire exposure, volume volatility, and declined transactions</div>
 
@@ -808,7 +1479,7 @@
         </div>
 
         <!-- full feature overview — hidden until toggled -->
-        <div style="margin-top:14px;padding-top:12px;border-top:1px solid rgba(255,255,255,0.06);">
+        <div style="margin-top:14px;padding-top:12px;border-top:1px solid rgba(0,0,0,0.06);">
           <button id="fov-toggle" onclick="toggleFov()" style="background:none;border:none;cursor:pointer;display:flex;align-items:center;gap:8px;padding:0;">
             <span style="font-size:10px;font-weight:700;letter-spacing:0.10em;text-transform:uppercase;color:rgba(161,0,255,0.8);">All 64 features — 12 groups</span>
             <span id="fov-arrow" style="font-size:11px;color:rgba(161,0,255,0.6);transition:transform 0.2s;">▼</span>
@@ -898,8 +1569,8 @@
           </tbody>
         </table>
 
-        <div style="margin-top:14px;padding-top:14px;border-top:1px solid rgba(255,255,255,0.06);">
-          <div style="font-size:11px;color:rgba(255,255,255,0.35);line-height:1.6;">
+        <div style="margin-top:14px;padding-top:14px;border-top:1px solid rgba(0,0,0,0.06);">
+          <div style="font-size:11px;color:rgba(0,0,0,0.35);line-height:1.6;">
             Per-customer XGBoost feature contributions — drivers reflect what pushed <em>that</em> customer's score, not global model weights.
           </div>
         </div>
@@ -908,9 +1579,9 @@
     </div>
 
     <!-- floating tooltip -->
-    <div id="tip" style="display:none;position:fixed;z-index:999;max-width:320px;background:#1a1a1a;border:1px solid rgba(161,0,255,0.5);border-radius:6px;padding:12px 14px;pointer-events:none;">
+    <div id="tip" style="display:none;position:fixed;z-index:999;max-width:320px;background:#ffffff;border:1px solid rgba(161,0,255,0.35);border-radius:6px;padding:12px 14px;pointer-events:none;box-shadow:0 4px 16px rgba(0,0,0,0.12);">
       <div id="tip-src" style="font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#A100FF;margin-bottom:6px;"></div>
-      <div id="tip-body" style="font-size:12px;color:rgba(255,255,255,0.75);line-height:1.55;"></div>
+      <div id="tip-body" style="font-size:12px;color:rgba(0,0,0,0.70);line-height:1.55;"></div>
     </div>
   </div>
 
@@ -919,7 +1590,7 @@
 <!-- NAV -->
 <div class="nav">
   <button onclick="prevSlide()">← Prev</button>
-  <span class="slide-counter" id="counter">1 / 4</span>
+  <span class="slide-counter" id="counter">1 / 9</span>
   <button onclick="nextSlide()">Next →</button>
 </div>
 
